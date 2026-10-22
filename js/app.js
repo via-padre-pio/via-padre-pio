@@ -1,0 +1,723 @@
+/* ==========================================================================
+   Via Padre Pio — lógica da pré-venda
+   --------------------------------------------------------------------------
+   Monta o catálogo a partir de js/config.js, controla o carrinho e gera
+   o link do WhatsApp com o pedido já escrito.
+   Não é preciso editar este arquivo para mudar produtos, cores ou contato.
+   ========================================================================== */
+
+(function () {
+  "use strict";
+
+  const CHAVE_ARMAZENAMENTO = "viapadrepio:pedido:v1";
+  const LIMITE_POR_ITEM = 20;
+
+  /** Itens do pedido: { chave, produtoId, nome, preco, cor, tamanho, imagem, quantidade } */
+  let pedido = [];
+
+  const el = (id) => document.getElementById(id);
+
+  const elementos = {
+    faixaAviso: el("faixaAviso"),
+    textoAviso: el("textoAviso"),
+    logoMarca: el("logoMarca"),
+    marcaNome: el("marcaNome"),
+    marcaAssinatura: el("marcaAssinatura"),
+    linkInstagram: el("linkInstagram"),
+    botaoCarrinho: el("botaoCarrinho"),
+    contadorCarrinho: el("contadorCarrinho"),
+    marcaChamada: el("marcaChamada"),
+    capaLogo: el("capaLogo"),
+    marcaDescricao: el("marcaDescricao"),
+    marcaPrazo: el("marcaPrazo"),
+    gradeProdutos: el("gradeProdutos"),
+    duvidaPrazo: el("duvidaPrazo"),
+    resumoPedido: el("resumoPedido"),
+    formulario: el("formularioPedido"),
+    selectEntrega: el("entrega"),
+    erroGeral: el("erroGeral"),
+    rodapeNome: el("rodapeNome"),
+    rodapeCidade: el("rodapeCidade"),
+    rodapeWhatsapp: el("rodapeWhatsapp"),
+    rodapeEmail: el("rodapeEmail"),
+    rodapeInstagram: el("rodapeInstagram"),
+    fundoEscuro: el("fundoEscuro"),
+    painelCarrinho: el("painelCarrinho"),
+    fecharCarrinho: el("fecharCarrinho"),
+    itensCarrinho: el("itensCarrinho"),
+    totalCarrinho: el("totalCarrinho"),
+    irParaPedido: el("irParaPedido"),
+    avisoFlutuante: el("avisoFlutuante"),
+  };
+
+  /* ====================================================================
+     Utilidades
+     ==================================================================== */
+
+  const formatadorMoeda = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+
+  const emReais = (valor) => formatadorMoeda.format(valor);
+
+  const soDigitos = (texto) => String(texto || "").replace(/\D/g, "");
+
+  /** Aplica a máscara (11) 91234-5678 enquanto a pessoa digita. */
+  function mascaraTelefone(valor) {
+    const d = soDigitos(valor).slice(0, 11);
+    if (d.length <= 2) return d;
+    if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+    if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  }
+
+  let tempoAviso;
+  function avisar(mensagem) {
+    const caixa = elementos.avisoFlutuante;
+    caixa.textContent = mensagem;
+    caixa.hidden = false;
+    requestAnimationFrame(() => caixa.setAttribute("data-visivel", "true"));
+    clearTimeout(tempoAviso);
+    tempoAviso = setTimeout(() => {
+      caixa.removeAttribute("data-visivel");
+      setTimeout(() => { caixa.hidden = true; }, 200);
+    }, 2600);
+  }
+
+  /* ====================================================================
+     Tema e textos vindos da configuração
+     ==================================================================== */
+
+  function aplicarTema() {
+    const mapa = {
+      fundo: "--fundo",
+      superficie: "--superficie",
+      tinta: "--tinta",
+      tintaSuave: "--tinta-suave",
+      marca: "--marca",
+      marcaEscura: "--marca-escura",
+      destaque: "--destaque",
+      borda: "--borda",
+    };
+    const tema = CONFIG.tema || {};
+    Object.keys(mapa).forEach((chave) => {
+      if (tema[chave]) {
+        document.documentElement.style.setProperty(mapa[chave], tema[chave]);
+      }
+    });
+    if (tema.marca) {
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", tema.marca);
+    }
+  }
+
+  function aplicarTextos() {
+    const { marca, contato } = CONFIG;
+
+    document.title = `${marca.nome} — Pré-venda de Camisetas`;
+    elementos.marcaNome.textContent = marca.nome;
+    elementos.capaLogo.alt = marca.nome;
+    elementos.marcaAssinatura.textContent = marca.assinatura || "";
+    elementos.marcaChamada.textContent = marca.chamada || "Pré-venda";
+    elementos.marcaDescricao.textContent = marca.descricao || "";
+    elementos.logoMarca.alt = "";
+    if (marca.logo) {
+      elementos.logoMarca.src = marca.logo;
+      elementos.capaLogo.src = marca.logo;
+    }
+    elementos.rodapeNome.textContent = marca.nome;
+    elementos.rodapeCidade.textContent = contato.cidade || "";
+
+    if (marca.aviso) {
+      elementos.textoAviso.textContent = marca.aviso;
+      elementos.faixaAviso.hidden = false;
+    }
+
+    if (marca.prazoEntrega) {
+      elementos.marcaPrazo.textContent = marca.prazoEntrega;
+      elementos.marcaPrazo.hidden = false;
+      elementos.duvidaPrazo.textContent = marca.prazoEntrega;
+    }
+
+    if (contato.instagram) {
+      const url = `https://instagram.com/${contato.instagram}`;
+      elementos.linkInstagram.href = url;
+      elementos.rodapeInstagram.href = url;
+      elementos.rodapeInstagram.textContent = `@${contato.instagram}`;
+    }
+
+    if (contato.whatsapp) {
+      elementos.rodapeWhatsapp.href = `https://wa.me/${soDigitos(contato.whatsapp)}`;
+      elementos.rodapeWhatsapp.textContent =
+        contato.whatsappVisivel || "Falar no WhatsApp";
+    } else {
+      elementos.rodapeWhatsapp.hidden = true;
+    }
+
+    if (contato.email) {
+      elementos.rodapeEmail.href = `mailto:${contato.email}`;
+      elementos.rodapeEmail.textContent = contato.email;
+    } else {
+      elementos.rodapeEmail.hidden = true;
+    }
+
+    const opcoes = CONFIG.entrega || [];
+    elementos.selectEntrega.innerHTML =
+      '<option value="">Selecione…</option>' +
+      opcoes
+        .map((o) => `<option value="${o.id}">${escapar(o.nome)}</option>`)
+        .join("");
+  }
+
+  function escapar(texto) {
+    return String(texto)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  /* ====================================================================
+     Catálogo
+     ==================================================================== */
+
+  function coresDoProduto(produto) {
+    return produto.cores && produto.cores.length
+      ? produto.cores
+      : CONFIG.padrao.cores;
+  }
+
+  function tamanhosDoProduto(produto) {
+    return produto.tamanhos && produto.tamanhos.length
+      ? produto.tamanhos
+      : CONFIG.padrao.tamanhos;
+  }
+
+  function montarCatalogo() {
+    const produtos = CONFIG.produtos || [];
+
+    if (!produtos.length) {
+      elementos.gradeProdutos.innerHTML =
+        '<p class="resumo__vazio">Os modelos desta pré-venda serão anunciados em breve. Acompanhe o nosso Instagram.</p>';
+      return;
+    }
+
+    produtos.forEach((produto) => {
+      elementos.gradeProdutos.appendChild(criarCartaoProduto(produto));
+    });
+  }
+
+  function criarCartaoProduto(produto) {
+    const cores = coresDoProduto(produto);
+    const tamanhos = tamanhosDoProduto(produto);
+
+    const cartao = document.createElement("article");
+    cartao.className = "produto" + (produto.esgotado ? " produto--esgotado" : "");
+
+    const idCor = `cor-${produto.id}`;
+    const idTam = `tam-${produto.id}`;
+
+    cartao.innerHTML = `
+      <figure class="produto__figura">
+        <img src="${escapar(produto.imagem || "assets/camisetas/modelo-1.svg")}"
+             alt="Camiseta ${escapar(produto.nome)}" loading="lazy">
+        ${produto.esgotado ? '<span class="selo-esgotado">Esgotado</span>' : ""}
+      </figure>
+
+      <div class="produto__corpo">
+        <div class="produto__topo">
+          <h3 class="produto__nome">${escapar(produto.nome)}</h3>
+          <span class="produto__preco">${emReais(produto.preco)}</span>
+        </div>
+
+        ${produto.descricao
+          ? `<p class="produto__descricao">${escapar(produto.descricao)}</p>`
+          : ""}
+
+        ${produto.esgotado ? "" : `
+        <div class="opcao">
+          <span class="opcao__rotulo" id="${idCor}">Cor</span>
+          <div class="lista-opcoes" role="group" aria-labelledby="${idCor}" data-grupo="cor">
+            ${cores.map((cor, i) => `
+              <button type="button" class="bolinha-cor"
+                      style="background:${escapar(cor.hex)}"
+                      data-valor="${escapar(cor.nome)}"
+                      aria-pressed="${i === 0}"
+                      title="${escapar(cor.nome)}">
+                <span class="so-leitor">${escapar(cor.nome)}</span>
+              </button>`).join("")}
+          </div>
+        </div>
+
+        <div class="opcao">
+          <span class="opcao__rotulo" id="${idTam}">Tamanho</span>
+          <div class="lista-opcoes" role="group" aria-labelledby="${idTam}" data-grupo="tamanho">
+            ${tamanhos.map((t, i) => `
+              <button type="button" class="botao-tamanho"
+                      data-valor="${escapar(t)}"
+                      aria-pressed="${i === 0}">${escapar(t)}</button>`).join("")}
+          </div>
+        </div>
+
+        <div class="produto__rodape">
+          <div class="quantidade">
+            <button type="button" data-passo="-1" aria-label="Diminuir quantidade">−</button>
+            <output aria-live="polite">1</output>
+            <button type="button" data-passo="1" aria-label="Aumentar quantidade">+</button>
+          </div>
+          <button type="button" class="botao botao--principal" data-acao="adicionar">
+            Adicionar
+          </button>
+        </div>`}
+      </div>`;
+
+    if (produto.esgotado) return cartao;
+
+    // Seleção de cor e tamanho
+    cartao.querySelectorAll("[data-grupo]").forEach((grupo) => {
+      grupo.addEventListener("click", (evento) => {
+        const botao = evento.target.closest("button[data-valor]");
+        if (!botao) return;
+        grupo.querySelectorAll("button[data-valor]").forEach((b) =>
+          b.setAttribute("aria-pressed", String(b === botao))
+        );
+      });
+    });
+
+    // Quantidade
+    const saida = cartao.querySelector(".quantidade output");
+    cartao.querySelectorAll(".quantidade button").forEach((botao) => {
+      botao.addEventListener("click", () => {
+        const passo = Number(botao.dataset.passo);
+        const atual = Number(saida.textContent);
+        const novo = Math.min(LIMITE_POR_ITEM, Math.max(1, atual + passo));
+        saida.textContent = String(novo);
+      });
+    });
+
+    // Adicionar ao pedido
+    cartao
+      .querySelector('[data-acao="adicionar"]')
+      .addEventListener("click", () => {
+        const selecionado = (grupo) =>
+          cartao.querySelector(
+            `[data-grupo="${grupo}"] button[aria-pressed="true"]`
+          )?.dataset.valor;
+
+        adicionarAoPedido({
+          produtoId: produto.id,
+          nome: produto.nome,
+          preco: produto.preco,
+          imagem: produto.imagem,
+          cor: selecionado("cor"),
+          tamanho: selecionado("tamanho"),
+          quantidade: Number(saida.textContent),
+        });
+
+        saida.textContent = "1";
+      });
+
+    return cartao;
+  }
+
+  /* ====================================================================
+     Carrinho
+     ==================================================================== */
+
+  function adicionarAoPedido(item) {
+    const chave = `${item.produtoId}|${item.cor}|${item.tamanho}`;
+    const existente = pedido.find((i) => i.chave === chave);
+
+    if (existente) {
+      existente.quantidade = Math.min(
+        LIMITE_POR_ITEM,
+        existente.quantidade + item.quantidade
+      );
+    } else {
+      pedido.push({ chave, ...item });
+    }
+
+    salvar();
+    desenharTudo();
+    avisar(`${item.nome} (${item.tamanho}) adicionada ao pedido`);
+  }
+
+  function alterarQuantidade(chave, passo) {
+    const item = pedido.find((i) => i.chave === chave);
+    if (!item) return;
+
+    item.quantidade += passo;
+    if (item.quantidade < 1) {
+      pedido = pedido.filter((i) => i.chave !== chave);
+    } else {
+      item.quantidade = Math.min(LIMITE_POR_ITEM, item.quantidade);
+    }
+
+    salvar();
+    desenharTudo();
+  }
+
+  function removerItem(chave) {
+    pedido = pedido.filter((i) => i.chave !== chave);
+    salvar();
+    desenharTudo();
+    avisar("Item removido do pedido");
+  }
+
+  const totalItens = () => pedido.reduce((s, i) => s + i.quantidade, 0);
+  const totalValor = () => pedido.reduce((s, i) => s + i.preco * i.quantidade, 0);
+
+  function salvar() {
+    try {
+      localStorage.setItem(CHAVE_ARMAZENAMENTO, JSON.stringify(pedido));
+    } catch (e) {
+      /* navegação privada pode bloquear; o pedido segue válido na sessão */
+    }
+  }
+
+  function carregar() {
+    try {
+      const salvo = JSON.parse(localStorage.getItem(CHAVE_ARMAZENAMENTO) || "[]");
+      if (!Array.isArray(salvo)) return;
+
+      // Mantém só itens cujo produto ainda existe e revalida o preço atual.
+      pedido = salvo
+        .map((item) => {
+          const produto = (CONFIG.produtos || []).find(
+            (p) => p.id === item.produtoId && !p.esgotado
+          );
+          if (!produto) return null;
+          return {
+            ...item,
+            nome: produto.nome,
+            preco: produto.preco,
+            imagem: produto.imagem,
+            quantidade: Math.min(
+              LIMITE_POR_ITEM,
+              Math.max(1, Number(item.quantidade) || 1)
+            ),
+          };
+        })
+        .filter(Boolean);
+    } catch (e) {
+      pedido = [];
+    }
+  }
+
+  /* ====================================================================
+     Desenho da tela
+     ==================================================================== */
+
+  function desenharTudo() {
+    desenharContador();
+    desenharPainel();
+    desenharResumo();
+  }
+
+  function desenharContador() {
+    const n = totalItens();
+    elementos.contadorCarrinho.textContent = String(n);
+    elementos.contadorCarrinho.hidden = n === 0;
+
+    // Em telas estreitas o texto do botão fica escondido; o rótulo garante
+    // que leitores de tela continuem anunciando o pedido por extenso.
+    elementos.botaoCarrinho.setAttribute(
+      "aria-label",
+      n === 0
+        ? "Meu pedido, vazio"
+        : `Meu pedido, ${n} ${n === 1 ? "peça" : "peças"}`
+    );
+  }
+
+  function desenharPainel() {
+    const corpo = elementos.itensCarrinho;
+
+    if (!pedido.length) {
+      corpo.innerHTML =
+        '<p class="painel__vazio">Seu pedido ainda está vazio.<br>Escolha um modelo no catálogo para começar.</p>';
+      elementos.totalCarrinho.textContent = emReais(0);
+      elementos.irParaPedido.setAttribute("aria-disabled", "true");
+      return;
+    }
+
+    elementos.irParaPedido.removeAttribute("aria-disabled");
+    corpo.innerHTML = pedido
+      .map(
+        (item) => `
+        <div class="item-carrinho">
+          <img class="item-carrinho__imagem" src="${escapar(item.imagem)}" alt="" loading="lazy">
+          <div class="item-carrinho__dados">
+            <p class="item-carrinho__nome">${escapar(item.nome)}</p>
+            <p class="item-carrinho__detalhe">${escapar(item.cor)} · Tamanho ${escapar(item.tamanho)}</p>
+            <div class="item-carrinho__linha">
+              <div class="quantidade quantidade--pequena">
+                <button type="button" data-chave="${escapar(item.chave)}" data-passo="-1" aria-label="Diminuir quantidade de ${escapar(item.nome)}">−</button>
+                <output>${item.quantidade}</output>
+                <button type="button" data-chave="${escapar(item.chave)}" data-passo="1" aria-label="Aumentar quantidade de ${escapar(item.nome)}">+</button>
+              </div>
+              <span class="item-carrinho__preco">${emReais(item.preco * item.quantidade)}</span>
+            </div>
+            <button type="button" class="botao-remover" data-remover="${escapar(item.chave)}">Remover</button>
+          </div>
+        </div>`
+      )
+      .join("");
+
+    elementos.totalCarrinho.textContent = emReais(totalValor());
+  }
+
+  function desenharResumo() {
+    const caixa = elementos.resumoPedido;
+
+    if (!pedido.length) {
+      caixa.innerHTML =
+        '<p class="resumo__vazio">Nenhum item selecionado ainda. <a href="#catalogo">Escolher uma camiseta</a>.</p>';
+      return;
+    }
+
+    caixa.innerHTML = `
+      <ul class="resumo__lista">
+        ${pedido
+          .map(
+            (item) => `
+          <li class="resumo__item">
+            <span>
+              ${item.quantidade}× ${escapar(item.nome)}
+              <small>${escapar(item.cor)} · Tamanho ${escapar(item.tamanho)}</small>
+            </span>
+            <strong>${emReais(item.preco * item.quantidade)}</strong>
+          </li>`
+          )
+          .join("")}
+      </ul>
+      <div class="resumo__total">
+        <span>Total estimado</span>
+        <strong>${emReais(totalValor())}</strong>
+      </div>`;
+  }
+
+  /* ====================================================================
+     Painel lateral
+     ==================================================================== */
+
+  function abrirPainel() {
+    elementos.painelCarrinho.setAttribute("data-aberto", "true");
+    elementos.painelCarrinho.setAttribute("aria-hidden", "false");
+    elementos.botaoCarrinho.setAttribute("aria-expanded", "true");
+    elementos.fundoEscuro.hidden = false;
+    document.body.style.overflow = "hidden";
+
+    // O painel ainda está com visibility: hidden neste instante, e focar um
+    // elemento invisível não funciona; por isso o foco espera o próximo quadro.
+    // preventScroll impede que o foco puxe a página durante a animação.
+    requestAnimationFrame(() =>
+      elementos.fecharCarrinho.focus({ preventScroll: true })
+    );
+  }
+
+  function fecharPainel(devolverFoco = true) {
+    elementos.painelCarrinho.removeAttribute("data-aberto");
+    elementos.painelCarrinho.setAttribute("aria-hidden", "true");
+    elementos.botaoCarrinho.setAttribute("aria-expanded", "false");
+    elementos.fundoEscuro.hidden = true;
+    document.body.style.overflow = "";
+    if (devolverFoco) elementos.botaoCarrinho.focus({ preventScroll: true });
+  }
+
+  const painelAberto = () =>
+    elementos.painelCarrinho.getAttribute("data-aberto") === "true";
+
+  /* ====================================================================
+     Validação e envio
+     ==================================================================== */
+
+  function mostrarErro(campo, mensagem) {
+    const aviso = document.querySelector(`[data-erro-de="${campo}"]`);
+    const entrada = el(campo);
+    if (aviso) {
+      aviso.textContent = mensagem;
+      aviso.hidden = false;
+    }
+    if (entrada) entrada.setAttribute("aria-invalid", "true");
+  }
+
+  function limparErros() {
+    document.querySelectorAll(".erro[data-erro-de]").forEach((aviso) => {
+      aviso.hidden = true;
+      aviso.textContent = "";
+    });
+    document
+      .querySelectorAll("[aria-invalid]")
+      .forEach((campo) => campo.removeAttribute("aria-invalid"));
+    elementos.erroGeral.hidden = true;
+  }
+
+  function validar(dados) {
+    const erros = [];
+
+    if (dados.nome.trim().length < 3) {
+      erros.push(["nome", "Escreva o seu nome completo."]);
+    }
+
+    const telefone = soDigitos(dados.whatsapp);
+    if (telefone.length < 10 || telefone.length > 11) {
+      erros.push(["whatsapp", "Informe o DDD e o número, como (11) 91234-5678."]);
+    }
+
+    if (dados.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(dados.email)) {
+      erros.push(["email", "Esse e-mail parece incompleto."]);
+    }
+
+    if (dados.cidade.trim().length < 3) {
+      erros.push(["cidade", "Informe a sua cidade e o estado."]);
+    }
+
+    if (!dados.entrega) {
+      erros.push(["entrega", "Escolha como prefere receber."]);
+    }
+
+    return erros;
+  }
+
+  function montarMensagem(dados) {
+    const nomeEntrega =
+      (CONFIG.entrega.find((o) => o.id === dados.entrega) || {}).nome || "-";
+
+    const linhas = [
+      `*NOVO PEDIDO — PRÉ-VENDA ${CONFIG.marca.nome.toUpperCase()}*`,
+      "",
+      `*Nome:* ${dados.nome.trim()}`,
+      `*WhatsApp:* ${mascaraTelefone(dados.whatsapp)}`,
+    ];
+
+    if (dados.email.trim()) linhas.push(`*E-mail:* ${dados.email.trim()}`);
+
+    linhas.push(`*Cidade:* ${dados.cidade.trim()}`);
+    linhas.push(`*Entrega:* ${nomeEntrega}`);
+    linhas.push("", "*ITENS DO PEDIDO*");
+
+    pedido.forEach((item, indice) => {
+      linhas.push(
+        `${indice + 1}. ${item.nome}`,
+        `   Cor: ${item.cor} | Tamanho: ${item.tamanho} | Qtd: ${item.quantidade}`,
+        `   Subtotal: ${emReais(item.preco * item.quantidade)}`
+      );
+    });
+
+    linhas.push(
+      "",
+      `*Total estimado:* ${emReais(totalValor())}`,
+      `(${totalItens()} ${totalItens() === 1 ? "peça" : "peças"})`
+    );
+
+    if (dados.observacoes.trim()) {
+      linhas.push("", `*Observações:* ${dados.observacoes.trim()}`);
+    }
+
+    linhas.push("", "Enviado pelo site da pré-venda.");
+
+    return linhas.join("\n");
+  }
+
+  function enviar(evento) {
+    evento.preventDefault();
+    limparErros();
+
+    if (!pedido.length) {
+      elementos.erroGeral.textContent =
+        "Adicione pelo menos uma camiseta antes de enviar o pedido.";
+      elementos.erroGeral.hidden = false;
+      document
+        .getElementById("catalogo")
+        .scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    const formulario = new FormData(elementos.formulario);
+    const dados = {
+      nome: formulario.get("nome") || "",
+      whatsapp: formulario.get("whatsapp") || "",
+      email: formulario.get("email") || "",
+      cidade: formulario.get("cidade") || "",
+      entrega: formulario.get("entrega") || "",
+      observacoes: formulario.get("observacoes") || "",
+    };
+
+    const erros = validar(dados);
+    if (erros.length) {
+      erros.forEach(([campo, mensagem]) => mostrarErro(campo, mensagem));
+      el(erros[0][0]).focus();
+      return;
+    }
+
+    const numero = soDigitos(CONFIG.contato.whatsapp);
+    if (numero.length < 12) {
+      elementos.erroGeral.textContent =
+        "O número de WhatsApp da loja ainda não foi configurado. Fale com a gente pelo Instagram.";
+      elementos.erroGeral.hidden = false;
+      return;
+    }
+
+    const url = `https://wa.me/${numero}?text=${encodeURIComponent(montarMensagem(dados))}`;
+    window.open(url, "_blank", "noopener");
+    avisar("Abrindo o WhatsApp com o seu pedido…");
+  }
+
+  /* ====================================================================
+     Eventos
+     ==================================================================== */
+
+  function ligarEventos() {
+    elementos.botaoCarrinho.addEventListener("click", () =>
+      painelAberto() ? fecharPainel() : abrirPainel()
+    );
+    elementos.fecharCarrinho.addEventListener("click", () => fecharPainel());
+    elementos.fundoEscuro.addEventListener("click", () => fecharPainel());
+
+    document.addEventListener("keydown", (evento) => {
+      if (evento.key === "Escape" && painelAberto()) fecharPainel();
+    });
+
+    // Ao ir para o formulário o foco deve seguir a página, não voltar ao botão.
+    elementos.irParaPedido.addEventListener("click", () => fecharPainel(false));
+
+    elementos.itensCarrinho.addEventListener("click", (evento) => {
+      const remover = evento.target.closest("[data-remover]");
+      if (remover) return removerItem(remover.dataset.remover);
+
+      const ajustar = evento.target.closest("[data-passo]");
+      if (ajustar) {
+        alterarQuantidade(ajustar.dataset.chave, Number(ajustar.dataset.passo));
+      }
+    });
+
+    const campoTelefone = el("whatsapp");
+    campoTelefone.addEventListener("input", () => {
+      campoTelefone.value = mascaraTelefone(campoTelefone.value);
+    });
+
+    elementos.formulario.addEventListener("submit", enviar);
+  }
+
+  /* ====================================================================
+     Início
+     ==================================================================== */
+
+  function iniciar() {
+    if (typeof CONFIG === "undefined") {
+      console.error("Via Padre Pio: js/config.js não foi carregado.");
+      return;
+    }
+    aplicarTema();
+    aplicarTextos();
+    montarCatalogo();
+    carregar();
+    desenharTudo();
+    ligarEventos();
+  }
+
+  document.readyState === "loading"
+    ? document.addEventListener("DOMContentLoaded", iniciar)
+    : iniciar();
+})();

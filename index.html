@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Via Padre Pio — Pré-venda de Camisetas</title>
+<meta name="description" content="Pré-venda de camisetas Via Padre Pio. Reserve o seu modelo, cor e tamanho e finalize o pedido pelo WhatsApp.">
+<meta name="theme-color" content="#5c3a21">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Via Padre Pio — Pré-venda de Camisetas">
+<meta property="og:description" content="Reserve a sua camiseta antes da produção. Pedido rápido pelo WhatsApp.">
+<meta property="og:image" content="assets/logo.png">
+
+<link rel="icon" href="assets/logo.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilo.css">
+</head>
+
+<body>
+
+<a class="pular-link" href="#catalogo">Pular para o catálogo</a>
+
+<!-- Faixa de aviso -->
+<div class="faixa-aviso" id="faixaAviso" hidden>
+  <p id="textoAviso"></p>
+</div>
+
+<!-- Cabeçalho -->
+<header class="cabecalho">
+  <div class="container cabecalho__interno">
+    <a class="marca" href="#topo">
+      <img class="marca__logo" id="logoMarca" src="assets/logo.png" alt="">
+      <span class="marca__texto">
+        <strong id="marcaNome">Via Padre Pio</strong>
+        <small id="marcaAssinatura"></small>
+      </span>
+    </a>
+
+    <nav class="cabecalho__acoes">
+      <a class="link-insta" id="linkInstagram" href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="18" height="18" rx="5"/>
+          <circle cx="12" cy="12" r="4"/>
+          <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+        <span class="so-leitor">Instagram</span>
+      </a>
+
+      <button class="botao-carrinho" id="botaoCarrinho" type="button" aria-expanded="false" aria-controls="painelCarrinho">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M6 7h12l-1.2 11.2a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8L6 7Z"/>
+          <path d="M9 7a3 3 0 0 1 6 0"/>
+        </svg>
+        <span>Meu pedido</span>
+        <span class="selo-contador" id="contadorCarrinho" hidden>0</span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="topo">
+
+  <!-- Abertura -->
+  <section class="capa">
+    <div class="container capa__interno">
+      <p class="etiqueta" id="marcaChamada">Pré-venda aberta</p>
+      <h1 class="capa__titulo">
+        <img class="capa__logo" id="capaLogo" src="assets/logo.png" alt="Via Padre Pio" width="280" height="280">
+      </h1>
+      <p class="capa__texto" id="marcaDescricao"></p>
+      <div class="capa__botoes">
+        <a class="botao botao--principal" href="#catalogo">Ver camisetas</a>
+        <a class="botao botao--contorno" href="#como-funciona">Como funciona</a>
+      </div>
+      <p class="capa__prazo" id="marcaPrazo" hidden></p>
+    </div>
+  </section>
+
+  <!-- Catálogo -->
+  <section class="secao" id="catalogo">
+    <div class="container">
+      <header class="secao__cabecalho">
+        <h2>Escolha o seu modelo</h2>
+        <p>Selecione cor, tamanho e quantidade. Você pode somar vários modelos no mesmo pedido.</p>
+      </header>
+      <div class="grade-produtos" id="gradeProdutos"></div>
+    </div>
+  </section>
+
+  <!-- Como funciona -->
+  <section class="secao secao--alternada" id="como-funciona">
+    <div class="container">
+      <header class="secao__cabecalho">
+        <h2>Como funciona a pré-venda</h2>
+      </header>
+      <ol class="passos">
+        <li class="passo">
+          <span class="passo__numero">1</span>
+          <h3>Monte o seu pedido</h3>
+          <p>Escolha os modelos, as cores e os tamanhos que quiser e adicione ao pedido.</p>
+        </li>
+        <li class="passo">
+          <span class="passo__numero">2</span>
+          <h3>Preencha seus dados</h3>
+          <p>Nome, WhatsApp e como prefere receber. Leva menos de um minuto.</p>
+        </li>
+        <li class="passo">
+          <span class="passo__numero">3</span>
+          <h3>Confirme no WhatsApp</h3>
+          <p>O pedido chega pronto na nossa conversa. Ali combinamos o pagamento e a entrega.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Formulário -->
+  <section class="secao" id="pedido">
+    <div class="container container--estreito">
+      <header class="secao__cabecalho">
+        <h2>Finalizar reserva</h2>
+        <p>Confira os itens e preencha seus dados. Nada é cobrado agora — o pagamento é combinado no WhatsApp.</p>
+      </header>
+
+      <div class="resumo" id="resumoPedido"></div>
+
+      <form class="formulario" id="formularioPedido" novalidate>
+        <div class="campo">
+          <label for="nome">Nome completo <span class="obrigatorio" aria-hidden="true">*</span></label>
+          <input type="text" id="nome" name="nome" autocomplete="name" required placeholder="Como quer ser chamado">
+          <p class="erro" data-erro-de="nome" hidden></p>
+        </div>
+
+        <div class="campo-duplo">
+          <div class="campo">
+            <label for="whatsapp">Seu WhatsApp <span class="obrigatorio" aria-hidden="true">*</span></label>
+            <input type="tel" id="whatsapp" name="whatsapp" inputmode="numeric" autocomplete="tel" required placeholder="(11) 91234-5678" maxlength="16">
+            <p class="erro" data-erro-de="whatsapp" hidden></p>
+          </div>
+
+          <div class="campo">
+            <label for="email">E-mail <span class="opcional">(opcional)</span></label>
+            <input type="email" id="email" name="email" autocomplete="email" placeholder="voce@email.com">
+            <p class="erro" data-erro-de="email" hidden></p>
+          </div>
+        </div>
+
+        <div class="campo-duplo">
+          <div class="campo">
+            <label for="cidade">Cidade e estado <span class="obrigatorio" aria-hidden="true">*</span></label>
+            <input type="text" id="cidade" name="cidade" required placeholder="São Paulo - SP">
+            <p class="erro" data-erro-de="cidade" hidden></p>
+          </div>
+
+          <div class="campo">
+            <label for="entrega">Como prefere receber <span class="obrigatorio" aria-hidden="true">*</span></label>
+            <select id="entrega" name="entrega" required></select>
+            <p class="erro" data-erro-de="entrega" hidden></p>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="observacoes">Alguma observação <span class="opcional">(opcional)</span></label>
+          <textarea id="observacoes" name="observacoes" rows="3" maxlength="400" placeholder="Dúvidas sobre tamanho, presente, prazo..."></textarea>
+        </div>
+
+        <p class="erro erro--geral" id="erroGeral" hidden></p>
+
+        <button class="botao botao--whatsapp" id="botaoEnviar" type="submit">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="currentColor">
+            <path d="M12.04 2c-5.46 0-9.9 4.44-9.9 9.9 0 1.75.46 3.45 1.32 4.95L2 22l5.3-1.38a9.9 9.9 0 0 0 4.74 1.2h.01c5.46 0 9.9-4.44 9.9-9.9S17.5 2 12.04 2Zm0 18.05h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.05-.2-.31a8.18 8.18 0 1 1 6.99 3.87Zm4.5-6.14c-.25-.12-1.46-.72-1.69-.8-.22-.09-.39-.13-.55.12s-.63.8-.77.96c-.14.17-.28.19-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.55-1.34-.76-1.83-.2-.48-.4-.42-.55-.43h-.47c-.16 0-.43.06-.65.31-.22.25-.85.84-.85 2.04s.87 2.37 1 2.53c.12.17 1.72 2.62 4.16 3.68.58.25 1.03.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.46-.6 1.66-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.28Z"/>
+          </svg>
+          <span>Enviar pedido pelo WhatsApp</span>
+        </button>
+
+        <p class="nota-form">
+          Ao enviar, abrimos o WhatsApp com o seu pedido já escrito. É só tocar em enviar na conversa.
+        </p>
+      </form>
+    </div>
+  </section>
+
+  <!-- Dúvidas -->
+  <section class="secao secao--alternada" id="duvidas">
+    <div class="container container--estreito">
+      <header class="secao__cabecalho">
+        <h2>Dúvidas frequentes</h2>
+      </header>
+
+      <details class="duvida">
+        <summary>Preciso pagar agora?</summary>
+        <p>Não. A reserva é gratuita e sem compromisso de pagamento imediato. Assim que recebermos o seu pedido, conversamos no WhatsApp para combinar a forma de pagamento.</p>
+      </details>
+
+      <details class="duvida">
+        <summary>Quando a camiseta chega?</summary>
+        <p id="duvidaPrazo">Produzimos as peças depois que a pré-venda fecha, por isso o prazo é maior que o de uma compra pronta. Avisamos você por WhatsApp em cada etapa.</p>
+      </details>
+
+      <details class="duvida">
+        <summary>E se o tamanho não servir?</summary>
+        <p>Fale com a gente antes de fechar o pedido que ajudamos na escolha. Depois de produzida, trocamos o tamanho conforme a disponibilidade do lote.</p>
+      </details>
+
+      <details class="duvida">
+        <summary>Posso pedir mais de uma camiseta?</summary>
+        <p>Pode sim. Adicione quantos modelos, cores e tamanhos quiser — tudo vai junto no mesmo pedido.</p>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<footer class="rodape">
+  <div class="container rodape__interno">
+    <div>
+      <strong id="rodapeNome">Via Padre Pio</strong>
+      <p id="rodapeCidade"></p>
+    </div>
+    <div class="rodape__contatos">
+      <a id="rodapeWhatsapp" href="#" target="_blank" rel="noopener noreferrer"></a>
+      <a id="rodapeEmail" href="#"></a>
+      <a id="rodapeInstagram" href="#" target="_blank" rel="noopener noreferrer"></a>
+    </div>
+  </div>
+</footer>
+
+<!-- Painel do carrinho -->
+<div class="fundo-escuro" id="fundoEscuro" hidden></div>
+
+<aside class="painel" id="painelCarrinho" aria-label="Seu pedido" aria-hidden="true">
+  <header class="painel__cabecalho">
+    <h2>Seu pedido</h2>
+    <button class="botao-fechar" id="fecharCarrinho" type="button">
+      <span class="so-leitor">Fechar</span>
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="m6 6 12 12M18 6 6 18"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="painel__corpo" id="itensCarrinho"></div>
+
+  <footer class="painel__rodape">
+    <div class="painel__total">
+      <span>Total estimado</span>
+      <strong id="totalCarrinho">R$ 0,00</strong>
+    </div>
+    <a class="botao botao--principal botao--bloco" id="irParaPedido" href="#pedido">Finalizar reserva</a>
+  </footer>
+</aside>
+
+<!-- Aviso flutuante -->
+<div class="aviso-flutuante" id="avisoFlutuante" role="status" aria-live="polite" hidden></div>
+
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

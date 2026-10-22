@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600" role="img" aria-label="Foto da camiseta em breve">
+  <rect width="600" height="600" fill="#e7dcc8"/>
+  <g transform="translate(300 290)">
+    <path d="M-150-110 -75-150q25 30 75 30t75-30l75 40-35 80-40-18v178H-75V-8l-40 18Z"
+          fill="#f7f5f0" stroke="#c9bda6" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M-75-150q25 30 75 30t75-30" fill="none" stroke="#c9bda6" stroke-width="3"/>
+    <circle cx="0" cy="-45" r="30" fill="none" stroke="#5c3a21" stroke-width="5"/>
+    <path d="M0-75v60" stroke="#5c3a21" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <text x="300" y="540" font-family="Inter, Arial, sans-serif" font-size="22"
+        fill="#8a7a68" text-anchor="middle">Foto do modelo em breve</text>
+</svg>
