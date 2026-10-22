@@ -121,6 +121,8 @@ marrom `#6b4a1e` nas letras e botões.
   entrega são combinados na conversa.
 - **O pedido fica salvo no navegador do cliente.** Se ele fechar a aba e voltar, os
   itens continuam lá.
+- **O cliente vê os modelos em grade ou em lista.** O botão fica acima do catálogo e
+  a escolha dele também fica salva no navegador.
 - **Preço alterado no config vale na hora**, inclusive para carrinhos já montados —
   ninguém fica com preço antigo.
 - **Modelo removido ou marcado como esgotado** some automaticamente dos pedidos

@@ -10,17 +10,20 @@
   "use strict";
 
   const CHAVE_ARMAZENAMENTO = "viapadrepio:pedido:v1";
+  const CHAVE_VISAO = "viapadrepio:visao:v1";
   const LIMITE_POR_ITEM = 20;
 
   /** Itens do pedido: { chave, produtoId, nome, preco, cor, tamanho, imagem, quantidade } */
   let pedido = [];
+
+  /** Etapa visível no painel: "itens" (lista) ou "dados" (formulário). */
+  let etapa = "itens";
 
   const el = (id) => document.getElementById(id);
 
   const elementos = {
     faixaAviso: el("faixaAviso"),
     textoAviso: el("textoAviso"),
-    logoMarca: el("logoMarca"),
     marcaNome: el("marcaNome"),
     marcaAssinatura: el("marcaAssinatura"),
     linkInstagram: el("linkInstagram"),
@@ -31,10 +34,14 @@
     marcaDescricao: el("marcaDescricao"),
     marcaPrazo: el("marcaPrazo"),
     gradeProdutos: el("gradeProdutos"),
+    barraCatalogo: el("barraCatalogo"),
+    contagemProdutos: el("contagemProdutos"),
+    alternarVisao: el("alternarVisao"),
     duvidaPrazo: el("duvidaPrazo"),
     resumoPedido: el("resumoPedido"),
     formulario: el("formularioPedido"),
     selectEntrega: el("entrega"),
+    textoBotaoEnviar: el("textoBotaoEnviar"),
     erroGeral: el("erroGeral"),
     rodapeNome: el("rodapeNome"),
     rodapeCidade: el("rodapeCidade"),
@@ -43,8 +50,14 @@
     rodapeInstagram: el("rodapeInstagram"),
     fundoEscuro: el("fundoEscuro"),
     painelCarrinho: el("painelCarrinho"),
+    tituloPainel: el("tituloPainel"),
+    voltarItens: el("voltarItens"),
     fecharCarrinho: el("fecharCarrinho"),
+    corpoCarrinho: el("corpoCarrinho"),
+    etapaItens: el("etapaItens"),
+    etapaDados: el("etapaDados"),
     itensCarrinho: el("itensCarrinho"),
+    rodapeCarrinho: el("rodapeCarrinho"),
     totalCarrinho: el("totalCarrinho"),
     irParaPedido: el("irParaPedido"),
     avisoFlutuante: el("avisoFlutuante"),
@@ -117,17 +130,23 @@
 
     document.title = `${marca.nome} — Pré-venda de Camisetas`;
     elementos.marcaNome.textContent = marca.nome;
-    elementos.capaLogo.alt = marca.nome;
     elementos.marcaAssinatura.textContent = marca.assinatura || "";
     elementos.marcaChamada.textContent = marca.chamada || "Pré-venda";
     elementos.marcaDescricao.textContent = marca.descricao || "";
-    elementos.logoMarca.alt = "";
-    if (marca.logo) {
-      elementos.logoMarca.src = marca.logo;
-      elementos.capaLogo.src = marca.logo;
+
+    // O logo da capa é opcional: tirar a imagem do HTML não pode derrubar o
+    // restante da página, como acontecia com o antigo logo do cabeçalho.
+    if (elementos.capaLogo) {
+      elementos.capaLogo.alt = marca.nome;
+      if (marca.logo) elementos.capaLogo.src = marca.logo;
     }
+
     elementos.rodapeNome.textContent = marca.nome;
     elementos.rodapeCidade.textContent = contato.cidade || "";
+    // Em telas estreitas o rótulo ocupa duas linhas; o nome da marca fica
+    // inteiro na segunda em vez de ser partido no meio.
+    elementos.textoBotaoEnviar.innerHTML =
+      `Enviar pedido para <span class="sem-quebra">${escapar(marca.nome.toUpperCase())}</span>`;
 
     if (marca.aviso) {
       elementos.textoAviso.textContent = marca.aviso;
@@ -206,6 +225,40 @@
     produtos.forEach((produto) => {
       elementos.gradeProdutos.appendChild(criarCartaoProduto(produto));
     });
+
+    elementos.contagemProdutos.textContent =
+      produtos.length === 1 ? "1 modelo" : `${produtos.length} modelos`;
+    elementos.barraCatalogo.hidden = false;
+    aplicarVisao(visaoSalva());
+  }
+
+  /* ====================================================================
+     Grade ou lista
+     ==================================================================== */
+
+  function visaoSalva() {
+    try {
+      return localStorage.getItem(CHAVE_VISAO) === "lista" ? "lista" : "grade";
+    } catch (e) {
+      return "grade";
+    }
+  }
+
+  function aplicarVisao(visao) {
+    elementos.gradeProdutos.classList.toggle(
+      "grade-produtos--lista",
+      visao === "lista"
+    );
+
+    elementos.alternarVisao.querySelectorAll("[data-visao]").forEach((botao) =>
+      botao.setAttribute("aria-pressed", String(botao.dataset.visao === visao))
+    );
+
+    try {
+      localStorage.setItem(CHAVE_VISAO, visao);
+    } catch (e) {
+      /* navegação privada pode bloquear; a escolha vale para esta visita */
+    }
   }
 
   function criarCartaoProduto(produto) {
@@ -413,6 +466,9 @@
     desenharContador();
     desenharPainel();
     desenharResumo();
+
+    // Esvaziar o pedido pelo formulário deixaria a etapa de dados sem sentido.
+    if (!pedido.length && etapa === "dados") mostrarEtapa("itens");
   }
 
   function desenharContador() {
@@ -437,11 +493,11 @@
       corpo.innerHTML =
         '<p class="painel__vazio">Seu pedido ainda está vazio.<br>Escolha um modelo no catálogo para começar.</p>';
       elementos.totalCarrinho.textContent = emReais(0);
-      elementos.irParaPedido.setAttribute("aria-disabled", "true");
+      elementos.irParaPedido.disabled = true;
       return;
     }
 
-    elementos.irParaPedido.removeAttribute("aria-disabled");
+    elementos.irParaPedido.disabled = false;
     corpo.innerHTML = pedido
       .map(
         (item) => `
@@ -501,7 +557,27 @@
      Painel lateral
      ==================================================================== */
 
+  /**
+   * Alterna entre a lista de itens e o formulário, ambos dentro do painel.
+   * O rodapé com o total só existe na etapa dos itens: na de dados quem
+   * conclui é o botão do WhatsApp, dentro do próprio formulário.
+   */
+  function mostrarEtapa(nova) {
+    etapa = nova;
+    const emDados = nova === "dados";
+
+    elementos.etapaItens.hidden = emDados;
+    elementos.etapaDados.hidden = !emDados;
+    elementos.rodapeCarrinho.hidden = emDados;
+    elementos.voltarItens.hidden = !emDados;
+    elementos.tituloPainel.textContent = emDados
+      ? "Finalizar reserva"
+      : "Seu pedido";
+    elementos.corpoCarrinho.scrollTop = 0;
+  }
+
   function abrirPainel() {
+    mostrarEtapa("itens");
     elementos.painelCarrinho.setAttribute("data-aberto", "true");
     elementos.painelCarrinho.setAttribute("aria-hidden", "false");
     elementos.botaoCarrinho.setAttribute("aria-expanded", "true");
@@ -527,6 +603,11 @@
 
   const painelAberto = () =>
     elementos.painelCarrinho.getAttribute("data-aberto") === "true";
+
+  function voltarParaItens() {
+    mostrarEtapa("itens");
+    elementos.irParaPedido.focus({ preventScroll: true });
+  }
 
   /* ====================================================================
      Validação e envio
@@ -625,9 +706,8 @@
     limparErros();
 
     if (!pedido.length) {
-      elementos.erroGeral.textContent =
-        "Adicione pelo menos uma camiseta antes de enviar o pedido.";
-      elementos.erroGeral.hidden = false;
+      fecharPainel();
+      avisar("Adicione pelo menos uma camiseta antes de enviar o pedido.");
       document
         .getElementById("catalogo")
         .scrollIntoView({ behavior: "smooth", block: "start" });
@@ -669,6 +749,11 @@
      ==================================================================== */
 
   function ligarEventos() {
+    elementos.alternarVisao.addEventListener("click", (evento) => {
+      const botao = evento.target.closest("[data-visao]");
+      if (botao) aplicarVisao(botao.dataset.visao);
+    });
+
     elementos.botaoCarrinho.addEventListener("click", () =>
       painelAberto() ? fecharPainel() : abrirPainel()
     );
@@ -676,11 +761,24 @@
     elementos.fundoEscuro.addEventListener("click", () => fecharPainel());
 
     document.addEventListener("keydown", (evento) => {
-      if (evento.key === "Escape" && painelAberto()) fecharPainel();
+      if (evento.key !== "Escape" || !painelAberto()) return;
+      etapa === "dados" ? voltarParaItens() : fecharPainel();
     });
 
-    // Ao ir para o formulário o foco deve seguir a página, não voltar ao botão.
-    elementos.irParaPedido.addEventListener("click", () => fecharPainel(false));
+    elementos.irParaPedido.addEventListener("click", () => {
+      if (!pedido.length) return;
+      mostrarEtapa("dados");
+      // Focar o bloco (e não o primeiro campo) evita abrir o teclado no celular.
+      elementos.etapaDados.focus({ preventScroll: true });
+    });
+
+    elementos.voltarItens.addEventListener("click", voltarParaItens);
+
+    // Links para seções da página (como "escolher uma camiseta") precisam
+    // sair da frente do conteúdo que acabaram de abrir.
+    elementos.painelCarrinho.addEventListener("click", (evento) => {
+      if (evento.target.closest('a[href^="#"]')) fecharPainel(false);
+    });
 
     elementos.itensCarrinho.addEventListener("click", (evento) => {
       const remover = evento.target.closest("[data-remover]");

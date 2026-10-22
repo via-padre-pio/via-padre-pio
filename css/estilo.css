@@ -91,6 +91,8 @@ a { color: inherit; }
   border: 0;
 }
 
+.sem-quebra { white-space: nowrap; }
+
 .pular-link {
   position: absolute;
   left: -9999px;
@@ -145,15 +147,6 @@ a { color: inherit; }
   align-items: center;
   gap: 11px;
   text-decoration: none;
-}
-
-.marca__logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-  border: 1px solid var(--borda);
 }
 
 .marca__texto { display: flex; flex-direction: column; line-height: 1.2; }
@@ -308,13 +301,16 @@ a { color: inherit; }
 .botao--contorno:hover { background: color-mix(in srgb, var(--marca) 9%, transparent); }
 
 .botao--whatsapp {
-  background: #1faa54;
+  background: var(--marca-escura);
   color: #fff;
   width: 100%;
-  padding: 16px 26px;
-  font-size: 1.02rem;
+  padding: 16px 22px;
+  font-size: 0.98rem;
+  text-align: center;
 }
-.botao--whatsapp:hover { background: #178f45; }
+.botao--whatsapp:hover { background: var(--marca); }
+
+.botao--whatsapp svg { flex-shrink: 0; }
 
 .botao--bloco { width: 100%; }
 
@@ -344,12 +340,106 @@ a { color: inherit; }
   margin-inline: auto;
 }
 
+/* ---------- Barra do catálogo ---------- */
+
+.barra-catalogo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.barra-catalogo__contagem {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--tinta-suave);
+}
+
+.alternar-visao {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+}
+
+.alternar-visao button {
+  display: grid;
+  place-items: center;
+  width: 38px; height: 32px;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: var(--tinta-suave);
+  cursor: pointer;
+  transition: background var(--transicao), color var(--transicao);
+}
+.alternar-visao button:hover { color: var(--marca); }
+
+.alternar-visao button[aria-pressed="true"] {
+  background: var(--marca);
+  color: #fff;
+}
+
 /* ---------- Grade de produtos ---------- */
 
 .grade-produtos {
   display: grid;
   gap: 24px;
   grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+}
+
+/* ---------- Produtos em lista ---------- */
+
+/* O minmax(0, …) e os min-width são o que permite a linha encolher junto com
+   a tela; sem eles o cartão trava na largura do conteúdo e vaza no celular. */
+.grade-produtos--lista {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.grade-produtos--lista .produto {
+  flex-direction: row;
+  min-width: 0;
+}
+
+/* No celular o cartão fica alto e a foto esticada viraria uma tira recortada,
+   então ela continua quadrada no topo. Na tela larga ela acompanha a altura. */
+.grade-produtos--lista .produto__figura {
+  width: clamp(96px, 22vw, 168px);
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.grade-produtos--lista .produto__corpo { min-width: 0; }
+
+.grade-produtos--lista .produto__topo { flex-wrap: wrap; }
+
+/* Na lista o cartão é largo: esticar o botão "Adicionar" deixaria um alvo
+   enorme e desproporcional, então ele e a quantidade ficam à direita. */
+.grade-produtos--lista .produto__rodape {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.grade-produtos--lista .produto__rodape .botao { flex: 0 0 auto; }
+
+/* Sobra pouca largura ao lado da miniatura: os controles encolhem para o
+   seletor de quantidade e o "Adicionar" dividirem a mesma linha. */
+@media (max-width: 619px) {
+  .grade-produtos--lista .quantidade button { width: 30px; height: 38px; font-size: 1rem; }
+  .grade-produtos--lista .quantidade output { min-width: 22px; font-size: 0.9rem; }
+  .grade-produtos--lista .produto__rodape .botao { font-size: 0.92rem; }
+}
+
+@media (min-width: 620px) {
+  .grade-produtos--lista .produto__figura {
+    align-self: stretch;
+    aspect-ratio: auto;
+  }
+
+  .grade-produtos--lista .produto__rodape .botao { padding-inline: 26px; }
 }
 
 .produto {
@@ -770,17 +860,19 @@ a { color: inherit; }
 .painel__cabecalho {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   padding: 18px 20px;
   border-bottom: 1px solid var(--borda);
 }
 
-.painel__cabecalho h2 { font-size: 1.5rem; }
+.painel__cabecalho h2 { flex: 1; font-size: 1.5rem; }
 
-.botao-fechar {
+.botao-fechar,
+.botao-voltar {
   display: grid;
   place-items: center;
   width: 38px; height: 38px;
+  flex-shrink: 0;
   background: transparent;
   border: 0;
   border-radius: 50%;
@@ -788,13 +880,34 @@ a { color: inherit; }
   cursor: pointer;
   transition: background var(--transicao);
 }
-.botao-fechar:hover { background: color-mix(in srgb, var(--tinta) 8%, transparent); }
+.botao-fechar:hover,
+.botao-voltar:hover { background: color-mix(in srgb, var(--tinta) 8%, transparent); }
 
 .painel__corpo {
   flex: 1;
   overflow-y: auto;
   padding: 18px 20px;
+  padding-bottom: max(18px, env(safe-area-inset-bottom));
 }
+
+.painel__intro {
+  color: var(--tinta-suave);
+  font-size: 0.9rem;
+  margin-bottom: 18px;
+}
+
+/* Dentro do painel a superfície já é clara: os campos e o resumo usam o
+   fundo creme para não sumirem no branco. */
+.painel .resumo,
+.painel .campo input,
+.painel .campo select,
+.painel .campo textarea { background: var(--fundo); }
+
+/* A largura do painel não acompanha a da tela: os pares de campos ficariam
+   espremidos no desktop se seguissem a mesma regra da página. */
+.painel .campo-duplo { grid-template-columns: 1fr; }
+
+.painel #etapaDados:focus { outline: none; }
 
 .painel__vazio {
   text-align: center;

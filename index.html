@@ -32,7 +32,6 @@
 <header class="cabecalho">
   <div class="container cabecalho__interno">
     <a class="marca" href="#topo">
-      <img class="marca__logo" id="logoMarca" src="assets/logo.png" alt="">
       <span class="marca__texto">
         <strong id="marcaNome">Via Padre Pio</strong>
         <small id="marcaAssinatura"></small>
@@ -86,6 +85,33 @@
         <h2>Escolha o seu modelo</h2>
         <p>Selecione cor, tamanho e quantidade. Você pode somar vários modelos no mesmo pedido.</p>
       </header>
+
+      <div class="barra-catalogo" id="barraCatalogo" hidden>
+        <p class="barra-catalogo__contagem" id="contagemProdutos"></p>
+
+        <div class="alternar-visao" id="alternarVisao" role="group" aria-label="Como ver os modelos">
+          <button type="button" data-visao="lista" aria-pressed="false" title="Ver em lista">
+            <span class="so-leitor">Ver em lista</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="4.5" cy="6" r="1.3" fill="currentColor" stroke="none"/>
+              <circle cx="4.5" cy="12" r="1.3" fill="currentColor" stroke="none"/>
+              <circle cx="4.5" cy="18" r="1.3" fill="currentColor" stroke="none"/>
+              <path d="M9.5 6h10M9.5 12h10M9.5 18h10"/>
+            </svg>
+          </button>
+
+          <button type="button" data-visao="grade" aria-pressed="true" title="Ver em grade">
+            <span class="so-leitor">Ver em grade</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/>
+              <rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/>
+              <rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/>
+              <rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
       <div class="grade-produtos" id="gradeProdutos"></div>
     </div>
   </section>
@@ -113,72 +139,6 @@
           <p>O pedido chega pronto na nossa conversa. Ali combinamos o pagamento e a entrega.</p>
         </li>
       </ol>
-    </div>
-  </section>
-
-  <!-- Formulário -->
-  <section class="secao" id="pedido">
-    <div class="container container--estreito">
-      <header class="secao__cabecalho">
-        <h2>Finalizar reserva</h2>
-        <p>Confira os itens e preencha seus dados. Nada é cobrado agora — o pagamento é combinado no WhatsApp.</p>
-      </header>
-
-      <div class="resumo" id="resumoPedido"></div>
-
-      <form class="formulario" id="formularioPedido" novalidate>
-        <div class="campo">
-          <label for="nome">Nome completo <span class="obrigatorio" aria-hidden="true">*</span></label>
-          <input type="text" id="nome" name="nome" autocomplete="name" required placeholder="Como quer ser chamado">
-          <p class="erro" data-erro-de="nome" hidden></p>
-        </div>
-
-        <div class="campo-duplo">
-          <div class="campo">
-            <label for="whatsapp">Seu WhatsApp <span class="obrigatorio" aria-hidden="true">*</span></label>
-            <input type="tel" id="whatsapp" name="whatsapp" inputmode="numeric" autocomplete="tel" required placeholder="(11) 91234-5678" maxlength="16">
-            <p class="erro" data-erro-de="whatsapp" hidden></p>
-          </div>
-
-          <div class="campo">
-            <label for="email">E-mail <span class="opcional">(opcional)</span></label>
-            <input type="email" id="email" name="email" autocomplete="email" placeholder="voce@email.com">
-            <p class="erro" data-erro-de="email" hidden></p>
-          </div>
-        </div>
-
-        <div class="campo-duplo">
-          <div class="campo">
-            <label for="cidade">Cidade e estado <span class="obrigatorio" aria-hidden="true">*</span></label>
-            <input type="text" id="cidade" name="cidade" required placeholder="São Paulo - SP">
-            <p class="erro" data-erro-de="cidade" hidden></p>
-          </div>
-
-          <div class="campo">
-            <label for="entrega">Como prefere receber <span class="obrigatorio" aria-hidden="true">*</span></label>
-            <select id="entrega" name="entrega" required></select>
-            <p class="erro" data-erro-de="entrega" hidden></p>
-          </div>
-        </div>
-
-        <div class="campo">
-          <label for="observacoes">Alguma observação <span class="opcional">(opcional)</span></label>
-          <textarea id="observacoes" name="observacoes" rows="3" maxlength="400" placeholder="Dúvidas sobre tamanho, presente, prazo..."></textarea>
-        </div>
-
-        <p class="erro erro--geral" id="erroGeral" hidden></p>
-
-        <button class="botao botao--whatsapp" id="botaoEnviar" type="submit">
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="currentColor">
-            <path d="M12.04 2c-5.46 0-9.9 4.44-9.9 9.9 0 1.75.46 3.45 1.32 4.95L2 22l5.3-1.38a9.9 9.9 0 0 0 4.74 1.2h.01c5.46 0 9.9-4.44 9.9-9.9S17.5 2 12.04 2Zm0 18.05h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.05-.2-.31a8.18 8.18 0 1 1 6.99 3.87Zm4.5-6.14c-.25-.12-1.46-.72-1.69-.8-.22-.09-.39-.13-.55.12s-.63.8-.77.96c-.14.17-.28.19-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.55-1.34-.76-1.83-.2-.48-.4-.42-.55-.43h-.47c-.16 0-.43.06-.65.31-.22.25-.85.84-.85 2.04s.87 2.37 1 2.53c.12.17 1.72 2.62 4.16 3.68.58.25 1.03.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.46-.6 1.66-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.28Z"/>
-          </svg>
-          <span>Enviar pedido pelo WhatsApp</span>
-        </button>
-
-        <p class="nota-form">
-          Ao enviar, abrimos o WhatsApp com o seu pedido já escrito. É só tocar em enviar na conversa.
-        </p>
-      </form>
     </div>
   </section>
 
@@ -232,7 +192,13 @@
 
 <aside class="painel" id="painelCarrinho" aria-label="Seu pedido" aria-hidden="true">
   <header class="painel__cabecalho">
-    <h2>Seu pedido</h2>
+    <button class="botao-voltar" id="voltarItens" type="button" hidden>
+      <span class="so-leitor">Voltar para os itens</span>
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 5 8 12l7 7"/>
+      </svg>
+    </button>
+    <h2 id="tituloPainel">Seu pedido</h2>
     <button class="botao-fechar" id="fecharCarrinho" type="button">
       <span class="so-leitor">Fechar</span>
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
@@ -241,14 +207,84 @@
     </button>
   </header>
 
-  <div class="painel__corpo" id="itensCarrinho"></div>
+  <div class="painel__corpo" id="corpoCarrinho">
 
-  <footer class="painel__rodape">
+    <!-- Etapa 1: itens escolhidos -->
+    <div id="etapaItens">
+      <div id="itensCarrinho"></div>
+    </div>
+
+    <!-- Etapa 2: dados de quem está reservando -->
+    <div id="etapaDados" tabindex="-1" hidden>
+      <p class="painel__intro">
+        Confira os itens e preencha seus dados. Nada é cobrado agora — o pagamento é combinado no WhatsApp.
+      </p>
+
+      <div class="resumo" id="resumoPedido"></div>
+
+      <form class="formulario" id="formularioPedido" novalidate>
+        <div class="campo">
+          <label for="nome">Nome completo <span class="obrigatorio" aria-hidden="true">*</span></label>
+          <input type="text" id="nome" name="nome" autocomplete="name" required placeholder="Como quer ser chamado">
+          <p class="erro" data-erro-de="nome" hidden></p>
+        </div>
+
+        <div class="campo-duplo">
+          <div class="campo">
+            <label for="whatsapp">Seu WhatsApp <span class="obrigatorio" aria-hidden="true">*</span></label>
+            <input type="tel" id="whatsapp" name="whatsapp" inputmode="numeric" autocomplete="tel" required placeholder="(11) 91234-5678" maxlength="16">
+            <p class="erro" data-erro-de="whatsapp" hidden></p>
+          </div>
+
+          <div class="campo">
+            <label for="email">E-mail <span class="opcional">(opcional)</span></label>
+            <input type="email" id="email" name="email" autocomplete="email" placeholder="voce@email.com">
+            <p class="erro" data-erro-de="email" hidden></p>
+          </div>
+        </div>
+
+        <div class="campo-duplo">
+          <div class="campo">
+            <label for="cidade">Cidade e estado <span class="obrigatorio" aria-hidden="true">*</span></label>
+            <input type="text" id="cidade" name="cidade" required placeholder="São Paulo - SP">
+            <p class="erro" data-erro-de="cidade" hidden></p>
+          </div>
+
+          <div class="campo">
+            <label for="entrega">Como prefere receber <span class="obrigatorio" aria-hidden="true">*</span></label>
+            <select id="entrega" name="entrega" required></select>
+            <p class="erro" data-erro-de="entrega" hidden></p>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="observacoes">Alguma observação <span class="opcional">(opcional)</span></label>
+          <textarea id="observacoes" name="observacoes" rows="3" maxlength="400" placeholder="Dúvidas sobre tamanho, presente, prazo..."></textarea>
+        </div>
+
+        <p class="erro erro--geral" id="erroGeral" hidden></p>
+
+        <button class="botao botao--whatsapp" id="botaoEnviar" type="submit">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="currentColor">
+            <path d="M12.04 2c-5.46 0-9.9 4.44-9.9 9.9 0 1.75.46 3.45 1.32 4.95L2 22l5.3-1.38a9.9 9.9 0 0 0 4.74 1.2h.01c5.46 0 9.9-4.44 9.9-9.9S17.5 2 12.04 2Zm0 18.05h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.05-.2-.31a8.18 8.18 0 1 1 6.99 3.87Zm4.5-6.14c-.25-.12-1.46-.72-1.69-.8-.22-.09-.39-.13-.55.12s-.63.8-.77.96c-.14.17-.28.19-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.55-1.34-.76-1.83-.2-.48-.4-.42-.55-.43h-.47c-.16 0-.43.06-.65.31-.22.25-.85.84-.85 2.04s.87 2.37 1 2.53c.12.17 1.72 2.62 4.16 3.68.58.25 1.03.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.46-.6 1.66-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.28Z"/>
+          </svg>
+          <span id="textoBotaoEnviar">Enviar pedido para VIA PADRE PIO</span>
+        </button>
+
+        <p class="nota-form">
+          Ao enviar, abrimos o WhatsApp com o seu pedido já escrito. É só tocar em enviar na conversa.
+        </p>
+      </form>
+    </div>
+
+  </div>
+
+  <footer class="painel__rodape" id="rodapeCarrinho">
     <div class="painel__total">
       <span>Total estimado</span>
       <strong id="totalCarrinho">R$ 0,00</strong>
     </div>
-    <a class="botao botao--principal botao--bloco" id="irParaPedido" href="#pedido">Finalizar reserva</a>
+    <button class="botao botao--principal botao--bloco" id="irParaPedido" type="button">Finalizar reserva</button>
   </footer>
 </aside>
 
