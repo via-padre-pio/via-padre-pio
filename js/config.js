@@ -23,7 +23,7 @@ const CONFIG = {
 
     email: "",
     instagram: "viapadrepio",
-    cidade: "São Paulo - SP",
+    cidade: "Barueri - SP",
   },
 
   /* ------------------------------------------------------------------
