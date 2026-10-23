@@ -67,7 +67,9 @@
     <div class="container capa__interno">
       <p class="etiqueta" id="marcaChamada">Pré-venda aberta</p>
       <h1 class="capa__titulo">
-        <img class="capa__logo" id="capaLogo" src="assets/logo.png" alt="Via Padre Pio" width="280" height="280">
+        <span class="capa__palco" id="capaPalco">
+          <img class="capa__logo" id="capaLogo" src="assets/logo.png" alt="Via Padre Pio" width="280" height="280">
+        </span>
       </h1>
       <p class="capa__texto" id="marcaDescricao"></p>
       <div class="capa__botoes">
@@ -150,23 +152,59 @@
       </header>
 
       <details class="duvida">
-        <summary>Preciso pagar agora?</summary>
-        <p>Não. A reserva é gratuita e sem compromisso de pagamento imediato. Assim que recebermos o seu pedido, conversamos no WhatsApp para combinar a forma de pagamento.</p>
+        <summary>
+          <span>Preciso pagar agora?</span>
+          <svg class="duvida__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </summary>
+        <div class="duvida__painel">
+          <div class="duvida__conteudo">
+            <p>Não. A reserva é gratuita e sem compromisso de pagamento imediato. Assim que recebermos o seu pedido, conversamos no WhatsApp para combinar a forma de pagamento.</p>
+          </div>
+        </div>
       </details>
 
       <details class="duvida">
-        <summary>Quando a camiseta chega?</summary>
-        <p id="duvidaPrazo">Produzimos as peças depois que a pré-venda fecha, por isso o prazo é maior que o de uma compra pronta. Avisamos você por WhatsApp em cada etapa.</p>
+        <summary>
+          <span>Quando a camiseta chega?</span>
+          <svg class="duvida__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </summary>
+        <div class="duvida__painel">
+          <div class="duvida__conteudo">
+            <p id="duvidaPrazo">Produzimos as peças depois que a pré-venda fecha, por isso o prazo é maior que o de uma compra pronta. Avisamos você por WhatsApp em cada etapa.</p>
+          </div>
+        </div>
       </details>
 
       <details class="duvida">
-        <summary>E se o tamanho não servir?</summary>
-        <p>Fale com a gente antes de fechar o pedido que ajudamos na escolha. Depois de produzida, trocamos o tamanho conforme a disponibilidade do lote.</p>
+        <summary>
+          <span>E se o tamanho não servir?</span>
+          <svg class="duvida__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </summary>
+        <div class="duvida__painel">
+          <div class="duvida__conteudo">
+            <p>Fale com a gente antes de fechar o pedido que ajudamos na escolha. Depois de produzida, trocamos o tamanho conforme a disponibilidade do lote.</p>
+          </div>
+        </div>
       </details>
 
       <details class="duvida">
-        <summary>Posso pedir mais de uma camiseta?</summary>
-        <p>Pode sim. Adicione quantos modelos, cores e tamanhos quiser — tudo vai junto no mesmo pedido.</p>
+        <summary>
+          <span>Posso pedir mais de uma camiseta?</span>
+          <svg class="duvida__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </summary>
+        <div class="duvida__painel">
+          <div class="duvida__conteudo">
+            <p>Pode sim. Adicione quantos modelos, cores e tamanhos quiser — tudo vai junto no mesmo pedido.</p>
+          </div>
+        </div>
       </details>
     </div>
   </section>
@@ -293,5 +331,10 @@
 
 <script src="js/config.js"></script>
 <script src="js/app.js"></script>
+
+<!-- Animações. É um enfeite: se este arquivo ou a Motion não carregarem,
+     a página continua inteira e o pedido funciona normalmente. -->
+<script src="https://cdn.jsdelivr.net/npm/motion@14.6.0/dist/motion.js"></script>
+<script src="js/animacoes.js"></script>
 </body>
 </html>

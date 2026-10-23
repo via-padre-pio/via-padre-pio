@@ -742,6 +742,10 @@
     const url = `https://wa.me/${numero}?text=${encodeURIComponent(montarMensagem(dados))}`;
     window.open(url, "_blank", "noopener");
     avisar("Abrindo o WhatsApp com o seu pedido…");
+
+    // js/animacoes.js escuta para comemorar. Só dispara quando o pedido
+    // realmente saiu, nunca quando a validação barrou o envio.
+    document.dispatchEvent(new CustomEvent("via:pedido-enviado"));
   }
 
   /* ====================================================================

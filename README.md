@@ -105,8 +105,9 @@ git push
 ├── css/estilo.css          aparência (as cores vêm do config)
 ├── js/config.js            ← tudo que vocês editam
 ├── js/app.js               catálogo, carrinho e envio pro WhatsApp
+├── js/animacoes.js         só os movimentos da página (enfeite, veja abaixo)
 └── assets/
-    ├── logo.png            logo da marca (aparece no topo e na capa)
+    ├── logo.png            logo da marca (aparece na capa)
     └── camisetas/          fotos dos modelos
 ```
 
@@ -123,6 +124,10 @@ marrom `#6b4a1e` nas letras e botões.
   itens continuam lá.
 - **O cliente vê os modelos em grade ou em lista.** O botão fica acima do catálogo e
   a escolha dele também fica salva no navegador.
+- **As animações são enfeite e nada mais.** Elas vivem em `js/animacoes.js` e usam a
+  biblioteca Motion, carregada da internet (CDN) no fim do `index.html`. Se essa
+  biblioteca não carregar, ou se o visitante pedir menos movimento nas configurações
+  do celular, a página aparece parada — mas inteira, e o pedido funciona igual.
 - **Preço alterado no config vale na hora**, inclusive para carrinhos já montados —
   ninguém fica com preço antigo.
 - **Modelo removido ou marcado como esgotado** some automaticamente dos pedidos

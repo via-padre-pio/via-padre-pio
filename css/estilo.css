@@ -243,10 +243,29 @@ a { color: inherit; }
   margin-bottom: 18px;
 }
 
-.capa__logo {
-  width: clamp(190px, 44vw, 280px);
-  height: auto;
+/* O palco é maior que o logo para a nuvem de partículas ter onde orbitar. */
+.capa__palco {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(262px, 60vw, 384px);
+  aspect-ratio: 1;
   margin-inline: auto;
+  touch-action: manipulation;
+}
+
+.capa__particulas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.capa__logo {
+  position: relative;
+  width: 73%;
+  height: auto;
   border-radius: 50%;
 }
 
@@ -618,6 +637,7 @@ a { color: inherit; }
 }
 
 .passo__numero {
+  position: relative;
   display: grid;
   place-items: center;
   width: 44px; height: 44px;
@@ -632,6 +652,26 @@ a { color: inherit; }
 
 .passo h3 { font-size: 1.25rem; margin-bottom: 7px; }
 .passo p { color: var(--tinta-suave); font-size: 0.92rem; }
+
+/* Anel que a Motion desenha em volta do número quando o passo entra na tela. */
+.passo__anel {
+  position: absolute;
+  inset: -7px;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.passo__anel circle {
+  fill: none;
+  stroke: var(--destaque);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  opacity: 0;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
 
 /* ---------- Resumo do pedido ---------- */
 
@@ -777,29 +817,42 @@ a { color: inherit; }
 
 .duvida summary::-webkit-details-marker { display: none; }
 
-.duvida summary::after {
-  content: "+";
-  font-size: 1.4rem;
-  line-height: 1;
+.duvida__seta {
+  flex-shrink: 0;
   color: var(--marca);
-  transition: transform var(--transicao);
 }
 
-.duvida[open] summary::after { content: "–"; }
+/* Sem JavaScript a seta ainda indica o estado; com ele a Motion assume o giro. */
+.duvida:not(.duvida--animada)[open] .duvida__seta { transform: rotate(180deg); }
+
+.duvida__conteudo { padding-top: 11px; }
 
 .duvida p {
-  margin-top: 11px;
   color: var(--tinta-suave);
   font-size: 0.93rem;
 }
 
+.duvida p + p { margin-top: 9px; }
+
 /* ---------- Rodapé ---------- */
 
 .rodape {
+  position: relative;
+  overflow: hidden;
   background: var(--marca-escura);
   color: #f0e4d2;
   padding: 36px 0;
 }
+
+.rodape__fio {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--destaque), transparent);
+}
+
+.rodape__letra { display: inline-block; }
 
 .rodape__interno {
   display: flex;
@@ -987,6 +1040,20 @@ a { color: inherit; }
   color: var(--destaque);
   font-variant-numeric: tabular-nums;
 }
+
+/* ---------- Confete ---------- */
+
+.confete {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.confete--ativo { opacity: 1; }
 
 /* ---------- Aviso flutuante ---------- */
 
