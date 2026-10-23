@@ -116,11 +116,42 @@ a { color: inherit; }
 .faixa-aviso {
   background: var(--marca-escura);
   color: #f6ead6;
-  text-align: center;
   font-size: 0.82rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  padding: 9px 16px;
+  padding: 9px 0;
+  overflow: hidden;
+}
+
+/* O trilho tem duas metades iguais. Ele desliza de -50% até 0, ou seja, da
+   esquerda para a direita; quando a primeira metade sai, a segunda já está
+   no lugar dela e o salto de volta não aparece. */
+.faixa-aviso__trilho {
+  display: flex;
+  width: max-content;
+  animation: letreiro 38s linear infinite;
+}
+
+.faixa-aviso__trilho span { padding-inline: 1.6em; }
+
+.faixa-aviso:hover .faixa-aviso__trilho { animation-play-state: paused; }
+
+@keyframes letreiro {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+
+/* Para quem pede menos movimento, o letreiro vira uma frase parada e
+   centralizada — a regra global de animação não serve aqui, porque
+   encurtar a duração faria o texto piscar sem parar. */
+@media (prefers-reduced-motion: reduce) {
+  .faixa-aviso__trilho {
+    animation: none !important;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .faixa-aviso__trilho span:not(:first-child) { display: none; }
 }
 
 /* ---------- Cabeçalho ---------- */
@@ -921,35 +952,26 @@ a { color: inherit; }
   min-width: 0;
 }
 
-/* Lado a lado, a primeira linha de cada coluna ocupa a altura do logo. É o
-   que põe o nome da marca, "Nossas Inspirações" e o primeiro contato na
-   mesma linha, em vez de cada coluna começar onde o conteúdo dela mandar. */
+/* O bloco de contatos encosta na direita da coluna, mas as linhas dentro
+   dele continuam começando no mesmo ponto, uma embaixo da outra. */
 @media (min-width: 761px) {
-  .rodape__coluna--fim { align-items: flex-end; text-align: right; }
-
-  .rodape__coluna > strong {
-    display: flex;
-    align-items: center;
-    min-height: var(--logo-rodape);
-  }
-
-  /* O primeiro contato ocupa essa mesma primeira linha; os outros descem
-     com o mesmo respiro das demais colunas. */
-  .rodape__coluna--fim .rodape__contatos { gap: 8px; }
-
-  .rodape__coluna--fim .rodape__contatos a:first-of-type {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    min-height: var(--logo-rodape);
-  }
+  .rodape__coluna--fim { align-items: flex-end; }
 }
 
+/* O nome e a cidade formam um bloco só ao lado do logo, e o logo fica
+   centrado nas duas linhas. */
 .rodape__marca {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 12px;
   min-height: var(--logo-rodape);
+}
+
+.rodape__marca-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 /* Altura fixa e largura automática: o logo acompanha a própria proporção
@@ -1001,14 +1023,17 @@ a { color: inherit; }
   border: 0;
   padding: 0;
   cursor: pointer;
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+  text-decoration: none;
   text-underline-offset: 4px;
   transition: opacity var(--transicao);
 }
 
-.rodape__santo:hover {
+/* Em repouso o nome é só texto, como na marca e nos contatos. O sublinhado
+   aparece quando a pessoa chega perto, para avisar que ali se clica. */
+.rodape__santo:hover,
+.rodape__santo:focus-visible {
   opacity: 1;
+  text-decoration: underline;
   text-decoration-color: var(--destaque);
 }
 

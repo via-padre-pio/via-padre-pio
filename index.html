@@ -25,7 +25,10 @@
 
 <!-- Faixa de aviso -->
 <div class="faixa-aviso" id="faixaAviso" hidden>
-  <p id="textoAviso"></p>
+  <!-- O texto é copiado pelo js/app.js até encher a tela, para a volta do
+       letreiro acontecer sem buraco. -->
+  <div class="faixa-aviso__trilho" id="trilhoAviso" aria-hidden="true"></div>
+  <p class="so-leitor" id="textoAviso"></p>
 </div>
 
 <!-- Cabeçalho -->
@@ -229,9 +232,11 @@
     <div class="rodape__coluna">
       <div class="rodape__marca">
         <img class="rodape__logo" id="rodapeLogo" src="" alt="" width="52" height="52">
-        <strong id="rodapeNome">Via Padre Pio</strong>
+        <div class="rodape__marca-texto">
+          <strong id="rodapeNome">Via Padre Pio</strong>
+          <p id="rodapeCidade"></p>
+        </div>
       </div>
-      <p id="rodapeCidade"></p>
     </div>
 
     <div class="rodape__coluna" id="colunaInspiracoes" hidden>

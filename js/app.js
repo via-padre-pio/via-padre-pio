@@ -24,6 +24,7 @@
   const elementos = {
     faixaAviso: el("faixaAviso"),
     textoAviso: el("textoAviso"),
+    trilhoAviso: el("trilhoAviso"),
     marcaNome: el("marcaNome"),
     marcaAssinatura: el("marcaAssinatura"),
     linkInstagram: el("linkInstagram"),
@@ -172,6 +173,8 @@
     if (marca.aviso) {
       elementos.textoAviso.textContent = marca.aviso;
       elementos.faixaAviso.hidden = false;
+      // Só dá para medir o texto depois que a faixa aparece.
+      montarLetreiro(marca.aviso);
     }
 
     if (marca.prazoEntrega) {
@@ -218,6 +221,39 @@
       opcoes
         .map((o) => `<option value="${o.id}">${escapar(o.nome)}</option>`)
         .join("");
+  }
+
+  /**
+   * Enche a faixa com cópias do aviso. São duas metades iguais, cada uma
+   * larga o bastante para cobrir a tela: é isso que faz o letreiro voltar
+   * ao início sem deixar um vão vazio passando.
+   */
+  function montarLetreiro(texto) {
+    const trilho = elementos.trilhoAviso;
+    if (!trilho) return;
+
+    const copia = () => {
+      const span = document.createElement("span");
+      span.textContent = texto;
+      return span;
+    };
+
+    trilho.replaceChildren(copia());
+    const largura = trilho.firstElementChild.getBoundingClientRect().width;
+    if (!largura) return;
+
+    // Usa a tela inteira, e não só a janela, para a faixa continuar cheia
+    // se a pessoa maximizar o navegador depois.
+    const alvo = Math.max(window.innerWidth, screen.width || 0);
+    const quantas = Math.ceil(alvo / largura) + 1;
+
+    const metade = [];
+    for (let i = 0; i < quantas; i += 1) metade.push(copia());
+
+    trilho.replaceChildren(
+      ...metade,
+      ...metade.map((span) => span.cloneNode(true))
+    );
   }
 
   function escapar(texto) {
