@@ -12,16 +12,16 @@ const CONFIG = {
      1. CONTATO E REDES
      ------------------------------------------------------------------ */
   contato: {
-    // Número que vai RECEBER os pedidos.  <<< PREENCHER ANTES DE PUBLICAR >>>
+    // Número que vai RECEBER os pedidos.
     // Formato: 55 + DDD + número, só dígitos, sem espaço, traço ou parênteses.
     // Exemplo para (11) 91234-5678  ->  "5511912345678"
     // Enquanto estiver vazio, o site avisa o cliente em vez de enviar errado.
-    whatsapp: "",
+    whatsapp: "5511988269898",
 
     // Como o número aparece escrito na tela para o cliente.
-    whatsappVisivel: "",
+    whatsappVisivel: "(11) 98826-9898",
 
-    email: "",
+    email: "padrepiovia@gmail.com",
     instagram: "viapadrepio",
 
     // Segundo perfil do Instagram, mostrado no rodapé embaixo do primeiro.
@@ -29,6 +29,9 @@ const CONFIG = {
     instagramPadre: "pe.riquemarins",
 
     cidade: "Barueri - SP",
+
+    // Aparece numa linha discreta no fim do rodapé. Deixe "" para esconder.
+    cnpj: "69.747.809/0001-88",
   },
 
   /* ------------------------------------------------------------------

@@ -987,6 +987,18 @@ a { color: inherit; }
 
 .rodape p { font-size: 0.88rem; opacity: 0.75; }
 
+/* Linha do CNPJ: fecha o rodapé embaixo das três colunas, discreta o
+   bastante para não disputar atenção com o resto. */
+.rodape__legal {
+  margin-block-start: 26px;
+  padding-block-start: 18px;
+  border-block-start: 1px solid rgb(240 228 210 / 14%);
+  font-size: 0.76rem;
+  letter-spacing: 0.02em;
+}
+
+.rodape .rodape__legal { opacity: 0.5; }
+
 .rodape__contatos {
   display: flex;
   flex-direction: column;

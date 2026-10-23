@@ -17,6 +17,7 @@ Tudo fica em **`js/config.js`**. É o único arquivo do dia a dia.
 | Como o número aparece na tela | `contato.whatsappVisivel` | Sim |
 | E-mail de contato | `contato.email` | Não |
 | Usuário do Instagram | `contato.instagram` | Não |
+| CNPJ (linha discreta no fim do rodapé) | `contato.cnpj` | Não |
 | Arquivo do logo | `marca.logo` | Não |
 | Cores da marca | `tema` | Não |
 | Camisetas, preços e fotos | `produtos` | **Sim** |

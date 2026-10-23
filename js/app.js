@@ -51,6 +51,7 @@
     rodapeEmail: el("rodapeEmail"),
     rodapeInstagram: el("rodapeInstagram"),
     rodapeInstagramPadre: el("rodapeInstagramPadre"),
+    rodapeCnpj: el("rodapeCnpj"),
     colunaInspiracoes: el("colunaInspiracoes"),
     tituloInspiracoes: el("tituloInspiracoes"),
     listaSantos: el("listaSantos"),
@@ -213,6 +214,11 @@
       elementos.rodapeEmail.textContent = contato.email;
     } else {
       elementos.rodapeEmail.remove();
+    }
+
+    if (contato.cnpj) {
+      elementos.rodapeCnpj.textContent = `CNPJ ${contato.cnpj}`;
+      elementos.rodapeCnpj.hidden = false;
     }
 
     const opcoes = CONFIG.entrega || [];
