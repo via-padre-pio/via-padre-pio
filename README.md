@@ -107,7 +107,8 @@ git push
 ├── js/app.js               catálogo, carrinho e envio pro WhatsApp
 ├── js/animacoes.js         só os movimentos da página (enfeite, veja abaixo)
 └── assets/
-    ├── logo.png            logo da marca (aparece na capa)
+    ├── logo.png            logo da marca (aparece na capa e no rodapé)
+    ├── santos/             fotos de "Nossas Inspirações"
     └── camisetas/          fotos dos modelos
 ```
 
@@ -122,8 +123,13 @@ marrom `#6b4a1e` nas letras e botões.
   entrega são combinados na conversa.
 - **O pedido fica salvo no navegador do cliente.** Se ele fechar a aba e voltar, os
   itens continuam lá.
-- **O cliente vê os modelos em grade ou em lista.** O botão fica acima do catálogo e
-  a escolha dele também fica salva no navegador.
+- **O cliente escolhe o tamanho das fotos.** O botão acima do catálogo alterna entre
+  fotos grandes (poucas por linha, com cor e tamanho já à mostra) e fotos menores
+  (mais modelos por linha, onde as opções aparecem ao tocar em "Escolher", um
+  modelo por vez). A escolha fica salva no navegador dele.
+- **"Nossas Inspirações" fica no rodapé.** Os santos vêm de `inspiracoes.santos`,
+  no `js/config.js`: nome, anos de vida, foto (dentro de `assets/santos/`) e a
+  história em parágrafos. Clicando no nome, abre uma janela com a foto e o texto.
 - **As animações são enfeite e nada mais.** Elas vivem em `js/animacoes.js` e usam a
   biblioteca Motion, carregada da internet (CDN) no fim do `index.html`. Se essa
   biblioteca não carregar, ou se o visitante pedir menos movimento nas configurações

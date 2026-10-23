@@ -10,7 +10,7 @@
   "use strict";
 
   const CHAVE_ARMAZENAMENTO = "viapadrepio:pedido:v1";
-  const CHAVE_VISAO = "viapadrepio:visao:v1";
+  const CHAVE_VISAO = "viapadrepio:visao:v2";
   const LIMITE_POR_ITEM = 20;
 
   /** Itens do pedido: { chave, produtoId, nome, preco, cor, tamanho, imagem, quantidade } */
@@ -43,11 +43,22 @@
     selectEntrega: el("entrega"),
     textoBotaoEnviar: el("textoBotaoEnviar"),
     erroGeral: el("erroGeral"),
+    rodapeLogo: el("rodapeLogo"),
     rodapeNome: el("rodapeNome"),
     rodapeCidade: el("rodapeCidade"),
     rodapeWhatsapp: el("rodapeWhatsapp"),
     rodapeEmail: el("rodapeEmail"),
     rodapeInstagram: el("rodapeInstagram"),
+    rodapeInstagramPadre: el("rodapeInstagramPadre"),
+    colunaInspiracoes: el("colunaInspiracoes"),
+    tituloInspiracoes: el("tituloInspiracoes"),
+    listaSantos: el("listaSantos"),
+    janelaSanto: el("janelaSanto"),
+    fecharSanto: el("fecharSanto"),
+    santoFoto: el("santoFoto"),
+    santoNome: el("santoNome"),
+    santoViveu: el("santoViveu"),
+    santoHistoria: el("santoHistoria"),
     fundoEscuro: el("fundoEscuro"),
     painelCarrinho: el("painelCarrinho"),
     tituloPainel: el("tituloPainel"),
@@ -143,6 +154,16 @@
 
     elementos.rodapeNome.textContent = marca.nome;
     elementos.rodapeCidade.textContent = contato.cidade || "";
+
+    // Mesmo cuidado do logo da capa: sem imagem, o rodapé segue inteiro.
+    if (elementos.rodapeLogo) {
+      if (marca.logo) {
+        elementos.rodapeLogo.src = marca.logo;
+        elementos.rodapeLogo.alt = "";
+      } else {
+        elementos.rodapeLogo.hidden = true;
+      }
+    }
     // Em telas estreitas o rótulo ocupa duas linhas; o nome da marca fica
     // inteiro na segunda em vez de ser partido no meio.
     elementos.textoBotaoEnviar.innerHTML =
@@ -166,19 +187,29 @@
       elementos.rodapeInstagram.textContent = `@${contato.instagram}`;
     }
 
+    if (contato.instagramPadre) {
+      elementos.rodapeInstagramPadre.href = `https://instagram.com/${contato.instagramPadre}`;
+      elementos.rodapeInstagramPadre.textContent = `@${contato.instagramPadre}`;
+      elementos.rodapeInstagramPadre.hidden = false;
+    } else {
+      elementos.rodapeInstagramPadre.remove();
+    }
+
     if (contato.whatsapp) {
       elementos.rodapeWhatsapp.href = `https://wa.me/${soDigitos(contato.whatsapp)}`;
       elementos.rodapeWhatsapp.textContent =
         contato.whatsappVisivel || "Falar no WhatsApp";
     } else {
-      elementos.rodapeWhatsapp.hidden = true;
+      // Sai do DOM em vez de ficar escondido: assim o CSS do rodapé consegue
+      // mirar no primeiro contato que realmente aparece.
+      elementos.rodapeWhatsapp.remove();
     }
 
     if (contato.email) {
       elementos.rodapeEmail.href = `mailto:${contato.email}`;
       elementos.rodapeEmail.textContent = contato.email;
     } else {
-      elementos.rodapeEmail.hidden = true;
+      elementos.rodapeEmail.remove();
     }
 
     const opcoes = CONFIG.entrega || [];
@@ -233,22 +264,28 @@
   }
 
   /* ====================================================================
-     Grade ou lista
+     Tamanho das fotos: "grande" ou "compacta"
      ==================================================================== */
 
   function visaoSalva() {
     try {
-      return localStorage.getItem(CHAVE_VISAO) === "lista" ? "lista" : "grade";
+      return localStorage.getItem(CHAVE_VISAO) === "grande"
+        ? "grande"
+        : "compacta";
     } catch (e) {
-      return "grade";
+      return "compacta";
     }
   }
 
   function aplicarVisao(visao) {
     elementos.gradeProdutos.classList.toggle(
-      "grade-produtos--lista",
-      visao === "lista"
+      "grade-produtos--compacta",
+      visao === "compacta"
     );
+
+    // Nas fotos grandes as opções já ficam à mostra, então nenhum cartão
+    // precisa continuar marcado como aberto.
+    if (visao !== "compacta") fecharCartoes();
 
     elementos.alternarVisao.querySelectorAll("[data-visao]").forEach((botao) =>
       botao.setAttribute("aria-pressed", String(botao.dataset.visao === visao))
@@ -261,6 +298,71 @@
     }
   }
 
+  /* ====================================================================
+     Nossas inspirações: a coluna do meio do rodapé
+     ==================================================================== */
+
+  function montarInspiracoes() {
+    const bloco = CONFIG.inspiracoes || {};
+    const santos = bloco.santos || [];
+    if (!santos.length) return;
+
+    elementos.tituloInspiracoes.textContent =
+      bloco.titulo || "Nossas Inspirações";
+
+    santos.forEach((santo, indice) => {
+      const botao = document.createElement("button");
+      botao.type = "button";
+      botao.className = "rodape__santo";
+      botao.textContent = santo.nome;
+      botao.addEventListener("click", () => abrirSanto(indice));
+      elementos.listaSantos.appendChild(botao);
+    });
+
+    elementos.colunaInspiracoes.hidden = false;
+  }
+
+  function abrirSanto(indice) {
+    const santo = (CONFIG.inspiracoes.santos || [])[indice];
+    if (!santo) return;
+
+    elementos.santoNome.textContent = santo.nome;
+    elementos.santoViveu.textContent = santo.viveu || "";
+    elementos.santoViveu.hidden = !santo.viveu;
+
+    // A foto é ilustrativa e o nome já está no título ao lado: um alt
+    // repetindo tudo só faria o leitor de tela dizer a mesma coisa duas vezes.
+    elementos.santoFoto.src = santo.foto || "";
+    elementos.santoFoto.alt = "";
+    elementos.santoFoto.hidden = !santo.foto;
+
+    const paragrafos = Array.isArray(santo.historia)
+      ? santo.historia
+      : [santo.historia || ""];
+
+    elementos.santoHistoria.innerHTML = paragrafos
+      .filter(Boolean)
+      .map((p) => `<p>${escapar(p)}</p>`)
+      .join("");
+
+    elementos.janelaSanto.showModal();
+  }
+
+  /** Recolhe as opções de todos os cartões, menos o que for passado. */
+  function fecharCartoes(excecao) {
+    elementos.gradeProdutos
+      .querySelectorAll(".produto--aberto")
+      .forEach((cartao) => {
+        if (cartao === excecao) return;
+        cartao.classList.remove("produto--aberto");
+        const botao = cartao.querySelector(".produto__escolher");
+        if (botao) {
+          botao.setAttribute("aria-expanded", "false");
+          botao.textContent = "Escolher";
+        }
+      });
+  }
+
   function criarCartaoProduto(produto) {
     const cores = coresDoProduto(produto);
     const tamanhos = tamanhosDoProduto(produto);
@@ -270,6 +372,7 @@
 
     const idCor = `cor-${produto.id}`;
     const idTam = `tam-${produto.id}`;
+    const idDetalhes = `detalhes-${produto.id}`;
 
     cartao.innerHTML = `
       <figure class="produto__figura">
@@ -284,6 +387,11 @@
           <span class="produto__preco">${emReais(produto.preco)}</span>
         </div>
 
+        ${produto.esgotado ? "" : `
+        <button type="button" class="produto__escolher"
+                aria-expanded="false" aria-controls="${idDetalhes}">Escolher</button>`}
+
+        <div class="produto__detalhes" id="${idDetalhes}">
         ${produto.descricao
           ? `<p class="produto__descricao">${escapar(produto.descricao)}</p>`
           : ""}
@@ -323,9 +431,22 @@
             Adicionar
           </button>
         </div>`}
+        </div>
       </div>`;
 
     if (produto.esgotado) return cartao;
+
+    // Com as fotos menores o cartão mostra só foto, nome e preço; este botão
+    // é que traz as opções. Um cartão aberto por vez, para a grade não virar
+    // uma coluna de cartões gigantes.
+    const escolher = cartao.querySelector(".produto__escolher");
+    escolher.addEventListener("click", () => {
+      const abrindo = !cartao.classList.contains("produto--aberto");
+      fecharCartoes(cartao);
+      cartao.classList.toggle("produto--aberto", abrindo);
+      escolher.setAttribute("aria-expanded", String(abrindo));
+      escolher.textContent = abrindo ? "Fechar" : "Escolher";
+    });
 
     // Seleção de cor e tamanho
     cartao.querySelectorAll("[data-grupo]").forEach((grupo) => {
@@ -475,6 +596,7 @@
     const n = totalItens();
     elementos.contadorCarrinho.textContent = String(n);
     elementos.contadorCarrinho.hidden = n === 0;
+    elementos.botaoCarrinho.classList.toggle("botao-carrinho--cheio", n > 0);
 
     // Em telas estreitas o texto do botão fica escondido; o rótulo garante
     // que leitores de tela continuem anunciando o pedido por extenso.
@@ -758,6 +880,16 @@
       if (botao) aplicarVisao(botao.dataset.visao);
     });
 
+    elementos.fecharSanto.addEventListener("click", () =>
+      elementos.janelaSanto.close()
+    );
+
+    // Clique fora do conteúdo: num <dialog> o alvo só é o próprio diálogo
+    // quando a pessoa acerta o fundo escurecido. O Esc o navegador já fecha.
+    elementos.janelaSanto.addEventListener("click", (evento) => {
+      if (evento.target === elementos.janelaSanto) elementos.janelaSanto.close();
+    });
+
     elementos.botaoCarrinho.addEventListener("click", () =>
       painelAberto() ? fecharPainel() : abrirPainel()
     );
@@ -814,6 +946,7 @@
     aplicarTema();
     aplicarTextos();
     montarCatalogo();
+    montarInspiracoes();
     carregar();
     desenharTudo();
     ligarEventos();

@@ -591,7 +591,9 @@
       });
     }
 
-    const contatos = [...document.querySelectorAll(".rodape__contatos a")];
+    const contatos = [
+      ...document.querySelectorAll(".rodape__santo, .rodape__contatos a"),
+    ];
 
     inView(
       rodape,

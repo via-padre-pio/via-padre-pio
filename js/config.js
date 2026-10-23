@@ -23,7 +23,47 @@ const CONFIG = {
 
     email: "",
     instagram: "viapadrepio",
+
+    // Segundo perfil do Instagram, mostrado no rodapé embaixo do primeiro.
+    // Deixe "" para não aparecer.
+    instagramPadre: "pe.riquemarins",
+
     cidade: "Barueri - SP",
+  },
+
+  /* ------------------------------------------------------------------
+     1b. NOSSAS INSPIRAÇÕES
+     ------------------------------------------------------------------
+     Aparecem na coluna do meio do rodapé. Ao clicar no nome, abre uma
+     janela com a foto e a história. Para tirar um santo, apague o bloco
+     inteiro dele; para acrescentar outro, copie um bloco e cole abaixo.
+     ------------------------------------------------------------------ */
+  inspiracoes: {
+    titulo: "Nossas Inspirações",
+
+    santos: [
+      {
+        nome: "São Pio de Pietrelcina",
+        viveu: "1887 – 1968",
+        foto: "assets/santos/sao-pio-de-pietrelcina.jpg",
+        historia: [
+          "Francesco Forgione nasceu em Pietrelcina, no sul da Itália, numa família de camponeses. Entrou para os frades capuchinhos aos quinze anos e foi ordenado padre em 1910, já convivendo com a saúde frágil que o acompanharia a vida toda.",
+          "Em 20 de setembro de 1918, rezando diante do crucifixo em San Giovanni Rotondo, recebeu os estigmas: as cinco chagas de Cristo, que carregou por cinquenta anos. Passava o dia no confessionário, às vezes mais de dez horas seguidas, e ficou conhecido pela firmeza e pela ternura com que recebia cada pessoa.",
+          "Fundou a Casa Alívio do Sofrimento, hospital aberto em 1956 para cuidar dos pobres da região, e espalhou pelo mundo os Grupos de Oração. Morreu em 1968 e foi canonizado por João Paulo II em 2002. Dele vem a frase que nos guia: reze, espere e não se preocupe.",
+        ],
+      },
+
+      {
+        nome: "Santa Teresinha do Menino Jesus",
+        viveu: "1873 – 1897",
+        foto: "assets/santos/santa-teresinha.jpg",
+        historia: [
+          "Thérèse Martin nasceu em Alençon, na França, caçula de nove irmãos. Perdeu a mãe aos quatro anos e cresceu cercada de afeto pelo pai e pelas irmãs, várias delas também religiosas.",
+          "Queria entrar no Carmelo tão cedo que foi pedir autorização ao próprio Papa, numa audiência em Roma. Conseguiu: entrou aos quinze anos, no Carmelo de Lisieux, onde viveu escondida do mundo até morrer de tuberculose aos vinte e quatro.",
+          "Deixou o \"pequeno caminho\": a santidade não está em feitos grandiosos, e sim em fazer as coisas pequenas de cada dia com muito amor e confiança. Seus escritos viraram o livro História de uma Alma, lido no mundo inteiro. É padroeira das missões e Doutora da Igreja, e prometeu fazer cair do céu uma chuva de rosas.",
+        ],
+      },
+    ],
   },
 
   /* ------------------------------------------------------------------
@@ -31,7 +71,7 @@ const CONFIG = {
      ------------------------------------------------------------------ */
   marca: {
     nome: "Via Padre Pio",
-    assinatura: "Reze, espere e não se preocupe.",
+    assinatura: "Fé que se veste.",
 
     // Arquivo do logo, dentro da pasta assets/.
     logo: "assets/logo.png",

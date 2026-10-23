@@ -195,6 +195,20 @@ a { color: inherit; }
 .botao-carrinho:hover { background: var(--marca-escura); }
 .botao-carrinho:active { transform: scale(0.97); }
 
+/* Carrinho vazio é só o carrinho; com peças dentro, os corações crescem. */
+.icone-carrinho__coracoes {
+  opacity: 0;
+  transform: scale(0.3);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: opacity var(--transicao), transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.botao-carrinho--cheio .icone-carrinho__coracoes {
+  opacity: 1;
+  transform: scale(1);
+}
+
 .botao-carrinho > span:not(.selo-contador) { display: none; }
 @media (min-width: 560px) {
   .botao-carrinho > span:not(.selo-contador) { display: inline; }
@@ -404,80 +418,83 @@ a { color: inherit; }
 
 /* ---------- Grade de produtos ---------- */
 
+/* A foto é quem vende a camiseta, então ela manda no cartão: sem moldura,
+   sem fundo, apoiada direto na página. O texto vem embaixo, discreto. */
 .grade-produtos {
   display: grid;
-  gap: 24px;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  column-gap: 16px;
+  row-gap: 40px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
 
-/* ---------- Produtos em lista ---------- */
+/* ---------- Fotos menores ---------- */
 
-/* O minmax(0, …) e os min-width são o que permite a linha encolher junto com
-   a tela; sem eles o cartão trava na largura do conteúdo e vaza no celular. */
-.grade-produtos--lista {
-  grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
-}
-
-.grade-produtos--lista .produto {
-  flex-direction: row;
-  min-width: 0;
-}
-
-/* No celular o cartão fica alto e a foto esticada viraria uma tira recortada,
-   então ela continua quadrada no topo. Na tela larga ela acompanha a altura. */
-.grade-produtos--lista .produto__figura {
-  width: clamp(96px, 22vw, 168px);
-  flex-shrink: 0;
-  align-self: flex-start;
-}
-
-.grade-produtos--lista .produto__corpo { min-width: 0; }
-
-.grade-produtos--lista .produto__topo { flex-wrap: wrap; }
-
-/* Na lista o cartão é largo: esticar o botão "Adicionar" deixaria um alvo
-   enorme e desproporcional, então ele e a quantidade ficam à direita. */
-.grade-produtos--lista .produto__rodape {
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-.grade-produtos--lista .produto__rodape .botao { flex: 0 0 auto; }
-
-/* Sobra pouca largura ao lado da miniatura: os controles encolhem para o
-   seletor de quantidade e o "Adicionar" dividirem a mesma linha. */
-@media (max-width: 619px) {
-  .grade-produtos--lista .quantidade button { width: 30px; height: 38px; font-size: 1rem; }
-  .grade-produtos--lista .quantidade output { min-width: 22px; font-size: 0.9rem; }
-  .grade-produtos--lista .produto__rodape .botao { font-size: 0.92rem; }
+/* O minmax(0, …) é o que permite a coluna encolher junto com a tela; sem ele
+   o cartão trava na largura do conteúdo e vaza no celular. */
+.grade-produtos--compacta {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 10px;
+  row-gap: 28px;
+  align-items: start;
 }
 
 @media (min-width: 620px) {
-  .grade-produtos--lista .produto__figura {
-    align-self: stretch;
-    aspect-ratio: auto;
-  }
-
-  .grade-produtos--lista .produto__rodape .botao { padding-inline: 26px; }
+  .grade-produtos--compacta { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+
+@media (min-width: 900px) {
+  .grade-produtos--compacta { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* Cartão estreito: nome e preço deixam de dividir a linha e empilham. */
+.grade-produtos--compacta .produto__topo {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.grade-produtos--compacta .produto__nome {
+  font-size: 0.98rem;
+  line-height: 1.25;
+}
+
+.grade-produtos--compacta .produto__preco { font-size: 0.92rem; }
+
+/* As opções ficam guardadas até o cliente tocar em "Escolher". */
+.grade-produtos--compacta .produto__detalhes { display: none; }
+.grade-produtos--compacta .produto__escolher { display: block; }
+
+.grade-produtos--compacta .produto--aberto .produto__detalhes { display: flex; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .grade-produtos--compacta .produto--aberto .produto__detalhes {
+    animation: abrir-detalhes 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@keyframes abrir-detalhes {
+  from { opacity: 0; transform: translateY(-8px); }
+}
+
+/* Aberto num cartão estreito sobra pouca largura: o "Adicionar" desce para a
+   linha de baixo em vez de espremer o seletor de quantidade. */
+.grade-produtos--compacta .produto__rodape { flex-wrap: wrap; }
+.grade-produtos--compacta .produto__rodape .botao { flex: 1 0 100%; }
 
 .produto {
   display: flex;
   flex-direction: column;
-  background: var(--superficie);
-  border: 1px solid var(--borda);
-  border-radius: var(--raio);
-  overflow: hidden;
-  transition: box-shadow var(--transicao), transform var(--transicao);
+  min-width: 0;
 }
-.produto:hover { box-shadow: var(--sombra); transform: translateY(-2px); }
 
 .produto--esgotado { opacity: 0.62; }
 
 .produto__figura {
   position: relative;
   margin: 0;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: var(--raio-pequeno);
   background: color-mix(in srgb, var(--borda) 40%, var(--superficie));
 }
 
@@ -504,9 +521,38 @@ a { color: inherit; }
 .produto__corpo {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px 18px 20px;
+  gap: 12px;
+  padding-top: 14px;
   flex: 1;
+}
+
+.produto__detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+
+/* Só aparece quando as fotos estão menores; nas grandes as opções já estão
+   à mostra e um botão para abri-las não teria o que fazer. */
+.produto__escolher {
+  display: none;
+  width: 100%;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--marca-escura);
+  background: transparent;
+  border: 1.5px solid var(--borda);
+  border-radius: 999px;
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: all var(--transicao);
+}
+
+.produto__escolher:hover {
+  border-color: var(--marca);
+  background: color-mix(in srgb, var(--marca) 8%, transparent);
 }
 
 .produto__topo {
@@ -855,11 +901,64 @@ a { color: inherit; }
 .rodape__letra { display: inline-block; }
 
 .rodape__interno {
+  --logo-rodape: 52px;
+  display: grid;
+  gap: 26px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+}
+
+/* Numa tela estreita três colunas viram três tiras ilegíveis: elas
+   empilham e o rodapé vira uma lista só. */
+@media (max-width: 760px) {
+  .rodape__interno { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+}
+
+.rodape__coluna {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Lado a lado, a primeira linha de cada coluna ocupa a altura do logo. É o
+   que põe o nome da marca, "Nossas Inspirações" e o primeiro contato na
+   mesma linha, em vez de cada coluna começar onde o conteúdo dela mandar. */
+@media (min-width: 761px) {
+  .rodape__coluna--fim { align-items: flex-end; text-align: right; }
+
+  .rodape__coluna > strong {
+    display: flex;
+    align-items: center;
+    min-height: var(--logo-rodape);
+  }
+
+  /* O primeiro contato ocupa essa mesma primeira linha; os outros descem
+     com o mesmo respiro das demais colunas. */
+  .rodape__coluna--fim .rodape__contatos { gap: 8px; }
+
+  .rodape__coluna--fim .rodape__contatos a:first-of-type {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: var(--logo-rodape);
+  }
+}
+
+.rodape__marca {
+  display: flex;
   align-items: center;
+  gap: 11px;
+  min-height: var(--logo-rodape);
+}
+
+/* Altura fixa e largura automática: o logo acompanha a própria proporção
+   em vez de ser espremido num quadrado. */
+.rodape__logo {
+  height: var(--logo-rodape);
+  width: auto;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .rodape strong { font-family: var(--fonte-titulo); font-size: 1.3rem; }
@@ -880,6 +979,132 @@ a { color: inherit; }
   transition: opacity var(--transicao);
 }
 .rodape__contatos a:hover { opacity: 1; text-decoration: underline; }
+
+/* ---------- Nossas inspirações ---------- */
+
+.rodape__santos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+/* Tem a mesma cara da cidade logo acima, mas é um botão de verdade: abre a
+   janela com a história do santo. */
+.rodape__santo {
+  font: inherit;
+  font-size: 0.88rem;
+  text-align: left;
+  color: inherit;
+  opacity: 0.75;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+  text-underline-offset: 4px;
+  transition: opacity var(--transicao);
+}
+
+.rodape__santo:hover {
+  opacity: 1;
+  text-decoration-color: var(--destaque);
+}
+
+/* ---------- Janela de um santo ---------- */
+
+.janela-santo {
+  width: min(880px, calc(100vw - 32px));
+  max-height: min(620px, calc(100vh - 40px));
+  padding: 0;
+  border: 0;
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--tinta);
+  overflow: hidden;
+}
+
+.janela-santo::backdrop { background: rgb(43 33 28 / 55%); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .janela-santo[open] { animation: surgir 200ms ease; }
+}
+
+/* A foto e o texto são as duas colunas da mesma linha, então crescem
+   juntos: o texto termina exatamente na altura da imagem. */
+.janela-santo[open] {
+  display: grid;
+  grid-template-columns: minmax(0, 38%) minmax(0, 1fr);
+  /* A linha segue a altura da janela, não a do texto: é o que impede a
+     história comprida de empurrar o conteúdo para fora da caixa. */
+  grid-template-rows: minmax(0, 1fr);
+}
+
+/* O min-height: 0 é o que faz as duas colunas caberem na altura máxima da
+   janela. Sem ele elas crescem com o conteúdo e vazam para fora da caixa. */
+.janela-santo__foto {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+.janela-santo__texto {
+  padding: 30px 32px 32px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.janela-santo__texto h2 { font-size: 1.6rem; }
+
+.janela-santo__viveu {
+  margin-top: 4px;
+  font-size: 0.84rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--destaque);
+}
+
+.janela-santo__texto p + p { margin-top: 12px; }
+
+.janela-santo__historia {
+  margin-top: 18px;
+  color: var(--tinta-suave);
+  font-size: 0.95rem;
+  line-height: 1.72;
+}
+
+/* O seletor é duplo de propósito: a regra geral de .botao-fechar vem depois
+   neste arquivo e, com a mesma força, apagaria o fundo daqui. */
+.janela-santo .janela-santo__fechar {
+  position: absolute;
+  inset-block-start: 12px;
+  inset-inline-end: 12px;
+  z-index: 1;
+  background: var(--superficie);
+  box-shadow: 0 1px 6px rgb(43 33 28 / 18%);
+}
+
+/* No celular não há largura para duas colunas: a foto vira uma faixa no
+   topo e o texto segue embaixo. */
+@media (max-width: 680px) {
+  .janela-santo[open] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .janela-santo__foto {
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-position: center 22%;
+  }
+
+  .janela-santo__texto { padding: 22px 22px 26px; }
+}
 
 /* ---------- Painel lateral (carrinho) ---------- */
 
