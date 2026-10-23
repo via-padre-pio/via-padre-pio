@@ -10,7 +10,6 @@
   "use strict";
 
   const CHAVE_ARMAZENAMENTO = "viapadrepio:pedido:v1";
-  const CHAVE_VISAO = "viapadrepio:visao:v2";
   const LIMITE_POR_ITEM = 20;
 
   /** Itens do pedido: { chave, produtoId, nome, preco, cor, tamanho, imagem, quantidade } */
@@ -37,7 +36,6 @@
     gradeProdutos: el("gradeProdutos"),
     barraCatalogo: el("barraCatalogo"),
     contagemProdutos: el("contagemProdutos"),
-    alternarVisao: el("alternarVisao"),
     duvidaPrazo: el("duvidaPrazo"),
     resumoPedido: el("resumoPedido"),
     formulario: el("formularioPedido"),
@@ -302,42 +300,6 @@
     elementos.contagemProdutos.textContent =
       produtos.length === 1 ? "1 modelo" : `${produtos.length} modelos`;
     elementos.barraCatalogo.hidden = false;
-    aplicarVisao(visaoSalva());
-  }
-
-  /* ====================================================================
-     Tamanho das fotos: "grande" ou "compacta"
-     ==================================================================== */
-
-  function visaoSalva() {
-    try {
-      return localStorage.getItem(CHAVE_VISAO) === "grande"
-        ? "grande"
-        : "compacta";
-    } catch (e) {
-      return "compacta";
-    }
-  }
-
-  function aplicarVisao(visao) {
-    elementos.gradeProdutos.classList.toggle(
-      "grade-produtos--compacta",
-      visao === "compacta"
-    );
-
-    // Nas fotos grandes as opções já ficam à mostra, então nenhum cartão
-    // precisa continuar marcado como aberto.
-    if (visao !== "compacta") fecharCartoes();
-
-    elementos.alternarVisao.querySelectorAll("[data-visao]").forEach((botao) =>
-      botao.setAttribute("aria-pressed", String(botao.dataset.visao === visao))
-    );
-
-    try {
-      localStorage.setItem(CHAVE_VISAO, visao);
-    } catch (e) {
-      /* navegação privada pode bloquear; a escolha vale para esta visita */
-    }
   }
 
   /* ====================================================================
@@ -478,9 +440,9 @@
 
     if (produto.esgotado) return cartao;
 
-    // Com as fotos menores o cartão mostra só foto, nome e preço; este botão
-    // é que traz as opções. Um cartão aberto por vez, para a grade não virar
-    // uma coluna de cartões gigantes.
+    // O cartão mostra só foto, nome e preço; este botão é que traz as
+    // opções. Um cartão aberto por vez, para a grade não virar uma coluna
+    // de cartões gigantes.
     const escolher = cartao.querySelector(".produto__escolher");
     escolher.addEventListener("click", () => {
       const abrindo = !cartao.classList.contains("produto--aberto");
@@ -917,11 +879,6 @@
      ==================================================================== */
 
   function ligarEventos() {
-    elementos.alternarVisao.addEventListener("click", (evento) => {
-      const botao = evento.target.closest("[data-visao]");
-      if (botao) aplicarVisao(botao.dataset.visao);
-    });
-
     elementos.fecharSanto.addEventListener("click", () =>
       elementos.janelaSanto.close()
     );

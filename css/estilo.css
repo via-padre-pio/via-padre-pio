@@ -420,97 +420,30 @@ a { color: inherit; }
   color: var(--tinta-suave);
 }
 
-.alternar-visao {
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  background: var(--superficie);
-  border: 1px solid var(--borda);
-  border-radius: 999px;
-}
-
-.alternar-visao button {
-  display: grid;
-  place-items: center;
-  width: 38px; height: 32px;
-  background: transparent;
-  border: 0;
-  border-radius: 999px;
-  color: var(--tinta-suave);
-  cursor: pointer;
-  transition: background var(--transicao), color var(--transicao);
-}
-.alternar-visao button:hover { color: var(--marca); }
-
-.alternar-visao button[aria-pressed="true"] {
-  background: var(--marca);
-  color: #fff;
-}
-
 /* ---------- Grade de produtos ---------- */
 
 /* A foto é quem vende a camiseta, então ela manda no cartão: sem moldura,
-   sem fundo, apoiada direto na página. O texto vem embaixo, discreto. */
+   sem fundo, apoiada direto na página. O texto vem embaixo, discreto.
+
+   Duas fotos por linha no celular e quatro no notebook. O minmax(0, …) é o
+   que permite a coluna encolher junto com a tela; sem ele o cartão trava na
+   largura do conteúdo e vaza na horizontal. */
 .grade-produtos {
   display: grid;
-  column-gap: 16px;
-  row-gap: 40px;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-}
-
-/* ---------- Fotos menores ---------- */
-
-/* O minmax(0, …) é o que permite a coluna encolher junto com a tela; sem ele
-   o cartão trava na largura do conteúdo e vaza no celular. */
-.grade-produtos--compacta {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: 10px;
   row-gap: 28px;
   align-items: start;
 }
 
+/* Tablet: três cabem sem apertar antes de chegar nas quatro. */
 @media (min-width: 620px) {
-  .grade-produtos--compacta { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grade-produtos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (min-width: 900px) {
-  .grade-produtos--compacta { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .grade-produtos { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
-
-/* Cartão estreito: nome e preço deixam de dividir a linha e empilham. */
-.grade-produtos--compacta .produto__topo {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-}
-
-.grade-produtos--compacta .produto__nome {
-  font-size: 0.98rem;
-  line-height: 1.25;
-}
-
-.grade-produtos--compacta .produto__preco { font-size: 0.92rem; }
-
-/* As opções ficam guardadas até o cliente tocar em "Escolher". */
-.grade-produtos--compacta .produto__detalhes { display: none; }
-.grade-produtos--compacta .produto__escolher { display: block; }
-
-.grade-produtos--compacta .produto--aberto .produto__detalhes { display: flex; }
-
-@media (prefers-reduced-motion: no-preference) {
-  .grade-produtos--compacta .produto--aberto .produto__detalhes {
-    animation: abrir-detalhes 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-}
-
-@keyframes abrir-detalhes {
-  from { opacity: 0; transform: translateY(-8px); }
-}
-
-/* Aberto num cartão estreito sobra pouca largura: o "Adicionar" desce para a
-   linha de baixo em vez de espremer o seletor de quantidade. */
-.grade-produtos--compacta .produto__rodape { flex-wrap: wrap; }
-.grade-produtos--compacta .produto__rodape .botao { flex: 1 0 100%; }
 
 .produto {
   display: flex;
@@ -557,17 +490,29 @@ a { color: inherit; }
   flex: 1;
 }
 
+/* As opções ficam guardadas até o cliente tocar em "Escolher": num cartão
+   desse tamanho, elas à mostra sufocariam a foto. */
 .produto__detalhes {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 14px;
   flex: 1;
 }
 
-/* Só aparece quando as fotos estão menores; nas grandes as opções já estão
-   à mostra e um botão para abri-las não teria o que fazer. */
+.produto--aberto .produto__detalhes { display: flex; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .produto--aberto .produto__detalhes {
+    animation: abrir-detalhes 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@keyframes abrir-detalhes {
+  from { opacity: 0; transform: translateY(-8px); }
+}
+
 .produto__escolher {
-  display: none;
+  display: block;
   width: 100%;
   font: inherit;
   font-size: 0.86rem;
@@ -586,18 +531,22 @@ a { color: inherit; }
   background: color-mix(in srgb, var(--marca) 8%, transparent);
 }
 
+/* Num cartão estreito o nome e o preço não cabem lado a lado: empilham. */
 .produto__topo {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 }
 
-.produto__nome { font-size: 1.4rem; }
+.produto__nome {
+  font-size: 0.98rem;
+  line-height: 1.25;
+}
 
 .produto__preco {
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 0.92rem;
   color: var(--destaque);
   white-space: nowrap;
 }
@@ -655,8 +604,11 @@ a { color: inherit; }
   color: #fff;
 }
 
+/* Sobra pouca largura aqui: o "Adicionar" desce para a linha de baixo em vez
+   de espremer o seletor de quantidade. */
 .produto__rodape {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: auto;
   padding-top: 4px;
@@ -692,7 +644,7 @@ a { color: inherit; }
   font-variant-numeric: tabular-nums;
 }
 
-.produto__rodape .botao { flex: 1; padding-inline: 14px; }
+.produto__rodape .botao { flex: 1 0 100%; padding-inline: 14px; }
 
 /* ---------- Passos ---------- */
 

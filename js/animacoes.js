@@ -439,43 +439,10 @@
   }
 
   /* ====================================================================
-     6. Catálogo: as peças são redistribuídas ao trocar de visualização
-     --------------------------------------------------------------------
-     Trocar de grade para lista muda completamente a forma dos cartões, e
-     uma transição de posição ficaria torta. Em vez disso eles saem e
-     voltam em cascata, como quem espalha as peças de novo sobre a mesa.
+     6. Catálogo: a contagem de modelos sobe de zero
      ==================================================================== */
 
-  function cartasDoCatalogo() {
-    const alternar = document.getElementById("alternarVisao");
-    const grade = document.getElementById("gradeProdutos");
-    if (!alternar || !grade) return;
-
-    // Fase de captura: precisamos ler qual botão estava ativo antes de o
-    // app.js responder ao mesmo clique e marcar o novo.
-    alternar.addEventListener(
-      "click",
-      (evento) => {
-        const botao = evento.target.closest("[data-visao]");
-        if (!botao || botao.getAttribute("aria-pressed") === "true") return;
-
-        const cartoes = [...grade.children];
-        if (!cartoes.length) return;
-
-        // O app.js troca a classe ainda dentro deste clique, antes de pintar.
-        // Esperamos o quadro seguinte para animar os cartões já na forma nova.
-        requestAnimationFrame(() => {
-          animate(
-            cartoes,
-            { opacity: [0, 1], y: [24, 0], scale: [0.96, 1] },
-            { duration: 0.45, delay: stagger(0.06), ease: [0.22, 1, 0.36, 1] }
-          );
-        });
-      },
-      true
-    );
-
-    // A contagem conta de zero até o total quando entra na tela.
+  function contagemDoCatalogo() {
     const contagem = document.getElementById("contagemProdutos");
     if (!contagem) return;
 
@@ -508,6 +475,17 @@
     const passos = document.querySelectorAll(".passo");
     if (!passos.length) return;
 
+    // Lado a lado, os cartões são pequenos e a entrada em cascata fica boa.
+    // Empilhados, cada um ocupa quase a tela inteira: esconder o texto à
+    // espera do scroll faz a pessoa chegar no passo e encontrá-lo apagado,
+    // ainda mais porque no iOS o aviso de "entrou na tela" chega atrasado
+    // enquanto o dedo arrasta. Aí o cartão já vem pronto e só o anel se
+    // desenha.
+    const empilhados =
+      passos.length > 1 &&
+      passos[0].getBoundingClientRect().top !==
+        passos[1].getBoundingClientRect().top;
+
     passos.forEach((passo, indice) => {
       const numero = passo.querySelector(".passo__numero");
       if (!numero) return;
@@ -524,19 +502,21 @@
       anel.appendChild(circulo);
       numero.appendChild(anel);
 
-      passo.style.opacity = "0";
+      if (!empilhados) passo.style.opacity = "0";
 
       inView(
         passo,
         () => {
-          const atraso = indice * 0.14;
+          const atraso = empilhados ? 0 : indice * 0.14;
 
           try {
-            animate(
-              passo,
-              { opacity: [0, 1], y: [26, 0] },
-              { duration: 0.5, delay: atraso, ease: [0.22, 1, 0.36, 1] }
-            );
+            if (!empilhados) {
+              animate(
+                passo,
+                { opacity: [0, 1], y: [26, 0] },
+                { duration: 0.5, delay: atraso, ease: [0.22, 1, 0.36, 1] }
+              );
+            }
 
             animate(
               numero,
@@ -632,7 +612,7 @@
       accordionDuvidas,
       confeteNoEnvio,
       embaralharMarca,
-      cartasDoCatalogo,
+      contagemDoCatalogo,
       anelDosPassos,
       rodapeVivo,
     ].forEach((efeito) => {
