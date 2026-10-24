@@ -259,6 +259,12 @@ const CONFIG = {
        descricao -> frase curta sobre a estampa
        pasta     -> onde estão as fotos desta coleção
        esgotada  -> true marca a coleção inteira como indisponível
+       modelos   -> (opcional) lista de ids do item 6, quando a estampa só
+                    saiu em alguns modelos. Sem isso, a coleção aparece em
+                    todos — que é o normal.
+       nota      -> (opcional) um recado curto no cabeçalho da coleção.
+                    Serve para explicar uma coleção mais curta que as
+                    outras, por exemplo.
 
      As fotos seguem sempre o mesmo nome dentro da pasta:
        oversized-frente.jpg          oversized-costas.jpg
@@ -295,6 +301,38 @@ const CONFIG = {
         "O ano de nascimento de Teresinha estampado no peito e, nas costas, a rosa inteira em traço aberto.",
       pasta: "assets/colecoes/since-1873",
       esgotada: false,
+    },
+    {
+      id: "padre-pio",
+      nome: "Padre Pio",
+      santo: "São Pio de Pietrelcina",
+      descricao:
+        "O rosto do santo em traço contínuo, pequeno no peito. Nas costas, o nome descendo pela coluna em letras espaçadas, aberto por uma cruz.",
+      pasta: "assets/colecoes/padre-pio",
+      esgotada: false,
+    },
+    {
+      id: "father-pio",
+      nome: "Father Pio Since 1887",
+      santo: "São Pio de Pietrelcina",
+      descricao:
+        "O ano de nascimento discreto na frente e, ocupando as costas inteiras, o santo em oração sob a frase que ele repetia a quem o procurava: reze, espere e não se preocupe.",
+      pasta: "assets/colecoes/father-pio",
+      esgotada: false,
+    },
+    {
+      id: "amai-nossa-senhora",
+      nome: "Amai Nossa Senhora",
+      santo: "São Pio de Pietrelcina",
+      descricao:
+        "A frase de Padre Pio em manuscrito, no lado do peito, com a assinatura dele embaixo. As costas ficam limpas.",
+      pasta: "assets/colecoes/amai-nossa-senhora",
+      esgotada: false,
+
+      // Esta estampa só foi fotografada no oversized. Assim que chegarem as
+      // fotos dos outros modelos, é só apagar estas duas linhas.
+      modelos: ["oversized"],
+      nota: "Por enquanto, esta estampa sai só no oversized.",
     },
   ],
 

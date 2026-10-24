@@ -300,6 +300,16 @@
 
   const acharColecao = (id) => (CONFIG.colecoes || []).find((c) => c.id === id);
 
+  /**
+   * Os modelos de uma coleção. Em geral são todos, mas uma coleção pode
+   * trazer uma lista própria em "modelos" quando a estampa saiu só em
+   * algumas peças.
+   */
+  function modelosDaColecao(colecao) {
+    if (!colecao.modelos || !colecao.modelos.length) return modelos();
+    return colecao.modelos.map(acharModelo).filter(Boolean);
+  }
+
   function tamanhosDoModelo(modelo) {
     return modelo.tamanhos && modelo.tamanhos.length
       ? modelo.tamanhos
@@ -337,8 +347,9 @@
 
     // A barra conta peças, não coleções: é o número de cartões que a pessoa
     // encontra rolando a página.
-    const pecas =
-      colecoes.filter((c) => !c.esgotada).length * modelos().length;
+    const pecas = colecoes
+      .filter((c) => !c.esgotada)
+      .reduce((soma, colecao) => soma + modelosDaColecao(colecao).length, 0);
     const quantasColecoes =
       colecoes.length === 1 ? "1 coleção" : `${colecoes.length} coleções`;
     elementos.contagemProdutos.textContent = `${pecas} peças em ${quantasColecoes}`;
@@ -500,9 +511,9 @@
   }
 
   /**
-   * Uma coleção: o cabeçalho com o nome, a santa e a história da estampa, e
-   * embaixo um cartão para cada modelo. Tudo o que vale para as cinco peças
-   * fica no cabeçalho, em vez de se repetir cinco vezes seguidas.
+   * Uma coleção: o cabeçalho com o nome, o santo e a história da estampa, e
+   * embaixo um cartão para cada modelo. Tudo o que vale para a coleção
+   * inteira fica no cabeçalho, em vez de se repetir em cada cartão.
    */
   function criarBlocoColecao(colecao) {
     const bloco = document.createElement("section");
@@ -521,11 +532,14 @@
         ${colecao.descricao
           ? `<p class="colecao__descricao">${escapar(colecao.descricao)}</p>`
           : ""}
+        ${colecao.nota
+          ? `<p class="colecao__nota">${escapar(colecao.nota)}</p>`
+          : ""}
       </header>
       <div class="grade-produtos"></div>`;
 
     const grade = bloco.querySelector(".grade-produtos");
-    modelos().forEach((modelo) => {
+    modelosDaColecao(colecao).forEach((modelo) => {
       grade.appendChild(criarCartaoCamiseta(colecao, modelo));
     });
 

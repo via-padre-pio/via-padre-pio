@@ -96,7 +96,7 @@ São duas listas separadas em `js/config.js`, e a página cruza uma com a outra:
 - **`modelos`** são os caimentos — oversized, tradicional masculina, tradicional
   feminina, baby look e infantil. **O preço mora aqui**, não na coleção.
 - **`colecoes`** são as estampas. Cada uma vira um bloco do catálogo, com um cartão
-  para cada modelo: três coleções e cinco modelos dão quinze cartões.
+  para cada modelo: uma coleção em cinco modelos dá cinco cartões.
 
 Ou seja: mudou o preço do oversized, mudou em todas as coleções de uma vez.
 
@@ -119,6 +119,11 @@ Copie um bloco inteiro de `colecoes`, cole abaixo e troque os dados:
 arquivo é o que diz ao site a qual modelo ela pertence. São doze, sempre com estes
 nomes exatos:
 
+> As fotos chegam da sessão numeradas de `1` a `12`, e a ordem é sempre a mesma:
+> 1 e 2 baby look, 3 e 4 tradicional feminina, 5 e 6 oversized, 7 e 8 tradicional
+> masculina, 9 a 12 infantil (menina e depois menino). Os números ímpares são a
+> frente.
+
 ```
 oversized-frente.jpg              oversized-costas.jpg
 tradicional-masculina-frente.jpg  tradicional-masculina-costas.jpg
@@ -129,6 +134,18 @@ infantil-menino-frente.jpg        infantil-menino-costas.jpg
 ```
 
 Use imagens em pé (960×1080 px serve bem) e salve em `.jpg`.
+
+**Se a estampa ainda não saiu em todos os modelos**, liste em `modelos` só os que
+existem e explique isso em `nota` — assim o bloco não fica com um buraco sem
+explicação. É o caso da "Amai Nossa Senhora", que hoje só foi fotografada no
+oversized:
+
+```js
+modelos: ["oversized"],
+nota: "Por enquanto, esta estampa sai só no oversized.",
+```
+
+Chegando as outras fotos, apague as duas linhas e os dez cartões aparecem sozinhos.
 
 **Cor e tamanhos** valem para a pré-venda inteira e ficam em `prevenda`. O infantil é
 a exceção: tem a sua própria grade de tamanhos, declarada dentro do modelo.
@@ -209,8 +226,8 @@ marrom `#6b4a1e` nas letras e botões.
 - **Cada pedido ganha um número** (`VIA-20261023-AF8KT`) que aparece na confirmação,
   vai para a InfinitePay e entra na mensagem do WhatsApp: é por ele que vocês
   cruzam o pagamento recebido com a pessoa que escreveu.
-- **O catálogo é uma vitrine de fotos.** Cada coleção abre com o nome, a santa e a
-  frase sobre a estampa; abaixo vêm as cinco camisetas, uma por cartão — as cinco
+- **O catálogo é uma vitrine de fotos.** Cada coleção abre com o nome, o santo e a
+  frase sobre a estampa; abaixo vêm as camisetas, uma por cartão — as cinco
   numa linha no notebook, três no tablet e duas no celular. O cartão mostra a foto,
   o modelo e o preço; o tamanho aparece ao tocar em "Escolher", um cartão por vez.
 - **Nenhum tamanho vem marcado de antemão**, para um padrão silencioso não virar

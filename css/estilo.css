@@ -492,6 +492,19 @@ a { color: inherit; }
   max-width: 62ch;
 }
 
+/* Um recado sobre a coleção inteira — por exemplo, que a estampa ainda não
+   saiu em todos os modelos. Sem isso, um bloco com um cartão só parece
+   uma peça que faltou carregar. */
+.colecao__nota {
+  align-self: flex-start;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(124, 92, 56, 0.08);
+  color: var(--tinta-suave);
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+}
+
 /* O nome da santa leva à história dela. */
 .colecao__santo {
   font: inherit;
