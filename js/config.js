@@ -137,25 +137,22 @@ const CONFIG = {
      dado de cartão passa por aqui, e o dinheiro cai direto na conta de
      vocês. O WhatsApp deixou de receber pedidos: agora é só atendimento.
 
-     PARA LIGAR O PAGAMENTO, FALTA SÓ ISTO:
+     As formas de pagamento e o tratamento das taxas ficam no app da
+     InfinitePay, em Vendas > Checkout > Configurações, e não aqui: mudar
+     isso pelo site exigiria a chave secreta da conta, e chave secreta não
+     pode morar num arquivo que qualquer visitante consegue abrir. O que
+     estiver configurado lá vale para o site na hora, sem publicar nada.
 
-       1. No app da InfinitePay, abra Vendas > Checkout > Configurações e
-          toque em "Habilitar Checkout Integrado". Sem esse passo, a
-          InfinitePay recusa os pedidos do site.
-       2. Ainda nessa tela, escolha quais formas de pagamento aceitar e
-          em quantas parcelas você absorve a taxa.
-       3. Copie a sua InfiniteTag (o seu usuário no app) e escreva no
-          campo "handle" aqui embaixo, SEM o cifrão.
-
-     Os itens 1 e 2 são feitos lá, e não aqui, de propósito: mudar isso
-     pelo site exigiria a chave secreta da conta, e chave secreta não
-     pode morar num arquivo que qualquer visitante consegue abrir.
+     Hoje a conta está com Pix e crédito ligados, e com as taxas
+     repassadas ao comprador. Repassando, só o Pix sai pelo valor do
+     pedido: o cartão tem acréscimo até mesmo em 1x. Num pedido de
+     R$ 509,50, por exemplo, dá R$ 531,84 à vista e R$ 611,40 em 12x.
      ------------------------------------------------------------------ */
   pagamento: {
-    // A sua InfiniteTag, sem o $. Exemplo: "viapadrepio".
-    // Enquanto estiver vazia, o site avisa o cliente e manda ele para o
-    // WhatsApp, em vez de abrir um pagamento quebrado.
-    handle: "",
+    // A sua InfiniteTag, sem o $. Enquanto estiver vazia, o site avisa o
+    // cliente e manda ele para o WhatsApp, em vez de abrir um pagamento
+    // quebrado.
+    handle: "henrique-marins-lxa",
 
     // Para onde a InfinitePay traz o cliente depois de pagar. Deixe ""
     // que o site usa o próprio endereço de onde o pedido saiu.

@@ -63,20 +63,36 @@ o cartão — **nenhum dado de pagamento passa pelo site de vocês**. Terminado,
 a InfinitePay traz ele de volta, o site confere com ela se o pagamento saiu mesmo e
 mostra a confirmação com o número do pedido.
 
-**O endereço de entrega não vai junto.** A InfinitePay recebe o nome, o e-mail, o
-telefone e a lista de peças; a cidade, a forma de entrega e as observações ficam no
-botão "Enviar meus dados de entrega" que aparece na confirmação, e chegam no
-WhatsApp com o número do pedido e o link do comprovante. É assim que as duas pontas
-se juntam. Quem quiser mandar só o comprovante tem um segundo link na mesma janela,
-"Enviar comprovante no WhatsApp".
+**O endereço completo é coletado pela InfinitePay**, não pelo site: o checkout tem
+uma etapa "Entrega" obrigatória, com CEP, rua, número, bairro, cidade e estado. Ele
+fica registrado na venda, dentro do app — é lá que vocês consultam para onde enviar.
+
+O que a InfinitePay *não* sabe é a forma de entrega escolhida (retirada, entrega em
+mãos ou Correios) e as observações do cliente. Isso chega pelo botão "Enviar meus
+dados de entrega" da tela de confirmação, que abre o WhatsApp com o número do
+pedido, o nome, a cidade, as peças e o link do comprovante já escritos. Quem quiser
+mandar só o comprovante tem um segundo link na mesma janela, "Enviar comprovante no
+WhatsApp".
 
 **Taxas e parcelamento ficam no app da InfinitePay** (Meios de Pagamento → cartão de
 crédito), onde se escolhe entre *repassar* ou *assumir* as taxas. Repassando, o
-cliente paga o acréscimo do parcelamento e vocês recebem o valor cheio; assumindo, o
-cliente paga o preço do pedido e a taxa sai do recebimento — e aí dá para limitar
-quantas parcelas saem sem juros. Hoje os textos do site falam em "até 12x" sem
-prometer "sem juros", que é o correto para o repasse. Se vocês passarem a assumir as
-taxas, vale revisar essas frases no `index.html`.
+cliente paga o acréscimo e vocês recebem o valor cheio; assumindo, o cliente paga o
+preço do pedido e a taxa sai do recebimento — e aí dá para limitar quantas parcelas
+saem sem juros. Hoje a conta repassa, então os textos do site falam em "até 12x" sem
+prometer "sem juros". Se vocês passarem a assumir as taxas, vale revisar essas
+frases no `index.html`.
+
+Atenção a um detalhe do repasse: **só o Pix sai pelo valor do pedido.** O cartão tem
+acréscimo até em 1x. Conferido num pedido de R$ 509,50:
+
+| Forma | O cliente paga |
+| --- | --- |
+| Pix | R$ 509,50 |
+| Crédito 1x | R$ 531,84 |
+| Crédito 5x | 5× R$ 111,74 = R$ 558,70 |
+| Crédito 12x | 12× R$ 50,95 = R$ 611,40 |
+
+Em todos eles vocês recebem os R$ 509,50.
 
 A confirmação mostra o que o cliente realmente pagou: a InfinitePay devolve o valor
 e o número de parcelas, e quando o valor pago passa do preço das peças a janela
