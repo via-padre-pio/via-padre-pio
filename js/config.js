@@ -329,10 +329,10 @@ const CONFIG = {
       pasta: "assets/colecoes/amai-nossa-senhora",
       esgotada: false,
 
-      // Esta estampa só foi fotografada no oversized. Assim que chegarem as
-      // fotos dos outros modelos, é só apagar estas duas linhas.
+      // Esta estampa existe só no oversized. Se um dia sair nos outros
+      // modelos, é só apagar estas duas linhas e acrescentar as fotos.
       modelos: ["oversized"],
-      nota: "Por enquanto, esta estampa sai só no oversized.",
+      nota: "Esta estampa sai apenas no modelo oversized.",
     },
   ],
 

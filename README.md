@@ -135,17 +135,17 @@ infantil-menino-frente.jpg        infantil-menino-costas.jpg
 
 Use imagens em pé (960×1080 px serve bem) e salve em `.jpg`.
 
-**Se a estampa ainda não saiu em todos os modelos**, liste em `modelos` só os que
-existem e explique isso em `nota` — assim o bloco não fica com um buraco sem
-explicação. É o caso da "Amai Nossa Senhora", que hoje só foi fotografada no
-oversized:
+**Se a estampa não sair em todos os modelos**, liste em `modelos` só os que existem
+e explique isso em `nota` — assim o bloco não fica com um buraco sem explicação. É o
+caso da "Amai Nossa Senhora", que existe apenas no oversized:
 
 ```js
 modelos: ["oversized"],
-nota: "Por enquanto, esta estampa sai só no oversized.",
+nota: "Esta estampa sai apenas no modelo oversized.",
 ```
 
-Chegando as outras fotos, apague as duas linhas e os dez cartões aparecem sozinhos.
+Nesse caso a pasta de fotos tem só as duas do oversized, e não as doze. Se um dia a
+estampa sair nos outros modelos, apague as duas linhas e acrescente as fotos.
 
 **Cor e tamanhos** valem para a pré-venda inteira e ficam em `prevenda`. O infantil é
 a exceção: tem a sua própria grade de tamanhos, declarada dentro do modelo.
