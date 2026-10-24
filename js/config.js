@@ -308,33 +308,6 @@ const CONFIG = {
      ------------------------------------------------------------------ */
   colecoes: [
     {
-      id: "nada-e-pequeno",
-      nome: "Nada é Pequeno se Feito com Amor",
-      santo: "Coleção: Santa Teresinha do Menino Jesus",
-      descricao:
-        "Uma rosa delicada no peito e, nas costas, a frase que traduz a pequena via de Santa Teresinha: nada é pequeno se feito com amor. Uma peça que nos lembra que a santidade está nos pequenos gestos vividos com amor.",
-      pasta: "assets/colecoes/nada-e-pequeno",
-      esgotada: false,
-    },
-    {
-      id: "saint-therese",
-      nome: "Saint Therese",
-      santo: "Coleção: Santa Teresinha do Menino Jesus",
-      descricao:
-        "O nome de Santa Teresinha percorre as costas da peça, escrito letra a letra ao longo da coluna e finalizado por uma rosa delicada. Na frente, uma rosa em traço sutil no peito completa o design com simplicidade e significado.",
-      pasta: "assets/colecoes/saint-therese",
-      esgotada: false,
-    },
-    {
-      id: "since-1873",
-      nome: "Saint Therese Since 1873",
-      santo: "Coleção: Santa Teresinha do Menino Jesus",
-      descricao:
-        "O ano de nascimento de Santa Teresinha em uma inscrição delicada no peito. Nas costas, uma rosa grande, simboliza a devoção à santa e remete à sua promessa de fazer cair uma chuva de rosas sobre a Terra, como sinal das graças de Deus.",
-      pasta: "assets/colecoes/since-1873",
-      esgotada: false,
-    },
-    {
       id: "padre-pio",
       nome: "Padre Pio",
       santo: "Coleção: São Pio de Pietrelcina",
@@ -365,6 +338,33 @@ const CONFIG = {
       // modelos, é só apagar estas duas linhas e acrescentar as fotos.
       modelos: ["oversized"],
       nota: "Esta estampa sai apenas no modelo oversized.",
+    },
+    {
+      id: "nada-e-pequeno",
+      nome: "Nada é Pequeno se Feito com Amor",
+      santo: "Coleção: Santa Teresinha do Menino Jesus",
+      descricao:
+        "Uma rosa delicada no peito e, nas costas, a frase que traduz a pequena via de Santa Teresinha: nada é pequeno se feito com amor. Uma peça que nos lembra que a santidade está nos pequenos gestos vividos com amor.",
+      pasta: "assets/colecoes/nada-e-pequeno",
+      esgotada: false,
+    },
+    {
+      id: "saint-therese",
+      nome: "Saint Therese",
+      santo: "Coleção: Santa Teresinha do Menino Jesus",
+      descricao:
+        "O nome de Santa Teresinha percorre as costas da peça, escrito letra a letra ao longo da coluna e finalizado por uma rosa delicada. Na frente, uma rosa em traço sutil no peito completa o design com simplicidade e significado.",
+      pasta: "assets/colecoes/saint-therese",
+      esgotada: false,
+    },
+    {
+      id: "since-1873",
+      nome: "Saint Therese Since 1873",
+      santo: "Coleção: Santa Teresinha do Menino Jesus",
+      descricao:
+        "O ano de nascimento de Santa Teresinha em uma inscrição delicada no peito. Nas costas, uma rosa grande, simboliza a devoção à santa e remete à sua promessa de fazer cair uma chuva de rosas sobre a Terra, como sinal das graças de Deus.",
+      pasta: "assets/colecoes/since-1873",
+      esgotada: false,
     },
   ],
 
