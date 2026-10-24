@@ -447,9 +447,17 @@
     elementos.janelaSanto.showModal();
   }
 
-  function abrirSantoPorNome(nome) {
-    const indice = (CONFIG.inspiracoes.santos || []).findIndex(
-      (s) => s.nome === nome
+  /**
+   * Acha o santo pelo rótulo escrito na coleção. A busca não exige o nome
+   * exato: basta que ele apareça no rótulo, para que escrever
+   * "Coleção: Santa Teresinha do Menino Jesus" em js/config.js continue
+   * abrindo a história dela. Uma vírgula a mais no config não deve
+   * desligar um botão em silêncio.
+   */
+  function abrirSantoPorNome(rotulo) {
+    const texto = String(rotulo).toLowerCase();
+    const indice = (CONFIG.inspiracoes.santos || []).findIndex((s) =>
+      texto.includes(String(s.nome).toLowerCase())
     );
     if (indice >= 0) abrirSanto(indice);
   }
