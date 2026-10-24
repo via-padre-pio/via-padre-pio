@@ -321,6 +321,18 @@ a { color: inherit; }
   font-size: clamp(1rem, 2.4vw, 1.1rem);
 }
 
+/* No computador as frases seguem no mesmo parágrafo, com o espaço
+   que o ponto final pedia. */
+.capa__frase + .capa__frase::before {
+  content: " ";
+}
+
+/* No celular, cada frase da descrição da capa ocupa a própria linha. */
+@media (max-width: 619px) {
+  .capa__frase { display: block; }
+  .capa__frase + .capa__frase::before { content: none; }
+}
+
 /* A assinatura fecha a abertura: mesma letra do título, em corpo pequeno. */
 .capa__lema {
   margin-top: 16px;
@@ -440,22 +452,6 @@ a { color: inherit; }
   color: var(--marca-escura);
   font-size: 0.84rem;
   font-weight: 600;
-}
-
-/* ---------- Barra do catálogo ---------- */
-
-.barra-catalogo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.barra-catalogo__contagem {
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: var(--tinta-suave);
 }
 
 /* ---------- Catálogo: coleções e peças ---------- */
@@ -904,6 +900,19 @@ a { color: inherit; }
 
 .resumo__item strong { white-space: nowrap; font-variant-numeric: tabular-nums; }
 
+/* Peças e frete, acima do total. Discretas: o número que importa é o
+   de baixo, estas só explicam como ele foi formado. */
+.resumo__linha {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  color: var(--tinta-suave);
+  font-size: 0.9rem;
+  padding-bottom: 8px;
+}
+
+.resumo__linha span:last-child { font-variant-numeric: tabular-nums; }
+
 .resumo__total {
   display: flex;
   justify-content: space-between;
@@ -941,6 +950,18 @@ a { color: inherit; }
 
 .obrigatorio { color: #c0392b; }
 .opcional { font-weight: 400; color: var(--tinta-suave); }
+
+/* O endereço que o CEP encontrou, logo abaixo do campo. */
+.campo__achado {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--marca-escura);
+}
+
+.campo__achado--buscando {
+  color: var(--tinta-suave);
+  font-style: italic;
+}
 
 .campo input,
 .campo select,
@@ -1274,6 +1295,139 @@ a { color: inherit; }
   .janela-santo__texto { padding: 22px 22px 26px; }
 }
 
+/* ---------- Janela da foto ampliada ---------- */
+
+.janela-foto {
+  width: min(960px, calc(100vw - 24px));
+  height: min(92vh, calc(100vh - 24px));
+  padding: 0;
+  border: 0;
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--tinta);
+  overflow: hidden;
+}
+
+.janela-foto::backdrop { background: rgb(43 33 28 / 72%); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .janela-foto[open] { animation: surgir 200ms ease; }
+}
+
+.janela-foto[open] {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+/* O palco recorta: a foto cresce para dentro dele, nunca para fora da
+   janela. touch-action none porque o arraste e a pinça são nossos — sem
+   isso o navegador rola a página por baixo. */
+.janela-foto__palco {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #efe6da;
+  touch-action: none;
+  cursor: zoom-in;
+}
+
+.janela-foto__palco[data-ampliado="sim"] { cursor: grab; }
+.janela-foto__palco[data-arrastando="sim"] { cursor: grabbing; }
+
+.janela-foto__imagem {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* A transição só vale para o clique que amplia. No arraste ela é
+   desligada, senão a foto corre atrás do dedo com atraso. */
+.janela-foto__palco:not([data-arrastando="sim"]) .janela-foto__imagem {
+  transition: transform 220ms cubic-bezier(0.33, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .janela-foto__imagem { transition: none; }
+}
+
+.janela-foto__barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  border-block-start: 1px solid var(--borda);
+}
+
+.janela-foto__dica {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--tinta-suave);
+}
+
+.janela-foto__vistas {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.janela-foto__vista {
+  width: 46px;
+  height: 58px;
+  padding: 0;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: none;
+  overflow: hidden;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 160ms ease, border-color 160ms ease;
+}
+
+.janela-foto__vista img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.janela-foto__vista:hover { opacity: 0.85; }
+
+.janela-foto__vista[aria-pressed="true"] {
+  opacity: 1;
+  border-color: var(--destaque);
+}
+
+.janela-foto .janela-foto__fechar {
+  position: absolute;
+  inset-block-start: 12px;
+  inset-inline-end: 12px;
+  z-index: 1;
+  background: var(--superficie);
+  box-shadow: 0 1px 6px rgb(43 33 28 / 18%);
+}
+
+/* A foto do cartão vira um botão: o cursor precisa dizer isso. */
+.produto__foto { cursor: zoom-in; }
+
+@media (max-width: 680px) {
+  .janela-foto {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    border-radius: 0;
+  }
+
+  .janela-foto__barra { padding: 10px 12px; }
+  .janela-foto__dica { font-size: 0.76rem; }
+}
+
 /* ---------- Janela da tabela de medidas ---------- */
 
 .janela-medidas {
@@ -1587,6 +1741,10 @@ a { color: inherit; }
 /* A largura do painel não acompanha a da tela: os pares de campos ficariam
    espremidos no desktop se seguissem a mesma regra da página. */
 .painel .campo-duplo { grid-template-columns: 1fr; }
+
+/* Cidade e estado cabem lado a lado mesmo no painel estreito: um é um
+   nome, o outro tem duas letras. */
+.painel .campo-duplo--cidade { grid-template-columns: 2fr 1fr; }
 
 .painel #etapaDados:focus { outline: none; }
 

@@ -445,36 +445,7 @@
   }
 
   /* ====================================================================
-     6. Catálogo: a contagem de peças sobe de zero
-     ==================================================================== */
-
-  function contagemDoCatalogo() {
-    const contagem = document.getElementById("contagemProdutos");
-    if (!contagem) return;
-
-    inView(
-      contagem,
-      () => {
-        const texto = contagem.textContent;
-        const total = parseInt(texto, 10);
-        if (!total) return;
-
-        const resto = texto.replace(/^\d+\s*/, "");
-        const relogio = { valor: 0 };
-        animate(relogio, { valor: total }, {
-          duration: 0.7,
-          ease: "easeOut",
-          onUpdate: () => {
-            contagem.textContent = `${Math.round(relogio.valor)} ${resto}`;
-          },
-        });
-      },
-      { amount: 1 }
-    );
-  }
-
-  /* ====================================================================
-     7. Como funciona: um anel dourado se fecha em volta de cada número
+     6. Como funciona: um anel dourado se fecha em volta de cada número
      ==================================================================== */
 
   function anelDosPassos() {
@@ -547,7 +518,7 @@
   }
 
   /* ====================================================================
-     8. Rodapé: o nome da marca sobe letra por letra
+     7. Rodapé: o nome da marca sobe letra por letra
      ==================================================================== */
 
   function rodapeVivo() {
@@ -607,6 +578,81 @@
   }
 
   /* ====================================================================
+     8. Tabela de medidas: um passeio que revela os tamanhos escondidos
+     --------------------------------------------------------------------
+     No celular a tabela é mais larga que a tela, e as colunas da direita
+     não dão sinal de que existem. Ao abrir, ela corre até o fim e volta
+     ao PP: em um segundo e meio a pessoa vê que há mais e aprende que
+     dá para arrastar.
+     ==================================================================== */
+
+  function passeioDasMedidas() {
+    const janela = document.getElementById("janelaMedidas");
+    const corpo = document.getElementById("corpoMedidas");
+    const abas = document.getElementById("abasMedidas");
+    if (!janela || !corpo) return;
+
+    const DESLIZE = { duration: 0.85, ease: [0.33, 0, 0.2, 1] };
+    let passeio = null;
+
+    const parar = () => {
+      if (passeio) passeio.stop();
+      passeio = null;
+    };
+
+    function passear() {
+      parar();
+
+      // A janela acabou de abrir: sem esperar o desenho, a largura ainda
+      // é a de antes.
+      requestAnimationFrame(() => {
+        const limite = corpo.scrollWidth - corpo.clientWidth;
+
+        // Tabela que já cabe inteira não tem nada a revelar — é o caso do
+        // computador, onde este passeio só atrapalharia a leitura.
+        if (limite < 24) return;
+
+        corpo.scrollLeft = 0;
+
+        const correr = (de, ate, atraso) =>
+          animate(de, ate, {
+            ...DESLIZE,
+            delay: atraso,
+            onUpdate: (onde) => {
+              corpo.scrollLeft = onde;
+            },
+          });
+
+        passeio = correr(0, limite, 0.25);
+        passeio.finished
+          .then(() => {
+            passeio = correr(limite, 0, 0.35);
+            return passeio.finished;
+          })
+          .catch(() => {})
+          .finally(() => {
+            passeio = null;
+          });
+      });
+    }
+
+    // O <dialog> não avisa quando abre, então observamos o atributo que
+    // o navegador põe nele.
+    new MutationObserver(() => {
+      janela.open ? passear() : parar();
+    }).observe(janela, { attributes: true, attributeFilter: ["open"] });
+
+    // Trocar de modelo mostra outra tabela, que pode ser mais larga.
+    if (abas) abas.addEventListener("click", passear);
+
+    // Quem já começou a arrastar sozinho não precisa mais da dica — e
+    // disputar o scroll com a pessoa seria pior do que não animar.
+    ["pointerdown", "wheel", "touchstart"].forEach((evento) =>
+      corpo.addEventListener(evento, parar, { passive: true })
+    );
+  }
+
+  /* ====================================================================
      Início
      ==================================================================== */
 
@@ -618,9 +664,9 @@
       accordionDuvidas,
       confeteNoEnvio,
       embaralharMarca,
-      contagemDoCatalogo,
       anelDosPassos,
       rodapeVivo,
+      passeioDasMedidas,
     ].forEach((efeito) => {
       try {
         efeito();

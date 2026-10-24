@@ -119,15 +119,50 @@ const CONFIG = {
      ------------------------------------------------------------------
      Apague linhas que não se aplicam. Precisa ter pelo menos uma.
 
-     "frete" é quanto essa opção custa, em reais, e entra como uma linha
-     a mais na hora de pagar. Deixe 0 quando o valor for combinado depois
-     pelo WhatsApp: aí o cliente paga só as peças.
+     "frete" é quanto a opção custa, em reais, e entra como uma linha a
+     mais no total e na cobrança. Deixe 0 nas que não cobram.
+
+     "porEstado: true" troca esse valor fixo pela tabela do item 4b: o
+     preço passa a sair do estado que o cliente escolher no formulário.
      ------------------------------------------------------------------ */
   entrega: [
-    { id: "retirada", nome: "Retirar pessoalmente (combinamos o ponto)", frete: 0 },
-    { id: "entrega",  nome: "Entrega em mãos na minha região",           frete: 0 },
-    { id: "correios", nome: "Enviar pelos Correios (frete à parte)",     frete: 0 },
+    { id: "retirada", nome: "Retirar pessoalmente (combinamos o ponto)",  frete: 0 },
+    { id: "entrega",  nome: "Entrega em mãos (Osasco, Barueri e região)", frete: 0 },
+    { id: "correios", nome: "Enviar pelos Correios",                      porEstado: true },
   ],
+
+  /* ------------------------------------------------------------------
+     4b. FRETE POR ESTADO
+     ------------------------------------------------------------------
+     Quanto custa enviar pelos Correios para cada estado, em reais. O
+     cliente escolhe o estado no formulário, e o valor entra no total
+     antes de ele sair para pagar — nada de surpresa no checkout.
+
+     Quem retira ou recebe em mãos não paga frete, qualquer que seja o
+     estado: isso vem do item 4, não daqui.
+
+     Os números abaixo são um ponto de partida por região. Troque pelos
+     seus quando tiver a tabela dos Correios na mão — é só mudar o número
+     ao lado da sigla. Estado que não estiver aqui sai com frete zero, o
+     que na prática é a loja pagando o envio.
+     ------------------------------------------------------------------ */
+  frete: {
+    // Sudeste
+    SP: 20, MG: 30, RJ: 30, ES: 30,
+
+    // Sul
+    PR: 30, SC: 30, RS: 30,
+
+    // Centro-Oeste
+    DF: 40, GO: 40, MT: 40, MS: 40,
+
+    // Nordeste
+    BA: 40, SE: 40, AL: 40, PE: 40, PB: 40,
+    RN: 40, CE: 40, PI: 40, MA: 40,
+
+    // Norte
+    TO: 50, PA: 50, AP: 50, RR: 50, AM: 50, AC: 50, RO: 50,
+  },
 
   /* ------------------------------------------------------------------
      4b. PAGAMENTO (InfinitePay)

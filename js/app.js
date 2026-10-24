@@ -12,6 +12,32 @@
   const CHAVE_ARMAZENAMENTO = "viapadrepio:pedido:v1";
   const LIMITE_POR_ITEM = 20;
 
+  /** Onde o CEP é conferido. Responde com CORS liberado, direto do navegador. */
+  const API_CEP = "https://brasilapi.com.br/api/cep/v2";
+
+  /**
+   * Os nomes dos estados, para escrever "Frete para São Paulo" em vez de
+   * "Frete para SP". Ficam aqui, e não em js/config.js, porque não são
+   * uma decisão da loja: o que a loja decide é quanto cobra por cada um,
+   * e isso está em CONFIG.frete.
+   */
+  const ESTADOS = {
+    AC: "Acre", AL: "Alagoas", AP: "Amapá", AM: "Amazonas",
+    BA: "Bahia", CE: "Ceará", DF: "Distrito Federal", ES: "Espírito Santo",
+    GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", MS: "Mato Grosso do Sul",
+    MG: "Minas Gerais", PA: "Pará", PB: "Paraíba", PR: "Paraná",
+    PE: "Pernambuco", PI: "Piauí", RJ: "Rio de Janeiro", RN: "Rio Grande do Norte",
+    RS: "Rio Grande do Sul", RO: "Rondônia", RR: "Roraima", SC: "Santa Catarina",
+    SP: "São Paulo", SE: "Sergipe", TO: "Tocantins",
+  };
+
+  /**
+   * O endereço do CEP que está no formulário, já conferido — ou null
+   * enquanto não houver um. É dele que sai o frete, então enquanto for
+   * null o pedido não pode seguir para o pagamento.
+   */
+  let enderecoDoCep = null;
+
   /** Itens do pedido: { chave, colecaoId, modeloId, nome, modeloNome, preco,
       cor, tamanho, imagem, quantidade } */
   let pedido = [];
@@ -36,11 +62,11 @@
     marcaLema: el("marcaLema"),
     marcaPrazo: el("marcaPrazo"),
     gradeProdutos: el("gradeProdutos"),
-    barraCatalogo: el("barraCatalogo"),
-    contagemProdutos: el("contagemProdutos"),
     resumoPedido: el("resumoPedido"),
     formulario: el("formularioPedido"),
     selectEntrega: el("entrega"),
+    campoCep: el("cep"),
+    cepEndereco: el("cepEndereco"),
     textoBotaoEnviar: el("textoBotaoEnviar"),
     erroGeral: el("erroGeral"),
     rodapeLogo: el("rodapeLogo"),
@@ -60,6 +86,12 @@
     santoNome: el("santoNome"),
     santoViveu: el("santoViveu"),
     santoHistoria: el("santoHistoria"),
+    janelaFoto: el("janelaFoto"),
+    fecharFoto: el("fecharFoto"),
+    palcoFoto: el("palcoFoto"),
+    fotoAmpliada: el("fotoAmpliada"),
+    dicaFoto: el("dicaFoto"),
+    vistasFoto: el("vistasFoto"),
     janelaMedidas: el("janelaMedidas"),
     fecharMedidas: el("fecharMedidas"),
     abasMedidas: el("abasMedidas"),
@@ -161,7 +193,11 @@
     elementos.marcaNome.textContent = marca.nome;
     elementos.marcaAssinatura.textContent = marca.assinatura || "";
     elementos.marcaChamada.textContent = marca.chamada || "Pré-venda";
-    elementos.marcaDescricao.textContent = marca.descricao || "";
+    // Cada frase vira um trecho próprio para o celular poder quebrar a linha
+    // depois do ponto, sem mudar o parágrafo no computador.
+    elementos.marcaDescricao.replaceChildren(
+      ...frasesDaCapa(marca.descricao)
+    );
 
     // A abertura fecha com a mesma assinatura do cabeçalho.
     elementos.marcaLema.textContent = marca.assinatura || "";
@@ -247,6 +283,7 @@
       opcoes
         .map((o) => `<option value="${o.id}">${escapar(o.nome)}</option>`)
         .join("");
+
   }
 
   /**
@@ -280,6 +317,20 @@
       ...metade,
       ...metade.map((span) => span.cloneNode(true))
     );
+  }
+
+  /** Frases da descrição da capa, separadas no ponto final. */
+  function frasesDaCapa(texto) {
+    return String(texto || "")
+      .trim()
+      .split(/(?<=\.)\s+/)
+      .filter(Boolean)
+      .map((frase) => {
+        const span = document.createElement("span");
+        span.className = "capa__frase";
+        span.textContent = frase;
+        return span;
+      });
   }
 
   function escapar(texto) {
@@ -344,16 +395,6 @@
     colecoes.forEach((colecao) => {
       elementos.gradeProdutos.appendChild(criarBlocoColecao(colecao));
     });
-
-    // A barra conta peças, não coleções: é o número de cartões que a pessoa
-    // encontra rolando a página.
-    const pecas = colecoes
-      .filter((c) => !c.esgotada)
-      .reduce((soma, colecao) => soma + modelosDaColecao(colecao).length, 0);
-    const quantasColecoes =
-      colecoes.length === 1 ? "1 coleção" : `${colecoes.length} coleções`;
-    elementos.contagemProdutos.textContent = `${pecas} peças em ${quantasColecoes}`;
-    elementos.barraCatalogo.hidden = false;
   }
 
   /* ====================================================================
@@ -416,6 +457,202 @@
   /* ====================================================================
      Tabela de medidas
      ==================================================================== */
+
+  /* ====================================================================
+     Foto ampliada
+     --------------------------------------------------------------------
+     A estampa é o produto, e no cartão ela cabe num quadrado pequeno.
+     Aqui a foto ocupa a tela e aceita zoom — clique ou duplo toque para
+     ampliar no ponto, arraste para passear, pinça no celular, roda do
+     mouse no computador.
+     ==================================================================== */
+
+  const AMPLIACAO_MAXIMA = 4;
+
+  /** O que está aberto: as vistas da peça e qual delas aparece. */
+  let fotoAberta = { vistas: [], atual: 0 };
+
+  /** O zoom de agora. Escala 1 é a foto inteira, sem deslocamento. */
+  let zoom = { escala: 1, x: 0, y: 0 };
+
+  function desenharZoom() {
+    elementos.fotoAmpliada.style.transform =
+      `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.escala})`;
+    elementos.palcoFoto.dataset.ampliado = zoom.escala > 1 ? "sim" : "nao";
+  }
+
+  /**
+   * Prende o deslocamento às bordas da foto. Sem isto, um arraste mais
+   * forte deixaria a tela vazia com a imagem lá fora — e a pessoa sem
+   * saber como trazê-la de volta.
+   */
+  function prenderZoom() {
+    if (zoom.escala <= 1) {
+      zoom.x = 0;
+      zoom.y = 0;
+      return;
+    }
+
+    const palco = elementos.palcoFoto.getBoundingClientRect();
+    const foto = elementos.fotoAmpliada;
+    const sobraX = Math.max(0, (foto.offsetWidth * zoom.escala - palco.width) / 2);
+    const sobraY = Math.max(0, (foto.offsetHeight * zoom.escala - palco.height) / 2);
+
+    zoom.x = Math.min(sobraX, Math.max(-sobraX, zoom.x));
+    zoom.y = Math.min(sobraY, Math.max(-sobraY, zoom.y));
+  }
+
+  /**
+   * Amplia mantendo parado o ponto que a pessoa escolheu — o dedo, o
+   * cursor, ou o meio da pinça. É o que faz o zoom parecer que obedece,
+   * em vez de pular para outro lugar da estampa.
+   */
+  function ampliarEmTorno(escalaNova, pontoX, pontoY) {
+    const palco = elementos.palcoFoto.getBoundingClientRect();
+    const doCentroX = pontoX - palco.left - palco.width / 2;
+    const doCentroY = pontoY - palco.top - palco.height / 2;
+
+    const limitada = Math.min(AMPLIACAO_MAXIMA, Math.max(1, escalaNova));
+    const razao = limitada / zoom.escala;
+
+    zoom.x = doCentroX - (doCentroX - zoom.x) * razao;
+    zoom.y = doCentroY - (doCentroY - zoom.y) * razao;
+    zoom.escala = limitada;
+
+    prenderZoom();
+    desenharZoom();
+  }
+
+  function zerarZoom() {
+    zoom = { escala: 1, x: 0, y: 0 };
+    desenharZoom();
+  }
+
+  function mostrarFoto(indice) {
+    const vista = fotoAberta.vistas[indice];
+    if (!vista) return;
+
+    fotoAberta.atual = indice;
+    elementos.fotoAmpliada.src = vista.src;
+    elementos.fotoAmpliada.alt = vista.legenda;
+    zerarZoom();
+
+    elementos.vistasFoto.innerHTML = fotoAberta.vistas
+      .map(
+        (v, i) => `
+        <button type="button" class="janela-foto__vista" data-vista="${i}"
+                aria-pressed="${i === indice}">
+          <img src="${escapar(v.src)}" alt="" loading="lazy">
+          <span class="so-leitor">${escapar(v.rotulo)}</span>
+        </button>`
+      )
+      .join("");
+    elementos.vistasFoto.hidden = fotoAberta.vistas.length < 2;
+  }
+
+  function abrirFoto(vistas, indice) {
+    fotoAberta = { vistas, atual: indice };
+    elementos.dicaFoto.textContent = podeApontar()
+      ? "Clique na foto para ampliar. Arraste para ver os detalhes."
+      : "Toque para ampliar. Use dois dedos para aproximar.";
+    mostrarFoto(indice);
+    elementos.janelaFoto.showModal();
+  }
+
+  const podeApontar = () =>
+    window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+  /**
+   * Arraste e pinça. Os dedos ficam num mapa porque a pinça precisa dos
+   * dois ao mesmo tempo, e porque um dedo pode sair da tela sem avisar.
+   */
+  function ligarZoomDaFoto() {
+    const palco = elementos.palcoFoto;
+    const dedos = new Map();
+    let distanciaAnterior = 0;
+    let arrastou = false;
+
+    const meio = () => {
+      const [a, b] = [...dedos.values()];
+      return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    };
+
+    const distancia = () => {
+      const [a, b] = [...dedos.values()];
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    };
+
+    palco.addEventListener("pointerdown", (evento) => {
+      palco.setPointerCapture(evento.pointerId);
+      dedos.set(evento.pointerId, { x: evento.clientX, y: evento.clientY });
+      arrastou = false;
+      if (dedos.size === 2) distanciaAnterior = distancia();
+    });
+
+    palco.addEventListener("pointermove", (evento) => {
+      const dedo = dedos.get(evento.pointerId);
+      if (!dedo) return;
+
+      const andouX = evento.clientX - dedo.x;
+      const andouY = evento.clientY - dedo.y;
+      dedo.x = evento.clientX;
+      dedo.y = evento.clientY;
+
+      if (Math.abs(andouX) + Math.abs(andouY) > 3) arrastou = true;
+
+      if (dedos.size === 2) {
+        palco.dataset.arrastando = "sim";
+        const agora = distancia();
+        if (distanciaAnterior > 0) {
+          const centro = meio();
+          ampliarEmTorno(zoom.escala * (agora / distanciaAnterior), centro.x, centro.y);
+        }
+        distanciaAnterior = agora;
+        return;
+      }
+
+      // Com a foto inteira na tela não há para onde arrastar.
+      if (zoom.escala <= 1) return;
+
+      palco.dataset.arrastando = "sim";
+      zoom.x += andouX;
+      zoom.y += andouY;
+      prenderZoom();
+      desenharZoom();
+    });
+
+    const soltar = (evento) => {
+      dedos.delete(evento.pointerId);
+      if (dedos.size < 2) distanciaAnterior = 0;
+      if (!dedos.size) palco.dataset.arrastando = "nao";
+
+      // Um toque que não andou é um clique: alterna entre inteira e
+      // ampliada, no ponto em que a pessoa tocou.
+      if (!arrastou && !dedos.size && evento.type === "pointerup") {
+        zoom.escala > 1
+          ? zerarZoom()
+          : ampliarEmTorno(2.5, evento.clientX, evento.clientY);
+      }
+    };
+
+    palco.addEventListener("pointerup", soltar);
+    palco.addEventListener("pointercancel", soltar);
+
+    palco.addEventListener(
+      "wheel",
+      (evento) => {
+        evento.preventDefault();
+        const passo = evento.deltaY < 0 ? 1.12 : 1 / 1.12;
+        ampliarEmTorno(zoom.escala * passo, evento.clientX, evento.clientY);
+      },
+      { passive: false }
+    );
+
+    elementos.vistasFoto.addEventListener("click", (evento) => {
+      const botao = evento.target.closest("[data-vista]");
+      if (botao) mostrarFoto(Number(botao.dataset.vista));
+    });
+  }
 
   /** Escreve 13,5 em vez de 13.5, como manda o português. */
   const emCentimetros = (valor) => String(valor).replace(".", ",");
@@ -575,7 +812,9 @@
     cartao.innerHTML = `
       <figure class="produto__figura">
         <img class="produto__foto" src="${escapar(vistas[0].src)}"
-             alt="${escapar(legenda(vistas[0]))}" loading="lazy">
+             alt="${escapar(legenda(vistas[0]))}" loading="lazy"
+             role="button" tabindex="0"
+             title="Ver a foto maior">
         ${colecao.esgotada ? '<span class="selo-esgotado">Esgotado</span>' : ""}
         <div class="produto__vistas" role="group" aria-label="Fotos da peça"></div>
       </figure>
@@ -591,28 +830,28 @@
                 aria-expanded="false" aria-controls="${idDetalhes}">Escolher</button>
 
         <div class="produto__detalhes" id="${idDetalhes}">
-          <div class="opcao">
-            <span class="opcao__rotulo" id="${idTam}">Tamanho</span>
-            <div class="lista-opcoes" role="group" aria-labelledby="${idTam}" data-grupo="tamanho">
+        <div class="opcao">
+          <span class="opcao__rotulo" id="${idTam}">Tamanho</span>
+          <div class="lista-opcoes" role="group" aria-labelledby="${idTam}" data-grupo="tamanho">
               ${tamanhosDoModelo(modelo).map((t) => `
                 <button type="button" class="botao-tamanho" data-valor="${escapar(t)}"
                         aria-pressed="false">${escapar(t)}</button>`).join("")}
-            </div>
+          </div>
             ${nota ? `<p class="opcao__nota">${escapar(nota)}</p>` : ""}
             <button type="button" class="link-texto" data-abrir-medidas>Tabela de medidas</button>
-          </div>
+        </div>
 
           <p class="produto__faltou" role="alert" hidden></p>
 
-          <div class="produto__rodape">
-            <div class="quantidade">
-              <button type="button" data-passo="-1" aria-label="Diminuir quantidade">−</button>
-              <output aria-live="polite">1</output>
-              <button type="button" data-passo="1" aria-label="Aumentar quantidade">+</button>
-            </div>
-            <button type="button" class="botao botao--principal" data-acao="adicionar">
-              Adicionar
-            </button>
+        <div class="produto__rodape">
+          <div class="quantidade">
+            <button type="button" data-passo="-1" aria-label="Diminuir quantidade">−</button>
+            <output aria-live="polite">1</output>
+            <button type="button" data-passo="1" aria-label="Aumentar quantidade">+</button>
+          </div>
+          <button type="button" class="botao botao--principal" data-acao="adicionar">
+            Adicionar
+          </button>
           </div>
         </div>`}
       </div>`;
@@ -641,9 +880,29 @@
 
     tiras.addEventListener("click", (evento) => {
       const botao = evento.target.closest("[data-vista]");
-      if (!botao) return;
+        if (!botao) return;
       vistaAtual = Number(botao.dataset.vista);
       mostrarVistas();
+    });
+
+    // A foto grande abre em tela cheia, já na vista que estava à mostra,
+    // levando as outras junto para trocar lá dentro.
+    const ampliar = () =>
+      abrirFoto(
+        vistas.map((vista) => ({
+          src: vista.src,
+          rotulo: vista.rotulo,
+          legenda: legenda(vista),
+        })),
+        vistaAtual
+      );
+
+    foto.addEventListener("click", ampliar);
+    foto.addEventListener("keydown", (evento) => {
+      if (evento.key === "Enter" || evento.key === " ") {
+        evento.preventDefault();
+        ampliar();
+      }
     });
 
     if (colecao.esgotada) return cartao;
@@ -760,6 +1019,124 @@
 
   const totalItens = () => pedido.reduce((s, i) => s + i.quantidade, 0);
   const totalValor = () => pedido.reduce((s, i) => s + i.preco * i.quantidade, 0);
+
+  const nomeDoEstado = (sigla) => ESTADOS[sigla] || "";
+
+  /**
+   * O frete de uma entrega. Retirada e entrega em mãos têm o seu valor
+   * escrito na própria opção — hoje, zero. Os Correios não: o preço sai
+   * da tabela por estado, porque mandar para Barueri e mandar para
+   * Roraima não custam a mesma coisa.
+   *
+   * Estado que não estiver na tabela sai por zero. É de propósito:
+   * esquecer uma sigla faz a loja pagar o envio, não o cliente pagar um
+   * número inventado.
+   */
+  function freteDaEntrega(idEntrega, uf) {
+    const opcao = opcaoDeEntrega(idEntrega);
+    if (!opcao.porEstado) return Number(opcao.frete) || 0;
+    return Number((CONFIG.frete || {})[uf]) || 0;
+  }
+
+  /** O frete pelo que está escolhido no formulário agora. */
+  const freteAtual = () =>
+    freteDaEntrega(
+      elementos.selectEntrega.value,
+      enderecoDoCep ? enderecoDoCep.estado : ""
+    );
+
+  /** O que o cliente vai pagar: as peças mais o frete. */
+  const totalComFrete = () => totalValor() + freteAtual();
+
+  /* ====================================================================
+     CEP
+     --------------------------------------------------------------------
+     O cliente digita oito números e a BrasilAPI diz de onde eles são. É
+     o estado dessa resposta que define o frete, então um CEP não
+     conferido impede o pedido de seguir: é melhor barrar aqui do que
+     cobrar o frete errado e descobrir depois.
+     ==================================================================== */
+
+  /** 06410120 vira 06410-120 enquanto a pessoa digita. */
+  function comoCep(valor) {
+    const numeros = soDigitos(valor).slice(0, 8);
+    return numeros.length > 5
+      ? `${numeros.slice(0, 5)}-${numeros.slice(5)}`
+      : numeros;
+  }
+
+  // Um CEP já perguntado não se pergunta de novo: quem corrige o número e
+  // volta atrás não deveria esperar duas vezes pela mesma resposta.
+  const cepsConhecidos = new Map();
+
+  async function perguntarCep(numeros) {
+    if (cepsConhecidos.has(numeros)) return cepsConhecidos.get(numeros);
+
+    const resposta = await fetch(`${API_CEP}/${numeros}`);
+    if (!resposta.ok) throw new Error("CEP não encontrado");
+
+    const dados = await resposta.json();
+    const endereco = {
+      cep: comoCep(numeros),
+      estado: dados.state || "",
+      cidade: dados.city || "",
+      bairro: dados.neighborhood || "",
+      rua: dados.street || "",
+    };
+
+    cepsConhecidos.set(numeros, endereco);
+    return endereco;
+  }
+
+  function mostrarAchado(texto, procurando) {
+    elementos.cepEndereco.textContent = texto;
+    elementos.cepEndereco.hidden = !texto;
+    elementos.cepEndereco.classList.toggle("campo__achado--buscando", !!procurando);
+  }
+
+  /**
+   * Respostas da rede chegam fora de ordem: quem digita depressa pode
+   * ver a resposta de um CEP que já apagou. Esta contagem garante que só
+   * a última pergunta feita tem direito de mexer na tela.
+   */
+  let perguntaMaisRecente = 0;
+
+  async function conferirCep() {
+    const campo = elementos.campoCep;
+    campo.value = comoCep(campo.value);
+
+    const numeros = soDigitos(campo.value);
+    const minha = ++perguntaMaisRecente;
+
+    if (numeros.length < 8) {
+      enderecoDoCep = null;
+      mostrarAchado("");
+      desenharTudo();
+      return;
+    }
+
+    mostrarAchado("Procurando o endereço…", true);
+
+    try {
+      const endereco = await perguntarCep(numeros);
+      if (minha !== perguntaMaisRecente) return;
+
+      enderecoDoCep = endereco;
+      campo.removeAttribute("aria-invalid");
+      esconderErro("cep");
+
+      const onde = [endereco.bairro, endereco.cidade].filter(Boolean).join(", ");
+      mostrarAchado(`${onde} — ${nomeDoEstado(endereco.estado)}`);
+    } catch (erro) {
+      if (minha !== perguntaMaisRecente) return;
+
+      enderecoDoCep = null;
+      mostrarAchado("");
+      mostrarErro("cep", "Não encontramos esse CEP. Confira os números.");
+    }
+
+    desenharTudo();
+  }
 
   function salvar() {
     try {
@@ -895,9 +1272,32 @@
           )
           .join("")}
       </ul>
+      ${desenharFrete()}
       <div class="resumo__total">
         <span>Total</span>
-        <strong>${emReais(totalValor())}</strong>
+        <strong>${emReais(totalComFrete())}</strong>
+      </div>`;
+  }
+
+  /**
+   * As duas linhas que separam peça de entrega. Só aparecem quando há
+   * frete a cobrar: num pedido que será retirado em mãos, "Peças" e
+   * "Total" seriam o mesmo número dito duas vezes.
+   */
+  function desenharFrete() {
+    const frete = freteAtual();
+    if (frete <= 0) return "";
+
+    const estado = enderecoDoCep ? nomeDoEstado(enderecoDoCep.estado) : "";
+
+    return `
+      <div class="resumo__linha">
+        <span>Peças</span>
+        <span>${emReais(totalValor())}</span>
+      </div>
+      <div class="resumo__linha">
+        <span>Frete${estado ? ` para ${escapar(estado)}` : ""}</span>
+        <span>${emReais(frete)}</span>
       </div>`;
   }
 
@@ -971,6 +1371,15 @@
     if (entrada) entrada.setAttribute("aria-invalid", "true");
   }
 
+  /** Apaga o aviso de um campo só, sem mexer nos outros. */
+  function esconderErro(campo) {
+    const aviso = document.querySelector(`[data-erro-de="${campo}"]`);
+    if (aviso) {
+      aviso.hidden = true;
+      aviso.textContent = "";
+    }
+  }
+
   function limparErros() {
     document.querySelectorAll(".erro[data-erro-de]").forEach((aviso) => {
       aviso.hidden = true;
@@ -998,8 +1407,11 @@
       erros.push(["email", "Esse e-mail parece incompleto."]);
     }
 
-    if (dados.cidade.trim().length < 3) {
-      erros.push(["cidade", "Informe a sua cidade e o estado."]);
+    // Sem o endereço conferido não há estado, e sem estado não há frete.
+    if (soDigitos(dados.cep).length !== 8) {
+      erros.push(["cep", "Informe o seu CEP, com os oito números."]);
+    } else if (!enderecoDoCep) {
+      erros.push(["cep", "Ainda estamos conferindo esse CEP. Aguarde um instante."]);
     }
 
     if (!dados.entrega) {
@@ -1027,9 +1439,15 @@
       nome: formulario.get("nome") || "",
       whatsapp: formulario.get("whatsapp") || "",
       email: formulario.get("email") || "",
-      cidade: formulario.get("cidade") || "",
+      cep: formulario.get("cep") || "",
       entrega: formulario.get("entrega") || "",
       observacoes: formulario.get("observacoes") || "",
+
+      // Não vêm do formulário: vêm da resposta da BrasilAPI ao CEP.
+      cidade: enderecoDoCep ? enderecoDoCep.cidade : "",
+      estado: enderecoDoCep ? enderecoDoCep.estado : "",
+      bairro: enderecoDoCep ? enderecoDoCep.bairro : "",
+      rua: enderecoDoCep ? enderecoDoCep.rua : "",
     };
 
     const erros = validar(dados);
@@ -1126,12 +1544,12 @@
       description: `${item.nome} — ${item.modeloNome} · ${item.cor} · Tam ${item.tamanho}`,
     }));
 
-    const entrega = opcaoDeEntrega(dados.entrega);
-    if (entrega.frete > 0) {
+    const frete = freteDaEntrega(dados.entrega, dados.estado);
+    if (frete > 0) {
       itens.push({
         quantity: 1,
-        price: emCentavos(entrega.frete),
-        description: `Frete — ${entrega.nome}`,
+        price: emCentavos(frete),
+        description: `Frete para ${nomeDoEstado(dados.estado) || dados.estado}`,
       });
     }
 
@@ -1198,12 +1616,17 @@
       // Guardado antes de a página sair do ar: é com isto que a volta do
       // checkout mostra o que foi comprado e monta os dados de entrega.
       // O carrinho só é esvaziado quando o pagamento se confirma.
+      // "total" é o que foi cobrado, frete incluído: é com ele que a
+      // volta do checkout descobre quanto do valor pago virou juro de
+      // parcelamento. O frete vai à parte para poder ser dito por nome.
+      const frete = freteDaEntrega(dados.entrega, dados.estado);
       guardarEmAndamento({
         numeroPedido,
         slug,
         dados,
         itens: pedido,
-        total: totalValor(),
+        frete,
+        total: totalValor() + frete,
         quando: new Date().toISOString(),
       });
 
@@ -1229,12 +1652,12 @@
 
   function pararPagamento(mensagem) {
     elementos.erroGeral.textContent = mensagem;
-    elementos.erroGeral.hidden = false;
+      elementos.erroGeral.hidden = false;
     elementos.erroGeral.scrollIntoView({ block: "nearest" });
   }
 
   const rotuloDoPagamento = () =>
-    pedido.length ? `Pagar ${emReais(totalValor())}` : "Ir para o pagamento";
+    pedido.length ? `Pagar ${emReais(totalComFrete())}` : "Ir para o pagamento";
 
   /**
    * Volta do checkout. A InfinitePay devolve o cliente com os dados da
@@ -1351,6 +1774,7 @@
     const linhas = [];
     if (numero) linhas.push(["Pedido", numero]);
     if (comoPagou) linhas.push(["Pagamento", comoPagou]);
+    if (registro.frete > 0) linhas.push(["Frete", emReais(registro.frete)]);
     if (pagou || registro.total) {
       linhas.push([pagou ? "Total pago" : "Total", emReais(pagou || registro.total)]);
     }
@@ -1381,7 +1805,7 @@
           ? `${consulta.parcelas}× de ${emReais(pagou / consulta.parcelas)} · `
           : "";
       elementos.pagamentoParcelas.textContent =
-        `${parcela}${emReais(registro.total)} em peças + ${emReais(acrescimo)} de acréscimo do parcelamento.`;
+        `${parcela}${emReais(registro.total)} do pedido + ${emReais(acrescimo)} de acréscimo do parcelamento.`;
     }
 
     const temComprovante = Boolean(retorno.comprovante);
@@ -1456,10 +1880,11 @@
   ];
 
   /**
-   * O pagamento em três linhas: como foi pago, quanto saiu da conta do
-   * cliente e o comprovante para conferir. Quem parcelou pagou mais do
-   * que o preço das peças, e a diferença vem dita por extenso — senão a
-   * loja estranha um valor que não bate com o pedido.
+   * O pagamento em poucas linhas: como foi pago, quanto saiu da conta do
+   * cliente e o comprovante para conferir. O valor pago costuma ser
+   * maior que o preço das peças — por causa do frete, do parcelamento,
+   * ou dos dois —, então a diferença vem aberta por extenso. Sem isso, a
+   * loja estranharia um número que não bate com o pedido.
    */
   function dadosDoPagamento(registro, retorno, consulta) {
     const linhas = [];
@@ -1470,11 +1895,19 @@
     const pago = consulta.valorPago;
     if (pago) {
       linhas.push(`*Total pago:* ${emReais(pago)}`);
+
+      const frete = registro.frete || 0;
+      const pecas = (registro.total || 0) - frete;
       const acrescimo = registro.total ? pago - registro.total : 0;
-      if (acrescimo > 0.009) {
-        linhas.push(
-          `_${emReais(registro.total)} em peças + ${emReais(acrescimo)} de acréscimo do parcelamento_`
-        );
+
+      const parcelas = [];
+      if (frete > 0 || acrescimo > 0.009) {
+        if (pecas > 0) parcelas.push(`${emReais(pecas)} em peças`);
+        if (frete > 0) parcelas.push(`${emReais(frete)} de frete`);
+        if (acrescimo > 0.009) {
+          parcelas.push(`${emReais(acrescimo)} de acréscimo do parcelamento`);
+        }
+        linhas.push(`_${parcelas.join(" + ")}_`);
       }
     } else if (registro.total) {
       linhas.push(`*Valor do pedido:* ${emReais(registro.total)}`);
@@ -1503,7 +1936,8 @@
       ...dadosDoPagamento(registro, retorno, consulta),
       REGUA,
       `*Cliente:* ${(dados.nome || "").trim()}`,
-      `*Cidade:* ${(dados.cidade || "").trim()}`,
+      `*CEP:* ${dados.cep || "-"}`,
+      `*Cidade:* ${[(dados.cidade || "").trim(), dados.estado].filter(Boolean).join(" - ")}`,
       `*Entrega:* ${entrega}`,
     ];
 
@@ -1556,6 +1990,12 @@
      ==================================================================== */
 
   function ligarEventos() {
+    // CEP e forma de entrega mudam o frete, e o frete muda o total e o
+    // valor escrito no botão. Quem escolhe precisa ver o preço mexer
+    // ali, não descobrir no checkout.
+    elementos.campoCep.addEventListener("input", conferirCep);
+    elementos.selectEntrega.addEventListener("change", desenharTudo);
+
     elementos.fecharSanto.addEventListener("click", () =>
       elementos.janelaSanto.close()
     );
@@ -1564,6 +2004,18 @@
     // quando a pessoa acerta o fundo escurecido. O Esc o navegador já fecha.
     elementos.janelaSanto.addEventListener("click", (evento) => {
       if (evento.target === elementos.janelaSanto) elementos.janelaSanto.close();
+    });
+
+    elementos.fecharFoto.addEventListener("click", () =>
+      elementos.janelaFoto.close()
+    );
+
+    // Sair da janela não deve guardar o zoom: quem abrir a próxima foto
+    // espera vê-la inteira.
+    elementos.janelaFoto.addEventListener("close", zerarZoom);
+
+    elementos.janelaFoto.addEventListener("click", (evento) => {
+      if (evento.target === elementos.janelaFoto) elementos.janelaFoto.close();
     });
 
     elementos.fecharMedidas.addEventListener("click", () =>
@@ -1659,6 +2111,7 @@
     carregar();
     desenharTudo();
     ligarEventos();
+    ligarZoomDaFoto();
     conferirVoltaDoPagamento();
   }
 

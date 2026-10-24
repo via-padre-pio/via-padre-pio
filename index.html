@@ -107,10 +107,6 @@
         <p class="secao__aviso">Nesta pré-venda, nossas peças estão disponíveis exclusivamente na cor <span class="sem-quebra">off-white</span>.</p>
       </header>
 
-      <div class="barra-catalogo" id="barraCatalogo" hidden>
-        <p class="barra-catalogo__contagem" id="contagemProdutos"></p>
-      </div>
-
       <!-- Uma seção por coleção, cada uma com os seus cinco modelos. Tudo é
            montado pelo js/app.js a partir de CONFIG.colecoes. -->
       <div class="catalogo" id="gradeProdutos"></div>
@@ -278,6 +274,26 @@
   </div>
 </dialog>
 
+<!-- Foto da peça em tela cheia. O js/app.js preenche o palco e cuida do
+     zoom; as miniaturas trocam entre frente e costas sem fechar a janela. -->
+<dialog class="janela-foto" id="janelaFoto" aria-label="Foto da peça, ampliada">
+  <button class="botao-fechar janela-foto__fechar" id="fecharFoto" type="button">
+    <span class="so-leitor">Fechar</span>
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="m6 6 12 12M18 6 6 18"/>
+    </svg>
+  </button>
+
+  <div class="janela-foto__palco" id="palcoFoto">
+    <img class="janela-foto__imagem" id="fotoAmpliada" src="" alt="" draggable="false">
+  </div>
+
+  <div class="janela-foto__barra">
+    <p class="janela-foto__dica" id="dicaFoto"></p>
+    <div class="janela-foto__vistas" id="vistasFoto" role="group" aria-label="Fotos da peça"></div>
+  </div>
+</dialog>
+
 <!-- Tabela de medidas: as abas e as tabelas são montadas pelo js/app.js a
      partir de CONFIG.medidas. -->
 <dialog class="janela-medidas" id="janelaMedidas" aria-labelledby="tituloMedidas">
@@ -391,18 +407,18 @@
           </div>
         </div>
 
-        <div class="campo-duplo">
-          <div class="campo">
-            <label for="cidade">Cidade e estado <span class="obrigatorio" aria-hidden="true">*</span></label>
-            <input type="text" id="cidade" name="cidade" required placeholder="São Paulo - SP">
-            <p class="erro" data-erro-de="cidade" hidden></p>
-          </div>
+        <div class="campo">
+          <label for="cep">CEP <span class="obrigatorio" aria-hidden="true">*</span></label>
+          <input type="text" id="cep" name="cep" required inputmode="numeric"
+                 autocomplete="postal-code" maxlength="9" placeholder="06410-120">
+          <p class="campo__achado" id="cepEndereco" role="status" hidden></p>
+          <p class="erro" data-erro-de="cep" hidden></p>
+        </div>
 
-          <div class="campo">
-            <label for="entrega">Como prefere receber <span class="obrigatorio" aria-hidden="true">*</span></label>
-            <select id="entrega" name="entrega" required></select>
-            <p class="erro" data-erro-de="entrega" hidden></p>
-          </div>
+        <div class="campo">
+          <label for="entrega">Como prefere receber <span class="obrigatorio" aria-hidden="true">*</span></label>
+          <select id="entrega" name="entrega" required></select>
+          <p class="erro" data-erro-de="entrega" hidden></p>
         </div>
 
         <div class="campo">

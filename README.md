@@ -26,6 +26,8 @@ Tudo fica em **`js/config.js`**. É o único arquivo do dia a dia.
 | Cor e tamanhos da pré-venda | `prevenda` | **Sim** |
 | Modelos de camiseta e seus preços | `modelos` | **Sim** |
 | Coleções e suas fotos | `colecoes` | **Sim** |
+| Opções de entrega | `entrega` | **Sim** |
+| Frete dos Correios por estado | `frete` | **Sim** |
 | Tabelas de medidas | `medidas` | Não |
 
 O número do WhatsApp vai **só com dígitos**, no formato `55` + DDD + número:
@@ -87,6 +89,7 @@ _R$ 329,70 em peças + R$ 32,00 de acréscimo do parcelamento_
 *Comprovante:* https://comprovante.infinitepay.io/abc123
 ──────────────────
 *Cliente:* Maria das Dores Silva
+*CEP:* 06410-120
 *Cidade:* Barueri - SP
 *Entrega:* Enviar pelos Correios (frete à parte)
 
@@ -130,9 +133,38 @@ e o número de parcelas, e quando o valor pago passa do preço das peças a jane
 explica a diferença ("5× de R$ 107,20 · R$ 509,50 em peças + R$ 26,48 de acréscimo
 do parcelamento").
 
-Se alguma opção de entrega tiver frete cobrado na hora, basta escrever o valor em
-reais no campo `frete` dela, dentro de `entrega`: ele entra como uma linha a mais
-no checkout. Com `frete: 0`, o cliente paga só as peças.
+---
+
+## Frete: o CEP é quem decide
+
+O cliente digita o CEP e o site pergunta a [BrasilAPI](https://brasilapi.com.br) de
+onde ele é. O estado da resposta entra na tabela `frete` do `js/config.js` e vira o
+valor cobrado — que aparece no resumo, no botão de pagar e como uma linha própria na
+cobrança da InfinitePay ("Frete para Santa Catarina"). Nada de descobrir o frete só
+no checkout.
+
+Os valores começaram por região e **são para vocês trocarem** pelos dos Correios:
+
+| Região | Hoje | Estados |
+| --- | --- | --- |
+| São Paulo | R$ 20 | SP |
+| Sul e resto do Sudeste | R$ 30 | MG, RJ, ES, PR, SC, RS |
+| Centro-Oeste e Nordeste | R$ 40 | DF, GO, MT, MS, BA, SE, AL, PE, PB, RN, CE, PI, MA |
+| Norte | R$ 50 | TO, PA, AP, RR, AM, AC, RO |
+
+Quem escolhe retirar ou receber em mãos não paga frete, em qualquer estado: isso vem
+do campo `frete` da opção de entrega, não da tabela. O que liga uma opção à tabela é
+`porEstado: true` — hoje, só os Correios.
+
+Três coisas que valem saber:
+
+- **CEP não conferido barra o pedido.** Se a BrasilAPI não responder ou o CEP não
+  existir, o campo avisa e o botão de pagar não segue. É melhor do que cobrar um
+  frete errado e descobrir na hora de postar.
+- **Sigla que não estiver na tabela sai por zero**, de propósito: esquecer um estado
+  faz a loja pagar o envio, nunca o cliente pagar um número inventado.
+- **O endereço completo continua sendo o da InfinitePay.** O CEP serve para o preço;
+  rua, número e complemento são pedidos no checkout, como sempre.
 
 ---
 
@@ -281,8 +313,16 @@ marrom `#6b4a1e` nas letras e botões.
   pedido errado.
 - **As miniaturas embaixo da foto mostram frente e costas.** No infantil são quatro,
   porque a peça foi fotografada em menina e em menino — é a mesma camiseta.
+- **Clicar na foto grande abre ela em tela cheia, com zoom.** Outro clique amplia no
+  ponto escolhido e o arraste passeia pela imagem; no celular funciona com a pinça
+  de dois dedos, e no computador também com a roda do mouse. É o que deixa ver o
+  traço da estampa de perto, que é onde está o produto. As miniaturas continuam ali
+  dentro, para trocar de vista sem fechar.
 - **A tabela de medidas abre numa janela** e vem de `medidas`, no `js/config.js`.
-  Dentro de um cartão, ela já abre na aba do modelo daquela camiseta.
+  Dentro de um cartão, ela já abre na aba do modelo daquela camiseta. No celular ela
+  é mais larga que a tela, então ao abrir ela corre sozinha até o último tamanho e
+  volta ao PP — em um segundo e meio a pessoa vê que há mais colunas à direita e
+  aprende que dá para arrastar. Quem já começou a arrastar interrompe o passeio.
 - **"Nossa Essência" fica no rodapé.** Os santos vêm de `inspiracoes.santos`,
   no `js/config.js`: nome, anos de vida, foto (dentro de `assets/santos/`) e a
   história em parágrafos. Clicando no nome, abre uma janela com a foto e o texto.
