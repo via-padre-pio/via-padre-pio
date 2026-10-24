@@ -337,11 +337,11 @@ const CONFIG = {
       // Esta estampa existe só no oversized. Se um dia sair nos outros
       // modelos, é só apagar estas duas linhas e acrescentar as fotos.
       modelos: ["oversized"],
-      nota: "Esta estampa sai apenas no modelo oversized.",
+      nota: "Disponível exclusivamente no modelo oversized.",
     },
     {
       id: "nada-e-pequeno",
-      nome: "Nada é Pequeno se Feito com Amor",
+      nome: "“Nada é Pequeno se Feito com Amor”",
       santo: "Coleção: Santa Teresinha do Menino Jesus",
       descricao:
         "Uma rosa delicada no peito e, nas costas, a frase que traduz a pequena via de Santa Teresinha: nada é pequeno se feito com amor. Uma peça que nos lembra que a santidade está nos pequenos gestos vividos com amor.",

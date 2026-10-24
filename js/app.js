@@ -319,18 +319,26 @@
     );
   }
 
-  /** Frases da descrição da capa, separadas no ponto final. */
-  function frasesDaCapa(texto) {
+  /**
+   * Separa um texto no ponto final. O ponto fica com a frase que ele
+   * fecha, e o espaço que vinha depois some: quem monta o HTML decide se
+   * as frases voltam a ser vizinhas ou se cada uma ganha a própria linha.
+   */
+  function emFrases(texto) {
     return String(texto || "")
       .trim()
       .split(/(?<=\.)\s+/)
-      .filter(Boolean)
-      .map((frase) => {
-        const span = document.createElement("span");
-        span.className = "capa__frase";
-        span.textContent = frase;
-        return span;
-      });
+      .filter(Boolean);
+  }
+
+  /** Frases da descrição da capa, separadas no ponto final. */
+  function frasesDaCapa(texto) {
+    return emFrases(texto).map((frase) => {
+      const span = document.createElement("span");
+      span.className = "capa__frase";
+      span.textContent = frase;
+      return span;
+    });
   }
 
   function escapar(texto) {
@@ -775,7 +783,9 @@
              </button>`
           : ""}
         ${colecao.descricao
-          ? `<p class="colecao__descricao">${escapar(colecao.descricao)}</p>`
+          ? `<p class="colecao__descricao">${emFrases(colecao.descricao)
+              .map((f) => `<span class="colecao__frase">${escapar(f)}</span>`)
+              .join("")}</p>`
           : ""}
         ${colecao.nota
           ? `<p class="colecao__nota">${escapar(colecao.nota)}</p>`

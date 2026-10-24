@@ -485,6 +485,13 @@ a { color: inherit; }
   max-width: 62ch;
 }
 
+/* Cada frase da história da estampa na própria linha, como na descrição da
+   capa: a primeira diz o que o desenho mostra, a segunda o que ele quer
+   dizer. Separadas, as duas são lidas; emendadas, viram um bloco só. */
+.colecao__frase {
+  display: block;
+}
+
 /* Um recado sobre a coleção inteira — por exemplo, que a estampa ainda não
    saiu em todos os modelos. Sem isso, um bloco com um cartão só parece
    uma peça que faltou carregar. */

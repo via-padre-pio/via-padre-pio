@@ -194,6 +194,10 @@ Copie um bloco inteiro de `colecoes`, cole abaixo e troque os dados:
 },
 ```
 
+A `descricao` quebra sozinha a cada ponto final: cada frase aparece na própria
+linha, como acontece na descrição da abertura. Vale escrever pensando nisso —
+uma frase para o que o desenho mostra, outra para o que ele quer dizer.
+
 **As fotos vão numa pasta própria**, dentro de `assets/colecoes/`, e o nome de cada
 arquivo é o que diz ao site a qual modelo ela pertence. São doze, sempre com estes
 nomes exatos:
@@ -220,7 +224,7 @@ caso da "Amai Nossa Senhora", que existe apenas no oversized:
 
 ```js
 modelos: ["oversized"],
-nota: "Esta estampa sai apenas no modelo oversized.",
+nota: "Disponível exclusivamente no modelo oversized.",
 ```
 
 Nesse caso a pasta de fotos tem só as duas do oversized, e não as doze. Se um dia a
