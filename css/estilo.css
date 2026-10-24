@@ -321,16 +321,13 @@ a { color: inherit; }
   font-size: clamp(1rem, 2.4vw, 1.1rem);
 }
 
-/* No computador as frases seguem no mesmo parágrafo, com o espaço
-   que o ponto final pedia. */
-.capa__frase + .capa__frase::before {
-  content: " ";
-}
-
-/* No celular, cada frase da descrição da capa ocupa a própria linha. */
-@media (max-width: 619px) {
-  .capa__frase { display: block; }
-  .capa__frase + .capa__frase::before { content: none; }
+/* Cada frase da descrição da capa ocupa a própria linha, em qualquer tela:
+   são três afirmações curtas, e lidas uma embaixo da outra elas respiram.
+   (Antes isso só valia no celular, e no computador o espaço de separação
+   vinha de um ::before com um espaço dentro — que o navegador colapsa,
+   emendando "significado.Uma coleção".) */
+.capa__frase {
+  display: block;
 }
 
 /* A assinatura fecha a abertura: mesma letra do título, em corpo pequeno. */
