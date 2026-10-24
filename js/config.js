@@ -152,7 +152,7 @@ const CONFIG = {
     // A sua InfiniteTag, sem o $. Enquanto estiver vazia, o site avisa o
     // cliente e manda ele para o WhatsApp, em vez de abrir um pagamento
     // quebrado.
-    handle: "henrique-marins-lxa",
+    handle: "via-padrepio",
 
     // Para onde a InfinitePay traz o cliente depois de pagar. Deixe ""
     // que o site usa o próprio endereço de onde o pedido saiu.
