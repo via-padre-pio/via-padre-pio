@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Via Padre Pio — Pré-venda de Camisetas</title>
-<meta name="description" content="Pré-venda de camisetas Via Padre Pio. Reserve o seu modelo, cor e tamanho e finalize o pedido pelo WhatsApp.">
+<meta name="description" content="Pré-venda de camisetas Via Padre Pio. Escolha a coleção, o modelo e o tamanho e pague no site com Pix ou cartão em até 12x.">
 <meta name="theme-color" content="#5c3a21">
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="Via Padre Pio — Pré-venda de Camisetas">
-<meta property="og:description" content="Reserve a sua camiseta antes da produção. Pedido rápido pelo WhatsApp.">
+<meta property="og:description" content="Garanta a sua camiseta antes da produção. Pagamento no site, com Pix ou cartão em até 12x.">
 <meta property="og:image" content="assets/logo.png">
 
 <link rel="icon" href="assets/logo.png" type="image/png">
@@ -70,7 +70,7 @@
             <circle cx="18.4" cy="20.4" r="1.4"/>
           </g>
         </svg>
-        <span>Meu pedido</span>
+        <span>Meus pedidos</span>
         <span class="selo-contador" id="contadorCarrinho" hidden>0</span>
       </button>
     </nav>
@@ -89,9 +89,10 @@
         </span>
       </h1>
       <p class="capa__texto" id="marcaDescricao"></p>
+      <p class="capa__lema" id="marcaLema"></p>
       <div class="capa__botoes">
-        <a class="botao botao--principal" href="#catalogo">Ver camisetas</a>
-        <a class="botao botao--contorno" href="#como-funciona">Como funciona</a>
+        <a class="botao botao--principal" href="#catalogo">Conheça a coleção</a>
+        <a class="botao botao--contorno" href="#como-funciona">Sobre a pré-venda</a>
       </div>
       <p class="capa__prazo" id="marcaPrazo" hidden></p>
     </div>
@@ -101,15 +102,18 @@
   <section class="secao" id="catalogo">
     <div class="container">
       <header class="secao__cabecalho">
-        <h2>Escolha o seu modelo</h2>
-        <p>Selecione cor, tamanho e quantidade. Você pode somar vários modelos no mesmo pedido.</p>
+        <h2>Escolha sua peça</h2>
+        <p>Cada coleção vem em cinco modelos, do oversized ao infantil. Escolha o tamanho e a quantidade — dá para somar várias peças no mesmo pedido.</p>
+        <p class="secao__aviso">Nesta pré-venda, nossas peças estão disponíveis exclusivamente na cor <span class="sem-quebra">off-white</span>.</p>
       </header>
 
       <div class="barra-catalogo" id="barraCatalogo" hidden>
         <p class="barra-catalogo__contagem" id="contagemProdutos"></p>
       </div>
 
-      <div class="grade-produtos" id="gradeProdutos"></div>
+      <!-- Uma seção por coleção, cada uma com os seus cinco modelos. Tudo é
+           montado pelo js/app.js a partir de CONFIG.colecoes. -->
+      <div class="catalogo" id="gradeProdutos"></div>
     </div>
   </section>
 
@@ -123,7 +127,7 @@
         <li class="passo">
           <span class="passo__numero">1</span>
           <h3>Monte o seu pedido</h3>
-          <p>Escolha os modelos, as cores e os tamanhos que quiser e adicione ao pedido.</p>
+          <p>Escolha as coleções, os modelos e os tamanhos que quiser e adicione ao pedido.</p>
         </li>
         <li class="passo">
           <span class="passo__numero">2</span>
@@ -132,8 +136,8 @@
         </li>
         <li class="passo">
           <span class="passo__numero">3</span>
-          <h3>Confirme no WhatsApp</h3>
-          <p>O pedido chega pronto na nossa conversa. Ali combinamos o pagamento e a entrega.</p>
+          <h3>Pague no site</h3>
+          <p>Pix, crédito à vista ou em até 12x no cartão, pelo checkout seguro da InfinitePay. A entrega combinamos depois, no WhatsApp.</p>
         </li>
       </ol>
     </div>
@@ -148,42 +152,58 @@
 
       <details class="duvida">
         <summary>
-          <span>Preciso pagar agora?</span>
+          <span>Como funciona o pagamento?</span>
           <svg class="duvida__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m6 9 6 6 6-6"/>
           </svg>
         </summary>
         <div class="duvida__painel">
           <div class="duvida__conteudo">
-            <p>Não. A reserva é gratuita e sem compromisso de pagamento imediato. Assim que recebermos o seu pedido, conversamos no WhatsApp para combinar a forma de pagamento.</p>
+            <p>O pagamento é feito no próprio site, no checkout da InfinitePay: você escolhe Pix, crédito à vista ou em até 12x no cartão, e os dados do cartão ficam só com eles. No Pix e à vista você paga o valor do pedido; no parcelado há o acréscimo do cartão, que aparece na tela antes de você confirmar. Assim que o pagamento é aprovado, a sua peça entra na produção.</p>
           </div>
         </div>
       </details>
 
       <details class="duvida">
         <summary>
-          <span>Quando a camiseta chega?</span>
+          <span>Qual é o prazo para receber minha camiseta?</span>
           <svg class="duvida__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m6 9 6 6 6-6"/>
           </svg>
         </summary>
         <div class="duvida__painel">
           <div class="duvida__conteudo">
-            <p id="duvidaPrazo">Produzimos as peças depois que a pré-venda fecha, por isso o prazo é maior que o de uma compra pronta. Avisamos você por WhatsApp em cada etapa.</p>
+            <!-- O mesmo prazo aparece na abertura, vindo de marca.prazoEntrega
+                 no js/config.js. Mudando um, confira o outro. -->
+            <p>A produção e a entrega serão realizadas em até 20 dias após a confirmação do pagamento do pedido.</p>
           </div>
         </div>
       </details>
 
       <details class="duvida">
         <summary>
-          <span>E se o tamanho não servir?</span>
+          <span>E se eu tiver dúvidas sobre o tamanho?</span>
           <svg class="duvida__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m6 9 6 6 6-6"/>
           </svg>
         </summary>
         <div class="duvida__painel">
           <div class="duvida__conteudo">
-            <p>Fale com a gente antes de fechar o pedido que ajudamos na escolha. Depois de produzida, trocamos o tamanho conforme a disponibilidade do lote.</p>
+            <p>Estamos à disposição para ajudar você a escolher o tamanho ideal antes de confirmar seu pedido. Por isso, recomendamos consultar nossa <button type="button" class="link-texto" data-abrir-medidas>tabela de medidas</button>.</p>
+          </div>
+        </div>
+      </details>
+
+      <details class="duvida">
+        <summary>
+          <span>Como combino a entrega depois de pagar?</span>
+          <svg class="duvida__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </summary>
+        <div class="duvida__painel">
+          <div class="duvida__conteudo">
+            <p>Assim que o pagamento é confirmado, aparece na tela um botão que abre o nosso WhatsApp com o número do pedido, os seus dados e o comprovante já escritos. É só enviar que combinamos o endereço e o prazo por ali — o WhatsApp é o nosso atendimento, e continua à disposição para qualquer dúvida depois da compra.</p>
           </div>
         </div>
       </details>
@@ -197,7 +217,7 @@
         </summary>
         <div class="duvida__painel">
           <div class="duvida__conteudo">
-            <p>Pode sim. Adicione quantos modelos, cores e tamanhos quiser — tudo vai junto no mesmo pedido.</p>
+            <p>Sim! Você pode escolher diferentes modelos, tamanhos e quantidades e reunir tudo em um único pedido.</p>
           </div>
         </div>
       </details>
@@ -258,6 +278,63 @@
   </div>
 </dialog>
 
+<!-- Tabela de medidas: as abas e as tabelas são montadas pelo js/app.js a
+     partir de CONFIG.medidas. -->
+<dialog class="janela-medidas" id="janelaMedidas" aria-labelledby="tituloMedidas">
+  <button class="botao-fechar janela-medidas__fechar" id="fecharMedidas" type="button">
+    <span class="so-leitor">Fechar</span>
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="m6 6 12 12M18 6 6 18"/>
+    </svg>
+  </button>
+
+  <h2 id="tituloMedidas">Tabela de medidas</h2>
+  <p class="janela-medidas__nota">
+    Medidas da peça em centímetros, não do corpo. Na dúvida, compare com uma
+    camiseta que já serve bem em você.
+  </p>
+
+  <div class="janela-medidas__abas" id="abasMedidas" role="tablist" aria-label="Modelo da camiseta"></div>
+  <div class="janela-medidas__corpo" id="corpoMedidas"></div>
+</dialog>
+
+<!-- Volta do checkout da InfinitePay. O js/app.js preenche e abre esta janela
+     quando o cliente retorna do pagamento; o endereço de entrega não passa
+     pela InfinitePay e sai daqui pelo WhatsApp. -->
+<dialog class="janela-pagamento" id="janelaPagamento" aria-labelledby="pagamentoTitulo">
+  <button class="botao-fechar janela-pagamento__fechar" id="fecharPagamento" type="button">
+    <span class="so-leitor">Fechar</span>
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="m6 6 12 12M18 6 6 18"/>
+    </svg>
+  </button>
+
+  <span class="janela-pagamento__selo" id="pagamentoSelo" data-confete-origem aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m4 12.5 5.5 5.5L20 7"/>
+    </svg>
+  </span>
+
+  <h2 id="pagamentoTitulo"></h2>
+  <p class="janela-pagamento__texto" id="pagamentoTexto"></p>
+
+  <dl class="janela-pagamento__dados" id="pagamentoDados"></dl>
+  <p class="janela-pagamento__parcelas" id="pagamentoParcelas" hidden></p>
+  <ul class="janela-pagamento__itens" id="pagamentoItens" hidden></ul>
+
+  <a class="botao botao--whatsapp" id="pagamentoSac" href="#" target="_blank" rel="noopener noreferrer">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="currentColor">
+      <path d="M12.04 2c-5.46 0-9.9 4.44-9.9 9.9 0 1.75.46 3.45 1.32 4.95L2 22l5.3-1.38a9.9 9.9 0 0 0 4.74 1.2h.01c5.46 0 9.9-4.44 9.9-9.9S17.5 2 12.04 2Zm0 18.05h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.05-.2-.31a8.18 8.18 0 1 1 6.99 3.87Zm4.5-6.14c-.25-.12-1.46-.72-1.69-.8-.22-.09-.39-.13-.55.12s-.63.8-.77.96c-.14.17-.28.19-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.55-1.34-.76-1.83-.2-.48-.4-.42-.55-.43h-.47c-.16 0-.43.06-.65.31-.22.25-.85.84-.85 2.04s.87 2.37 1 2.53c.12.17 1.72 2.62 4.16 3.68.58.25 1.03.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.46-.6 1.66-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.28Z"/>
+    </svg>
+    <span id="pagamentoSacTexto">Enviar meus dados de entrega</span>
+  </a>
+
+  <div class="janela-pagamento__comprovante">
+    <a class="link-texto" id="pagamentoEnviarComprovante" href="#" target="_blank" rel="noopener noreferrer" hidden>Enviar comprovante no WhatsApp</a>
+    <a class="link-texto" id="pagamentoComprovante" href="#" target="_blank" rel="noopener noreferrer" hidden>Ver o comprovante</a>
+  </div>
+</dialog>
+
 <!-- Painel do carrinho -->
 <div class="fundo-escuro" id="fundoEscuro" hidden></div>
 
@@ -285,10 +362,10 @@
       <div id="itensCarrinho"></div>
     </div>
 
-    <!-- Etapa 2: dados de quem está reservando -->
+    <!-- Etapa 2: dados de quem está comprando -->
     <div id="etapaDados" tabindex="-1" hidden>
       <p class="painel__intro">
-        Confira os itens e preencha seus dados. Nada é cobrado agora — o pagamento é combinado no WhatsApp.
+        Confira os itens e preencha seus dados. O pagamento é na próxima tela: Pix, crédito à vista ou em até 12x.
       </p>
 
       <div class="resumo" id="resumoPedido"></div>
@@ -335,15 +412,23 @@
 
         <p class="erro erro--geral" id="erroGeral" hidden></p>
 
-        <button class="botao botao--whatsapp" id="botaoEnviar" type="submit">
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="currentColor">
-            <path d="M12.04 2c-5.46 0-9.9 4.44-9.9 9.9 0 1.75.46 3.45 1.32 4.95L2 22l5.3-1.38a9.9 9.9 0 0 0 4.74 1.2h.01c5.46 0 9.9-4.44 9.9-9.9S17.5 2 12.04 2Zm0 18.05h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.05-.2-.31a8.18 8.18 0 1 1 6.99 3.87Zm4.5-6.14c-.25-.12-1.46-.72-1.69-.8-.22-.09-.39-.13-.55.12s-.63.8-.77.96c-.14.17-.28.19-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.55-1.34-.76-1.83-.2-.48-.4-.42-.55-.43h-.47c-.16 0-.43.06-.65.31-.22.25-.85.84-.85 2.04s.87 2.37 1 2.53c.12.17 1.72 2.62 4.16 3.68.58.25 1.03.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.46-.6 1.66-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.28Z"/>
+        <button class="botao botao--principal botao--pagar" id="botaoEnviar" type="submit">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="10" rx="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
-          <span id="textoBotaoEnviar">Enviar pedido para VIA PADRE PIO</span>
+          <span id="textoBotaoEnviar">Ir para o pagamento</span>
         </button>
 
         <p class="nota-form">
-          Ao enviar, abrimos o WhatsApp com o seu pedido já escrito. É só tocar em enviar na conversa.
+          Você vai para o checkout da InfinitePay, onde escolhe Pix, crédito à vista
+          ou em até 12x. O valor de cada parcela aparece lá, antes de confirmar.
+          Os dados do cartão são digitados lá, nunca aqui.
+        </p>
+
+        <p class="nota-form nota-form--sac">
+          Alguma dúvida antes de pagar?
+          <a id="sacCarrinho" href="#" target="_blank" rel="noopener noreferrer">Fale com a gente no WhatsApp</a>.
         </p>
       </form>
     </div>
@@ -352,10 +437,10 @@
 
   <footer class="painel__rodape" id="rodapeCarrinho">
     <div class="painel__total">
-      <span>Total estimado</span>
+      <span>Total</span>
       <strong id="totalCarrinho">R$ 0,00</strong>
     </div>
-    <button class="botao botao--principal botao--bloco" id="irParaPedido" type="button">Finalizar reserva</button>
+    <button class="botao botao--principal botao--bloco" id="irParaPedido" type="button">Finalizar pedido</button>
   </footer>
 </aside>
 

@@ -321,6 +321,14 @@ a { color: inherit; }
   font-size: clamp(1rem, 2.4vw, 1.1rem);
 }
 
+/* A assinatura fecha a abertura: mesma letra do título, em corpo pequeno. */
+.capa__lema {
+  margin-top: 16px;
+  font-family: var(--fonte-titulo);
+  font-size: clamp(1.05rem, 2.6vw, 1.2rem);
+  color: var(--marca);
+}
+
 .capa__botoes {
   display: flex;
   flex-wrap: wrap;
@@ -376,6 +384,18 @@ a { color: inherit; }
 
 .botao--whatsapp svg { flex-shrink: 0; }
 
+/* O botão que leva ao pagamento. O cadeado e o valor escrito nele são o
+   que dizem, antes do clique, quanto vai ser cobrado e que a próxima tela
+   é a do dinheiro. */
+.botao--pagar {
+  width: 100%;
+  padding: 16px 22px;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.botao--pagar svg { flex-shrink: 0; }
+
 .botao--bloco { width: 100%; }
 
 .botao[disabled] {
@@ -404,6 +424,24 @@ a { color: inherit; }
   margin-inline: auto;
 }
 
+/* Recado curto que o cliente precisa ler antes de escolher: destacado do
+   texto de apoio, mas sem o peso de um alerta de erro.
+
+   O seletor é duplo porque a regra de .secao__cabecalho p acima tem mais
+   força e, sozinho, o aviso herdaria dela a cor, a margem e os 560px de
+   largura — quebrando a frase em duas linhas. */
+.secao__cabecalho .secao__aviso {
+  margin-top: 16px;
+  padding: 9px 18px;
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--destaque) 14%, transparent);
+  color: var(--marca-escura);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
 /* ---------- Barra do catálogo ---------- */
 
 .barra-catalogo {
@@ -420,14 +458,63 @@ a { color: inherit; }
   color: var(--tinta-suave);
 }
 
-/* ---------- Grade de produtos ---------- */
+/* ---------- Catálogo: coleções e peças ---------- */
+
+/* O catálogo é uma pilha de coleções, cada uma com os seus cinco modelos.
+   O espaço entre elas é generoso de propósito: é ele que diz onde uma
+   coleção termina e a outra começa. */
+.catalogo {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(44px, 7vw, 72px);
+}
+
+/* O nome da coleção, a santa e a história da estampa valem para as cinco
+   peças abaixo, então ficam aqui em cima uma vez só. */
+.colecao__cabecalho {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.colecao__nome {
+  font-size: clamp(1.35rem, 3.4vw, 1.75rem);
+  line-height: 1.2;
+}
+
+.colecao__descricao {
+  color: var(--tinta-suave);
+  font-size: 0.94rem;
+  max-width: 62ch;
+}
+
+/* O nome da santa leva à história dela. */
+.colecao__santo {
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--marca);
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: start;
+  cursor: pointer;
+  transition: color var(--transicao);
+}
+
+.colecao__santo:hover { color: var(--destaque); }
 
 /* A foto é quem vende a camiseta, então ela manda no cartão: sem moldura,
    sem fundo, apoiada direto na página. O texto vem embaixo, discreto.
 
-   Duas fotos por linha no celular e quatro no notebook. O minmax(0, …) é o
-   que permite a coluna encolher junto com a tela; sem ele o cartão trava na
-   largura do conteúdo e vaza na horizontal. */
+   Duas fotos por linha no celular e as cinco da coleção numa linha só no
+   notebook. O minmax(0, …) é o que permite a coluna encolher junto com a
+   tela; sem ele o cartão trava na largura do conteúdo e vaza na horizontal. */
 .grade-produtos {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -436,13 +523,13 @@ a { color: inherit; }
   align-items: start;
 }
 
-/* Tablet: três cabem sem apertar antes de chegar nas quatro. */
+/* Tablet: três cabem sem apertar antes de chegar nas cinco. */
 @media (min-width: 620px) {
   .grade-produtos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
-@media (min-width: 900px) {
-  .grade-produtos { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (min-width: 1000px) {
+  .grade-produtos { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
 
 .produto {
@@ -472,6 +559,20 @@ a { color: inherit; }
   position: absolute;
   inset-block-start: 12px;
   inset-inline-start: 12px;
+  background: var(--tinta);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 999px;
+}
+
+/* No cabeçalho da coleção o selo não está em cima de foto nenhuma: entra na
+   linha do texto, como uma etiqueta. */
+.selo-esgotado--solto {
+  position: static;
   background: var(--tinta);
   color: #fff;
   font-size: 0.7rem;
@@ -548,12 +649,6 @@ a { color: inherit; }
   font-weight: 700;
   font-size: 0.92rem;
   color: var(--destaque);
-  white-space: nowrap;
-}
-
-.produto__descricao {
-  color: var(--tinta-suave);
-  font-size: 0.92rem;
 }
 
 .opcao { display: flex; flex-direction: column; gap: 8px; }
@@ -567,21 +662,6 @@ a { color: inherit; }
 }
 
 .lista-opcoes { display: flex; flex-wrap: wrap; gap: 8px; }
-
-/* botões de cor */
-.bolinha-cor {
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  border: 2px solid var(--borda);
-  cursor: pointer;
-  padding: 0;
-  position: relative;
-  transition: transform var(--transicao), box-shadow var(--transicao);
-}
-.bolinha-cor:hover { transform: scale(1.08); }
-.bolinha-cor[aria-pressed="true"] {
-  box-shadow: 0 0 0 2px var(--superficie), 0 0 0 4px var(--marca);
-}
 
 /* botões de tamanho */
 .botao-tamanho {
@@ -602,6 +682,75 @@ a { color: inherit; }
   background: var(--marca);
   border-color: var(--marca);
   color: #fff;
+}
+
+.opcao__nota {
+  font-size: 0.78rem;
+  color: var(--tinta-suave);
+  line-height: 1.45;
+}
+
+/* Um botão que se comporta como link: usado onde o texto já está correndo
+   e abrir uma janela seria a única diferença de um link de verdade. */
+.link-texto {
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--marca);
+  background: none;
+  border: 0;
+  padding: 0;
+  align-self: flex-start;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--destaque);
+  text-underline-offset: 3px;
+}
+.link-texto:hover { color: var(--marca-escura); }
+
+/* Dentro de um parágrafo o botão precisa herdar o tamanho do texto ao
+   redor, senão fica miúdo no meio da frase. */
+.duvida__conteudo .link-texto { font-size: inherit; }
+
+/* Nada vem marcado de antemão no cartão. Quando falta uma escolha, o aviso
+   aparece aqui, logo acima do botão que a pessoa acabou de tocar. */
+.produto__faltou {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #9a3412;
+}
+
+/* Miniaturas de frente e costas, sobrepostas ao pé da foto grande. O fundo
+   claro atrás delas garante contraste em cima de qualquer camiseta. */
+.produto__vistas {
+  position: absolute;
+  inset-block-end: 8px;
+  inset-inline: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+/* O infantil tem quatro fotos em vez de duas. Num cartão de celular elas não
+   cabem no tamanho cheio, então encolhem até caber em vez de a última ser
+   cortada pela borda da figura. */
+.produto__vista {
+  flex: 0 1 38px;
+  min-width: 0;
+  aspect-ratio: 38 / 46;
+  padding: 0;
+  overflow: hidden;
+  border: 1.5px solid rgb(255 255 255 / 75%);
+  border-radius: 6px;
+  background: var(--superficie);
+  cursor: pointer;
+  opacity: 0.75;
+  box-shadow: 0 2px 8px rgb(46 36 28 / 22%);
+  transition: opacity var(--transicao), border-color var(--transicao);
+}
+.produto__vista img { width: 100%; height: 100%; object-fit: cover; }
+.produto__vista:hover { opacity: 1; }
+.produto__vista[aria-pressed="true"] {
+  opacity: 1;
+  border-color: var(--marca);
 }
 
 /* Sobra pouca largura aqui: o "Adicionar" desce para a linha de baixo em vez
@@ -823,6 +972,23 @@ a { color: inherit; }
   font-size: 0.84rem;
   color: var(--tinta-suave);
 }
+
+/* O atendimento fecha o formulário: quem travou numa dúvida na hora de
+   pagar encontra a conversa sem ter de voltar ao rodapé. */
+.nota-form--sac {
+  padding-top: 14px;
+  border-top: 1px solid var(--borda);
+}
+
+.nota-form--sac a {
+  font-weight: 600;
+  color: var(--marca);
+  text-decoration: underline;
+  text-decoration-color: var(--destaque);
+  text-underline-offset: 3px;
+}
+
+.nota-form--sac a:hover { color: var(--marca-escura); }
 
 /* ---------- Dúvidas ---------- */
 
@@ -1093,6 +1259,241 @@ a { color: inherit; }
   }
 
   .janela-santo__texto { padding: 22px 22px 26px; }
+}
+
+/* ---------- Janela da tabela de medidas ---------- */
+
+.janela-medidas {
+  width: min(760px, calc(100vw - 32px));
+  max-height: calc(100vh - 40px);
+  padding: 30px 28px 28px;
+  border: 0;
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--tinta);
+  overflow-y: auto;
+}
+
+.janela-medidas::backdrop { background: rgb(43 33 28 / 55%); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .janela-medidas[open] { animation: surgir 200ms ease; }
+}
+
+.janela-medidas h2 { font-size: 1.5rem; }
+
+.janela-medidas__nota {
+  margin-top: 8px;
+  max-width: 52ch;
+  color: var(--tinta-suave);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.janela-medidas__abas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.janela-medidas__aba {
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--tinta);
+  background: transparent;
+  border: 1.5px solid var(--borda);
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all var(--transicao);
+}
+.janela-medidas__aba:hover { border-color: var(--marca); }
+.janela-medidas__aba[aria-selected="true"] {
+  background: var(--marca);
+  border-color: var(--marca);
+  color: #fff;
+}
+
+/* Dez tamanhos não cabem na largura de um celular. Em vez de encolher os
+   números até ninguém conseguir ler, a tabela rola para o lado e a coluna
+   do nome da medida fica parada, para não se perder a referência. */
+.janela-medidas__corpo {
+  margin-top: 18px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.tabela-medidas {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.84rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabela-medidas th,
+.tabela-medidas td {
+  padding: 9px 10px;
+  text-align: center;
+  white-space: nowrap;
+  border-block-end: 1px solid var(--borda);
+}
+
+.tabela-medidas thead th {
+  background: var(--marca-escura);
+  color: #f6ead6;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
+.tabela-medidas tbody th {
+  text-align: start;
+  font-weight: 600;
+  color: var(--marca-escura);
+}
+
+.tabela-medidas tbody tr:nth-child(odd) {
+  background: color-mix(in srgb, var(--destaque) 9%, transparent);
+}
+
+.tabela-medidas th:first-child {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+}
+
+/* A coluna parada precisa de fundo próprio: sem ele, as outras colunas
+   passariam por baixo e se misturariam ao texto. */
+.tabela-medidas tbody th:first-child {
+  background: var(--superficie);
+}
+.tabela-medidas tbody tr:nth-child(odd) th:first-child {
+  background: #f8ecdc;
+}
+
+.janela-medidas .janela-medidas__fechar {
+  position: absolute;
+  inset-block-start: 12px;
+  inset-inline-end: 12px;
+  background: var(--superficie);
+  box-shadow: 0 1px 6px rgb(43 33 28 / 18%);
+}
+
+@media (max-width: 560px) {
+  .janela-medidas { padding: 26px 18px 22px; }
+}
+
+/* ---------- Janela de volta do pagamento ---------- */
+
+/* É a primeira coisa que o cliente vê ao voltar do checkout, e por isso
+   ela é estreita e centrada: não há nada para fazer aqui além de ler a
+   confirmação e mandar o endereço de entrega. */
+.janela-pagamento {
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100vh - 40px);
+  padding: 34px 28px 28px;
+  border: 0;
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--tinta);
+  text-align: center;
+  overflow-y: auto;
+}
+
+.janela-pagamento::backdrop { background: rgb(43 33 28 / 55%); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .janela-pagamento[open] { animation: surgir 200ms ease; }
+}
+
+.janela-pagamento[open] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.janela-pagamento__selo {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--marca);
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--destaque) 18%, transparent);
+}
+
+.janela-pagamento h2 { font-size: 1.6rem; }
+
+.janela-pagamento__texto {
+  color: var(--tinta-suave);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  max-width: 42ch;
+}
+
+/* Número do pedido, forma de pagamento e total, lado a lado como num
+   comprovante. */
+.janela-pagamento__dados {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 22px;
+  width: 100%;
+  margin: 0;
+  padding: 14px 16px;
+  background: var(--fundo);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+}
+
+.janela-pagamento__dados dt {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+}
+
+.janela-pagamento__dados dd {
+  margin: 2px 0 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--marca-escura);
+}
+
+/* A conta do parcelamento, logo abaixo do valor: quem pagou em 5x vê o
+   mesmo número que vai aparecer na fatura do cartão. */
+.janela-pagamento__parcelas {
+  margin-top: -6px;
+  font-size: 0.82rem;
+  color: var(--tinta-suave);
+  line-height: 1.6;
+}
+
+.janela-pagamento__itens {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.86rem;
+  color: var(--tinta-suave);
+  line-height: 1.7;
+}
+
+.janela-pagamento__comprovante {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 18px;
+}
+
+.janela-pagamento .janela-pagamento__fechar {
+  position: absolute;
+  inset-block-start: 12px;
+  inset-inline-end: 12px;
 }
 
 /* ---------- Painel lateral (carrinho) ---------- */

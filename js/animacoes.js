@@ -265,15 +265,21 @@
   }
 
   /* ====================================================================
-     4. Confete ao enviar o pedido
+     4. Confete quando o pedido é pago
      --------------------------------------------------------------------
-     Só dispara quando o pedido realmente saiu para o WhatsApp — o app.js
-     avisa pelo evento "via:pedido-enviado". Se a validação barrou, não há
-     nada a comemorar.
+     Só dispara quando o pagamento volta confirmado da InfinitePay — o
+     app.js avisa pelo evento "via:pedido-enviado". Se o pagamento não
+     saiu, não há nada a comemorar.
+
+     O papel picado nasce do selo da janela de confirmação, que é para
+     onde os olhos vão nesse instante; se a janela não existir, o botão de
+     pagar serve de origem.
      ==================================================================== */
 
   function confeteNoEnvio() {
-    const botao = document.getElementById("botaoEnviar");
+    const botao =
+      document.querySelector("[data-confete-origem]") ||
+      document.getElementById("botaoEnviar");
     if (!botao) return;
 
     const cores = [
@@ -439,7 +445,7 @@
   }
 
   /* ====================================================================
-     6. Catálogo: a contagem de modelos sobe de zero
+     6. Catálogo: a contagem de peças sobe de zero
      ==================================================================== */
 
   function contagemDoCatalogo() {

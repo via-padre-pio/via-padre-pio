@@ -35,14 +35,17 @@ const CONFIG = {
   },
 
   /* ------------------------------------------------------------------
-     1b. NOSSAS INSPIRAÇÕES
+     1b. NOSSA ESSÊNCIA
      ------------------------------------------------------------------
-     Aparecem na coluna do meio do rodapé. Ao clicar no nome, abre uma
+     Aparece na coluna do meio do rodapé. Ao clicar no nome, abre uma
      janela com a foto e a história. Para tirar um santo, apague o bloco
      inteiro dele; para acrescentar outro, copie um bloco e cole abaixo.
+
+     O campo "nome" também liga o santo às coleções: toda coleção que
+     tiver o mesmo nome em "santo" ganha um atalho para esta janela.
      ------------------------------------------------------------------ */
   inspiracoes: {
-    titulo: "Nossas Inspirações",
+    titulo: "Nossa Essência",
 
     santos: [
       {
@@ -63,7 +66,7 @@ const CONFIG = {
         historia: [
           "Thérèse Martin nasceu em Alençon, na França, caçula de nove irmãos. Perdeu a mãe aos quatro anos e cresceu cercada de afeto pelo pai e pelas irmãs, várias delas também religiosas.",
           "Queria entrar no Carmelo tão cedo que foi pedir autorização ao próprio Papa, numa audiência em Roma. Conseguiu: entrou aos quinze anos, no Carmelo de Lisieux, onde viveu escondida do mundo até morrer de tuberculose aos vinte e quatro.",
-          "Deixou o \"pequeno caminho\": a santidade não está em feitos grandiosos, e sim em fazer as coisas pequenas de cada dia com muito amor e confiança. Seus escritos viraram o livro História de uma Alma, lido no mundo inteiro. É padroeira das missões e Doutora da Igreja, e prometeu fazer cair do céu uma chuva de rosas.",
+          "Deixou a \"pequena via\": a santidade não está em feitos grandiosos, e sim em fazer as coisas pequenas de cada dia com muito amor e confiança. Seus escritos viraram o livro História de uma Alma, lido no mundo inteiro. É padroeira das missões e Doutora da Igreja, e prometeu fazer cair do céu uma chuva de rosas.",
         ],
       },
     ],
@@ -79,15 +82,19 @@ const CONFIG = {
     // Arquivo do logo, dentro da pasta assets/.
     logo: "assets/logo.png",
 
-    chamada: "Pré-venda aberta",
+    chamada: "Pré-venda exclusiva",
     descricao:
-      "Camisetas feitas com devoção e cuidado. Nesta pré-venda você garante a sua peça antes da produção — reserve o modelo, a cor e o tamanho que quiser.",
+      "Peças que carregam significado. Uma coleção criada para vestir a fé de forma simples, elegante e atemporal. Cada peça é criada para unir conforto, qualidade e uma expressão discreta daquilo em que acreditamos.",
 
-    // Prazo informado ao cliente. Deixe "" para esconder o aviso.
-    prazoEntrega: "Produção e envio em até 20 dias após o fechamento da pré-venda.",
+    // Prazo informado ao cliente, logo abaixo dos botões da abertura. Deixe
+    // "" para esconder. A mesma informação é repetida com outras palavras na
+    // dúvida "Qual é o prazo...", dentro do index.html: mudando aqui, confira
+    // lá também.
+    prazoEntrega:
+      "Prazo de produção e envio: até 20 dias após a confirmação do pagamento do pedido.",
 
-    // Aviso que aparece no topo. Deixe "" para esconder a faixa.
-    aviso: "Pré-venda por tempo limitado — garanta a sua antes do lote fechar.",
+    // Aviso que anda no letreiro do topo. Deixe "" para esconder a faixa.
+    aviso: "Pré-venda exclusiva • Acesso reservado a convidados Via",
   },
 
   /* ------------------------------------------------------------------
@@ -111,73 +118,259 @@ const CONFIG = {
      4. OPÇÕES DE ENTREGA
      ------------------------------------------------------------------
      Apague linhas que não se aplicam. Precisa ter pelo menos uma.
+
+     "frete" é quanto essa opção custa, em reais, e entra como uma linha
+     a mais na hora de pagar. Deixe 0 quando o valor for combinado depois
+     pelo WhatsApp: aí o cliente paga só as peças.
      ------------------------------------------------------------------ */
   entrega: [
-    { id: "retirada", nome: "Retirar pessoalmente (combinamos o ponto)" },
-    { id: "entrega",  nome: "Entrega em mãos na minha região" },
-    { id: "correios", nome: "Enviar pelos Correios (frete à parte)" },
+    { id: "retirada", nome: "Retirar pessoalmente (combinamos o ponto)", frete: 0 },
+    { id: "entrega",  nome: "Entrega em mãos na minha região",           frete: 0 },
+    { id: "correios", nome: "Enviar pelos Correios (frete à parte)",     frete: 0 },
   ],
 
   /* ------------------------------------------------------------------
-     5. PADRÕES DAS CAMISETAS
+     4b. PAGAMENTO (InfinitePay)
      ------------------------------------------------------------------
-     Valem para todos os modelos que não definirem os seus próprios.
+     O cliente paga no site. Ao finalizar, ele é levado ao checkout da
+     InfinitePay, onde escolhe Pix, crédito à vista ou parcelado. Nenhum
+     dado de cartão passa por aqui, e o dinheiro cai direto na conta de
+     vocês. O WhatsApp deixou de receber pedidos: agora é só atendimento.
+
+     PARA LIGAR O PAGAMENTO, FALTA SÓ ISTO:
+
+       1. No app da InfinitePay, abra Vendas > Checkout > Configurações e
+          toque em "Habilitar Checkout Integrado". Sem esse passo, a
+          InfinitePay recusa os pedidos do site.
+       2. Ainda nessa tela, escolha quais formas de pagamento aceitar e
+          em quantas parcelas você absorve a taxa.
+       3. Copie a sua InfiniteTag (o seu usuário no app) e escreva no
+          campo "handle" aqui embaixo, SEM o cifrão.
+
+     Os itens 1 e 2 são feitos lá, e não aqui, de propósito: mudar isso
+     pelo site exigiria a chave secreta da conta, e chave secreta não
+     pode morar num arquivo que qualquer visitante consegue abrir.
      ------------------------------------------------------------------ */
-  padrao: {
-    tamanhos: ["PP", "P", "M", "G", "GG", "XGG"],
-    cores: [
-      { nome: "Preta",   hex: "#1c1c1c" },
-      { nome: "Branca",  hex: "#f7f7f5" },
-      { nome: "Areia",   hex: "#d8c7ad" },
-      { nome: "Marrom",  hex: "#5c3a21" },
-    ],
+  pagamento: {
+    // A sua InfiniteTag, sem o $. Exemplo: "viapadrepio".
+    // Enquanto estiver vazia, o site avisa o cliente e manda ele para o
+    // WhatsApp, em vez de abrir um pagamento quebrado.
+    handle: "",
+
+    // Para onde a InfinitePay traz o cliente depois de pagar. Deixe ""
+    // que o site usa o próprio endereço de onde o pedido saiu.
+    retorno: "",
   },
 
   /* ------------------------------------------------------------------
-     6. CAMISETAS DA PRÉ-VENDA
+     5. A PRÉ-VENDA INTEIRA
      ------------------------------------------------------------------
-     Pode ter de 1 a 10 modelos (ou mais) — a página se ajusta sozinha.
-     Para adicionar uma nova, copie um bloco { ... } inteiro, cole abaixo
-     e troque os dados. Cada modelo precisa de um "id" diferente.
-
-     Campos de cada modelo:
-       id        -> apelido único, sem espaço nem acento. Ex: "fe-01"
-       nome      -> nome que aparece no cartão
-       descricao -> frase curta sobre a estampa
-       preco     -> número puro, use ponto para centavos. Ex: 89.9
-       imagem    -> caminho da foto. Coloque o arquivo em assets/camisetas/
-       esgotado  -> true esconde o botão e marca como indisponível
-       tamanhos  -> (opcional) lista só deste modelo
-       cores     -> (opcional) lista só deste modelo
+     Vale para todas as peças, de todas as coleções.
      ------------------------------------------------------------------ */
-  produtos: [
+  prevenda: {
+    // Nesta pré-venda só existe uma cor. Ela não vira um botão de escolha
+    // no cartão: aparece escrita no aviso do catálogo e entra sozinha em
+    // cada peça do pedido.
+    cor: "Off-white",
+
+    // Tamanhos que qualquer pessoa pode reservar pelo site. A tabela de
+    // medidas mostra outros além destes, e é de propósito: os maiores saem
+    // por encomenda, combinada na conversa.
+    tamanhos: ["PP", "P", "M", "G", "GG"],
+
+    // Recado embaixo dos tamanhos no cartão. Deixe "" para esconder.
+    avisoTamanhos:
+      "Do XG ao G3, sob encomenda: é só combinar com a gente no WhatsApp.",
+  },
+
+  /* ------------------------------------------------------------------
+     6. MODELOS DE CAMISETA
+     ------------------------------------------------------------------
+     São os tipos de caimento. Toda coleção é vendida em todos eles, e o
+     preço vem daqui — não da coleção.
+
+     Campos:
+       id       -> apelido único, sem espaço nem acento. Também é o começo
+                   do nome dos arquivos de foto. Ex: "oversized" procura
+                   oversized-frente.jpg e oversized-costas.jpg dentro da
+                   pasta de cada coleção.
+       nome     -> como aparece no cartão
+       preco    -> número puro, use ponto para centavos. Ex: 109.9
+       medidas  -> qual tabela do item 8 se aplica a este modelo
+       tamanhos -> (opcional) lista só deste modelo
+       vistas   -> (opcional) as fotos deste modelo. Sem isso, o site
+                   procura só a frente e as costas.
+     ------------------------------------------------------------------ */
+  modelos: [
     {
-      id: "oracao",
-      nome: "Camiseta Oração",
-      descricao: "Estampa com a oração de Padre Pio nas costas.",
-      preco: 89.9,
-      imagem: "assets/camisetas/modelo-1.svg",
-      esgotado: false,
+      id: "oversized",
+      nome: "Oversized",
+      preco: 109.9,
+      medidas: "oversized",
     },
     {
-      id: "estigmas",
-      nome: "Camiseta Estigmas",
-      descricao: "Arte minimalista em traço sobre o peito.",
-      preco: 89.9,
-      imagem: "assets/camisetas/modelo-2.svg",
-      esgotado: false,
-    },
-    {
-      id: "via-classica",
-      nome: "Camiseta Via Clássica",
-      descricao: "Logo bordado no peito, caimento oversized.",
+      id: "tradicional-masculina",
+      nome: "Tradicional masculina",
       preco: 99.9,
-      imagem: "assets/camisetas/modelo-3.svg",
-      esgotado: false,
-      cores: [
-        { nome: "Preta",  hex: "#1c1c1c" },
-        { nome: "Branca", hex: "#f7f7f5" },
+      medidas: "tradicional",
+    },
+    {
+      id: "tradicional-feminina",
+      nome: "Tradicional feminina",
+      preco: 99.9,
+      medidas: "tradicional",
+    },
+    {
+      id: "baby-look",
+      nome: "Baby look",
+      preco: 89.9,
+      medidas: "baby-look",
+    },
+    {
+      id: "infantil",
+      nome: "Infantil",
+      preco: 74.9,
+      medidas: "infantil",
+      tamanhos: ["01", "02", "03", "04", "06", "08", "10", "12"],
+
+      // O infantil é o único fotografado duas vezes, em menina e em menino.
+      // É a mesma peça: muda só quem está vestindo.
+      vistas: [
+        { arquivo: "menina-frente", rotulo: "Frente" },
+        { arquivo: "menina-costas", rotulo: "Costas" },
+        { arquivo: "menino-frente", rotulo: "Frente (menino)" },
+        { arquivo: "menino-costas", rotulo: "Costas (menino)" },
       ],
     },
   ],
+
+  /* ------------------------------------------------------------------
+     7. COLEÇÕES
+     ------------------------------------------------------------------
+     Cada coleção vira um bloco do catálogo, com um cartão para cada
+     modelo da lista acima. Para acrescentar uma, copie um bloco { ... }
+     inteiro, cole abaixo e troque os dados.
+
+     Campos:
+       id        -> apelido único, sem espaço nem acento
+       nome      -> título que abre o bloco da coleção
+       santo     -> nome igual ao do item 1b, para abrir a história ao
+                    clicar. Deixe "" se a coleção não tiver santo.
+       descricao -> frase curta sobre a estampa
+       pasta     -> onde estão as fotos desta coleção
+       esgotada  -> true marca a coleção inteira como indisponível
+
+     As fotos seguem sempre o mesmo nome dentro da pasta:
+       oversized-frente.jpg          oversized-costas.jpg
+       tradicional-masculina-frente.jpg   ...-costas.jpg
+       tradicional-feminina-frente.jpg    ...-costas.jpg
+       baby-look-frente.jpg          baby-look-costas.jpg
+       infantil-menina-frente.jpg    infantil-menina-costas.jpg
+       infantil-menino-frente.jpg    infantil-menino-costas.jpg
+     ------------------------------------------------------------------ */
+  colecoes: [
+    {
+      id: "nada-e-pequeno",
+      nome: "Nada é Pequeno",
+      santo: "Santa Teresinha do Menino Jesus",
+      descricao:
+        "A rosa de Teresinha no peito e, descendo pelas costas, a frase que resume a pequena via: nada é pequeno se feito com amor.",
+      pasta: "assets/colecoes/nada-e-pequeno",
+      esgotada: false,
+    },
+    {
+      id: "saint-therese",
+      nome: "Saint Therese",
+      santo: "Santa Teresinha do Menino Jesus",
+      descricao:
+        "O nome da santa escrito letra a letra ao longo da coluna, fechado pela rosa. A frente fica com o traço discreto no peito.",
+      pasta: "assets/colecoes/saint-therese",
+      esgotada: false,
+    },
+    {
+      id: "since-1873",
+      nome: "Saint Therese Since 1873",
+      santo: "Santa Teresinha do Menino Jesus",
+      descricao:
+        "O ano de nascimento de Teresinha estampado no peito e, nas costas, a rosa inteira em traço aberto.",
+      pasta: "assets/colecoes/since-1873",
+      esgotada: false,
+    },
+  ],
+
+  /* ------------------------------------------------------------------
+     8. TABELAS DE MEDIDAS
+     ------------------------------------------------------------------
+     Abrem numa janela quando o cliente toca em "Tabela de medidas".
+     Os números são em centímetros e seguem a ordem de "linhas".
+     ------------------------------------------------------------------ */
+  medidas: {
+    linhas: [
+      "Comprimento",
+      "Tórax",
+      "Cintura",
+      "Barra",
+      "Ombro",
+      "Comp. manga",
+      "Boca manga",
+    ],
+
+    tabelas: {
+      tradicional: {
+        nome: "Tradicional",
+        tamanhos: ["PP", "P", "M", "G", "GG", "XG", "XGG", "G1", "G2", "G3"],
+        valores: [
+          [72, 73, 74, 76, 78, 80, 82, 84, 86, 88],
+          [48, 50, 52, 54, 56, 58, 60, 62, 64, 66],
+          [48, 50, 52, 54, 56, 58, 60, 62, 64, 66],
+          [49, 51, 53, 55, 57, 59, 61, 63, 65, 67],
+          [13, 13.5, 14, 14.5, 15, 16, 17, 18, 19, 20],
+          [19, 19.5, 20, 21, 22, 23, 24, 25, 26, 27],
+          [16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20, 20.5],
+        ],
+      },
+
+      oversized: {
+        nome: "Oversized",
+        tamanhos: ["PP", "P", "M", "G", "GG", "XG", "XGG", "G1", "G2", "G3"],
+        valores: [
+          [70, 72.5, 75, 77.5, 80, 82.5, 85, 87.5, 90, 92.5],
+          [54, 56, 58, 60, 62, 66, 70, 74, 78, 82],
+          [54, 56, 58, 60, 62, 66, 70, 74, 78, 82],
+          [54, 56, 58, 60, 62, 66, 70, 74, 78, 82],
+          [15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
+          [19, 21, 23, 25, 27, 29, 31, 33, 35, 37],
+          [18, 19, 20, 21, 22, 23, 24, 25, 26, 27],
+        ],
+      },
+
+      "baby-look": {
+        nome: "Baby look",
+        tamanhos: ["PP", "P", "M", "G", "GG", "XG", "XGG", "G1", "G2", "G3"],
+        valores: [
+          [59, 61, 63, 65, 67.5, 70, 72.5, 74, 75.5, 77],
+          [44, 46, 48, 50, 53, 56, 59, 61, 63, 65],
+          [42, 44, 46, 48, 51, 54, 57, 59, 61, 63],
+          [44, 46, 48, 50, 53, 56, 59, 61, 63, 65],
+          [8, 9, 10, 11, 12, 13, 14, 16, 16.5, 17],
+          [14, 15, 16, 17, 18, 19, 20, 21, 21.5, 22],
+          [14, 14.5, 15, 15.5, 16, 16.5, 17, 19, 19.5, 20],
+        ],
+      },
+
+      infantil: {
+        nome: "Infantil",
+        tamanhos: ["01", "02", "03", "04", "06", "08", "10", "12"],
+        valores: [
+          [39, 41, 43, 45, 47.5, 50, 52.5, 54],
+          [27, 29, 31, 33, 35, 37, 39, 41],
+          [27, 29, 31, 33, 35, 37, 39, 41],
+          [27, 29, 31, 33, 35, 37, 39, 41],
+          [6, 6.5, 7, 8, 8.5, 9, 9.5, 9.5],
+          [9.5, 10, 10.5, 11, 12, 13, 14, 18],
+          [9.5, 10, 10.5, 11, 12, 13, 14, 18],
+        ],
+      },
+    },
+  },
 };

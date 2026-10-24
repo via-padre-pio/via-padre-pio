@@ -12,7 +12,8 @@
   const CHAVE_ARMAZENAMENTO = "viapadrepio:pedido:v1";
   const LIMITE_POR_ITEM = 20;
 
-  /** Itens do pedido: { chave, produtoId, nome, preco, cor, tamanho, imagem, quantidade } */
+  /** Itens do pedido: { chave, colecaoId, modeloId, nome, modeloNome, preco,
+      cor, tamanho, imagem, quantidade } */
   let pedido = [];
 
   /** Etapa visível no painel: "itens" (lista) ou "dados" (formulário). */
@@ -32,11 +33,11 @@
     marcaChamada: el("marcaChamada"),
     capaLogo: el("capaLogo"),
     marcaDescricao: el("marcaDescricao"),
+    marcaLema: el("marcaLema"),
     marcaPrazo: el("marcaPrazo"),
     gradeProdutos: el("gradeProdutos"),
     barraCatalogo: el("barraCatalogo"),
     contagemProdutos: el("contagemProdutos"),
-    duvidaPrazo: el("duvidaPrazo"),
     resumoPedido: el("resumoPedido"),
     formulario: el("formularioPedido"),
     selectEntrega: el("entrega"),
@@ -59,6 +60,23 @@
     santoNome: el("santoNome"),
     santoViveu: el("santoViveu"),
     santoHistoria: el("santoHistoria"),
+    janelaMedidas: el("janelaMedidas"),
+    fecharMedidas: el("fecharMedidas"),
+    abasMedidas: el("abasMedidas"),
+    corpoMedidas: el("corpoMedidas"),
+    janelaPagamento: el("janelaPagamento"),
+    fecharPagamento: el("fecharPagamento"),
+    pagamentoSelo: el("pagamentoSelo"),
+    pagamentoTitulo: el("pagamentoTitulo"),
+    pagamentoTexto: el("pagamentoTexto"),
+    pagamentoDados: el("pagamentoDados"),
+    pagamentoParcelas: el("pagamentoParcelas"),
+    pagamentoItens: el("pagamentoItens"),
+    pagamentoSac: el("pagamentoSac"),
+    pagamentoSacTexto: el("pagamentoSacTexto"),
+    pagamentoEnviarComprovante: el("pagamentoEnviarComprovante"),
+    pagamentoComprovante: el("pagamentoComprovante"),
+    sacCarrinho: el("sacCarrinho"),
     fundoEscuro: el("fundoEscuro"),
     painelCarrinho: el("painelCarrinho"),
     tituloPainel: el("tituloPainel"),
@@ -145,6 +163,9 @@
     elementos.marcaChamada.textContent = marca.chamada || "Pré-venda";
     elementos.marcaDescricao.textContent = marca.descricao || "";
 
+    // A abertura fecha com a mesma assinatura do cabeçalho.
+    elementos.marcaLema.textContent = marca.assinatura || "";
+
     // O logo da capa é opcional: tirar a imagem do HTML não pode derrubar o
     // restante da página, como acontecia com o antigo logo do cabeçalho.
     if (elementos.capaLogo) {
@@ -164,11 +185,6 @@
         elementos.rodapeLogo.hidden = true;
       }
     }
-    // Em telas estreitas o rótulo ocupa duas linhas; o nome da marca fica
-    // inteiro na segunda em vez de ser partido no meio.
-    elementos.textoBotaoEnviar.innerHTML =
-      `Enviar pedido para <span class="sem-quebra">${escapar(marca.nome.toUpperCase())}</span>`;
-
     if (marca.aviso) {
       elementos.textoAviso.textContent = marca.aviso;
       elementos.faixaAviso.hidden = false;
@@ -179,7 +195,6 @@
     if (marca.prazoEntrega) {
       elementos.marcaPrazo.textContent = marca.prazoEntrega;
       elementos.marcaPrazo.hidden = false;
-      elementos.duvidaPrazo.textContent = marca.prazoEntrega;
     }
 
     if (contato.instagram) {
@@ -198,10 +213,17 @@
     }
 
     if (contato.whatsapp) {
-      elementos.rodapeWhatsapp.href = `https://wa.me/${soDigitos(contato.whatsapp)}`;
+      elementos.rodapeWhatsapp.href = linkDoAtendimento();
       elementos.rodapeWhatsapp.textContent =
         contato.whatsappVisivel || "Falar no WhatsApp";
+
+      // O mesmo número, dentro do painel: ali a pessoa está decidindo a
+      // compra, e é onde a dúvida costuma aparecer.
+      elementos.sacCarrinho.href = linkDoAtendimento(
+        `Olá! Estou montando um pedido no site da pré-venda ${CONFIG.marca.nome} e tenho uma dúvida.`
+      );
     } else {
+      elementos.sacCarrinho.hidden = true;
       // Sai do DOM em vez de ficar escondido: assim o CSS do rodapé consegue
       // mirar no primeiro contato que realmente aparece.
       elementos.rodapeWhatsapp.remove();
@@ -272,33 +294,54 @@
      Catálogo
      ==================================================================== */
 
-  function coresDoProduto(produto) {
-    return produto.cores && produto.cores.length
-      ? produto.cores
-      : CONFIG.padrao.cores;
+  const modelos = () => CONFIG.modelos || [];
+
+  const acharModelo = (id) => modelos().find((m) => m.id === id);
+
+  const acharColecao = (id) => (CONFIG.colecoes || []).find((c) => c.id === id);
+
+  function tamanhosDoModelo(modelo) {
+    return modelo.tamanhos && modelo.tamanhos.length
+      ? modelo.tamanhos
+      : CONFIG.prevenda.tamanhos;
   }
 
-  function tamanhosDoProduto(produto) {
-    return produto.tamanhos && produto.tamanhos.length
-      ? produto.tamanhos
-      : CONFIG.padrao.tamanhos;
+  /**
+   * As fotos de um modelo dentro de uma coleção. Por padrão são duas, frente
+   * e costas; um modelo pode declarar outras em "vistas" (o infantil tem
+   * quatro, porque foi fotografado em menina e em menino).
+   */
+  function vistasDoModelo(colecao, modelo) {
+    const padrao = [
+      { arquivo: "frente", rotulo: "Frente" },
+      { arquivo: "costas", rotulo: "Costas" },
+    ];
+    return (modelo.vistas || padrao).map((vista) => ({
+      rotulo: vista.rotulo,
+      src: `${colecao.pasta}/${modelo.id}-${vista.arquivo}.jpg`,
+    }));
   }
 
   function montarCatalogo() {
-    const produtos = CONFIG.produtos || [];
+    const colecoes = CONFIG.colecoes || [];
 
-    if (!produtos.length) {
+    if (!colecoes.length || !modelos().length) {
       elementos.gradeProdutos.innerHTML =
-        '<p class="resumo__vazio">Os modelos desta pré-venda serão anunciados em breve. Acompanhe o nosso Instagram.</p>';
+        '<p class="resumo__vazio">As coleções desta pré-venda serão anunciadas em breve. Acompanhe o nosso Instagram.</p>';
       return;
     }
 
-    produtos.forEach((produto) => {
-      elementos.gradeProdutos.appendChild(criarCartaoProduto(produto));
+    colecoes.forEach((colecao) => {
+      elementos.gradeProdutos.appendChild(criarBlocoColecao(colecao));
     });
 
-    elementos.contagemProdutos.textContent =
-      produtos.length === 1 ? "1 modelo" : `${produtos.length} modelos`;
+    // A barra conta peças, não coleções: é o número de cartões que a pessoa
+    // encontra rolando a página.
+    const pecas =
+      colecoes.filter((c) => !c.esgotada).length * modelos().length;
+    const quantasColecoes =
+      colecoes.length === 1 ? "1 coleção" : `${colecoes.length} coleções`;
+    elementos.contagemProdutos.textContent = `${pecas} peças em ${quantasColecoes}`;
     elementos.barraCatalogo.hidden = false;
   }
 
@@ -312,7 +355,7 @@
     if (!santos.length) return;
 
     elementos.tituloInspiracoes.textContent =
-      bloco.titulo || "Nossas Inspirações";
+      bloco.titulo || "Nossa Essência";
 
     santos.forEach((santo, indice) => {
       const botao = document.createElement("button");
@@ -352,6 +395,95 @@
     elementos.janelaSanto.showModal();
   }
 
+  function abrirSantoPorNome(nome) {
+    const indice = (CONFIG.inspiracoes.santos || []).findIndex(
+      (s) => s.nome === nome
+    );
+    if (indice >= 0) abrirSanto(indice);
+  }
+
+  /* ====================================================================
+     Tabela de medidas
+     ==================================================================== */
+
+  /** Escreve 13,5 em vez de 13.5, como manda o português. */
+  const emCentimetros = (valor) => String(valor).replace(".", ",");
+
+  function montarMedidas() {
+    const bloco = CONFIG.medidas || {};
+    const tabelas = bloco.tabelas || {};
+    const chaves = Object.keys(tabelas);
+    if (!chaves.length) return;
+
+    elementos.abasMedidas.innerHTML = chaves
+      .map(
+        (chave, i) => `
+        <button type="button" class="janela-medidas__aba" role="tab"
+                data-tabela="${escapar(chave)}"
+                aria-selected="${i === 0}">${escapar(tabelas[chave].nome)}</button>`
+      )
+      .join("");
+
+    elementos.corpoMedidas.innerHTML = chaves
+      .map((chave, i) => {
+        const tabela = tabelas[chave];
+        return `
+        <div class="janela-medidas__painel" data-tabela="${escapar(chave)}" ${i === 0 ? "" : "hidden"}>
+          <table class="tabela-medidas">
+            <caption class="so-leitor">Medidas do modelo ${escapar(tabela.nome)}, em centímetros</caption>
+            <thead>
+              <tr>
+                <th scope="col">Medidas (cm)</th>
+                ${tabela.tamanhos
+                  .map((t) => `<th scope="col">${escapar(t)}</th>`)
+                  .join("")}
+              </tr>
+            </thead>
+            <tbody>
+              ${(bloco.linhas || [])
+                .map(
+                  (linha, l) => `
+                <tr>
+                  <th scope="row">${escapar(linha)}</th>
+                  ${(tabela.valores[l] || [])
+                    .map((v) => `<td>${emCentimetros(v)}</td>`)
+                    .join("")}
+                </tr>`
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </div>`;
+      })
+      .join("");
+
+    elementos.abasMedidas.addEventListener("click", (evento) => {
+      const aba = evento.target.closest("[data-tabela]");
+      if (aba) mostrarTabela(aba.dataset.tabela);
+    });
+  }
+
+  function mostrarTabela(chave) {
+    elementos.abasMedidas.querySelectorAll("[data-tabela]").forEach((aba) =>
+      aba.setAttribute("aria-selected", String(aba.dataset.tabela === chave))
+    );
+    elementos.corpoMedidas.querySelectorAll("[data-tabela]").forEach((painel) => {
+      painel.hidden = painel.dataset.tabela !== chave;
+    });
+  }
+
+  /**
+   * Abre a janela já na tabela certa: cada cartão diz de qual modelo ele é.
+   * O botão da dúvida frequente não está dentro de cartão nenhum, então a
+   * janela abre na primeira aba.
+   */
+  function abrirMedidas(origem) {
+    const cartao = origem.closest(".produto");
+    if (cartao?.dataset.medidas) mostrarTabela(cartao.dataset.medidas);
+
+    elementos.janelaMedidas.showModal();
+  }
+
   /** Recolhe as opções de todos os cartões, menos o que for passado. */
   function fecharCartoes(excecao) {
     elementos.gradeProdutos
@@ -367,78 +499,143 @@
       });
   }
 
-  function criarCartaoProduto(produto) {
-    const cores = coresDoProduto(produto);
-    const tamanhos = tamanhosDoProduto(produto);
+  /**
+   * Uma coleção: o cabeçalho com o nome, a santa e a história da estampa, e
+   * embaixo um cartão para cada modelo. Tudo o que vale para as cinco peças
+   * fica no cabeçalho, em vez de se repetir cinco vezes seguidas.
+   */
+  function criarBlocoColecao(colecao) {
+    const bloco = document.createElement("section");
+    bloco.className = "colecao";
+    bloco.id = `colecao-${colecao.id}`;
 
+    bloco.innerHTML = `
+      <header class="colecao__cabecalho">
+        <h3 class="colecao__nome">${escapar(colecao.nome)}</h3>
+        ${colecao.esgotada ? '<span class="selo-esgotado selo-esgotado--solto">Esgotado</span>' : ""}
+        ${colecao.santo
+          ? `<button type="button" class="colecao__santo" data-santo="${escapar(colecao.santo)}">
+               ${escapar(colecao.santo)}
+             </button>`
+          : ""}
+        ${colecao.descricao
+          ? `<p class="colecao__descricao">${escapar(colecao.descricao)}</p>`
+          : ""}
+      </header>
+      <div class="grade-produtos"></div>`;
+
+    const grade = bloco.querySelector(".grade-produtos");
+    modelos().forEach((modelo) => {
+      grade.appendChild(criarCartaoCamiseta(colecao, modelo));
+    });
+
+    return bloco;
+  }
+
+  /**
+   * Um cartão por camiseta: a estampa da coleção num caimento só. O preço
+   * já é o dela, e a única escolha que resta é o tamanho.
+   */
+  function criarCartaoCamiseta(colecao, modelo) {
     const cartao = document.createElement("article");
-    cartao.className = "produto" + (produto.esgotado ? " produto--esgotado" : "");
+    cartao.className =
+      "produto" + (colecao.esgotada ? " produto--esgotado" : "");
 
-    const idCor = `cor-${produto.id}`;
-    const idTam = `tam-${produto.id}`;
-    const idDetalhes = `detalhes-${produto.id}`;
+    // De qual tabela de medidas este cartão fala, para a janela abrir na
+    // aba certa.
+    cartao.dataset.medidas = modelo.medidas || "";
+
+    const idTam = `tam-${colecao.id}-${modelo.id}`;
+    const idDetalhes = `detalhes-${colecao.id}-${modelo.id}`;
+
+    const vistas = vistasDoModelo(colecao, modelo);
+    let vistaAtual = 0;
+
+    const legenda = (vista) =>
+      `Camiseta ${colecao.nome}, modelo ${modelo.nome.toLowerCase()}, ${vista.rotulo.toLowerCase()}`;
+
+    // O recado sobre encomendar tamanhos maiores só vale para quem usa a
+    // grade de adulto: no infantil, que tem a sua própria, não faz sentido.
+    const nota = modelo.tamanhos ? "" : CONFIG.prevenda.avisoTamanhos || "";
 
     cartao.innerHTML = `
       <figure class="produto__figura">
-        <img src="${escapar(produto.imagem || "assets/camisetas/modelo-1.svg")}"
-             alt="Camiseta ${escapar(produto.nome)}" loading="lazy">
-        ${produto.esgotado ? '<span class="selo-esgotado">Esgotado</span>' : ""}
+        <img class="produto__foto" src="${escapar(vistas[0].src)}"
+             alt="${escapar(legenda(vistas[0]))}" loading="lazy">
+        ${colecao.esgotada ? '<span class="selo-esgotado">Esgotado</span>' : ""}
+        <div class="produto__vistas" role="group" aria-label="Fotos da peça"></div>
       </figure>
 
       <div class="produto__corpo">
         <div class="produto__topo">
-          <h3 class="produto__nome">${escapar(produto.nome)}</h3>
-          <span class="produto__preco">${emReais(produto.preco)}</span>
+          <h4 class="produto__nome">${escapar(modelo.nome)}</h4>
+          <span class="produto__preco">${emReais(modelo.preco)}</span>
         </div>
 
-        ${produto.esgotado ? "" : `
+        ${colecao.esgotada ? "" : `
         <button type="button" class="produto__escolher"
-                aria-expanded="false" aria-controls="${idDetalhes}">Escolher</button>`}
+                aria-expanded="false" aria-controls="${idDetalhes}">Escolher</button>
 
         <div class="produto__detalhes" id="${idDetalhes}">
-        ${produto.descricao
-          ? `<p class="produto__descricao">${escapar(produto.descricao)}</p>`
-          : ""}
-
-        ${produto.esgotado ? "" : `
-        <div class="opcao">
-          <span class="opcao__rotulo" id="${idCor}">Cor</span>
-          <div class="lista-opcoes" role="group" aria-labelledby="${idCor}" data-grupo="cor">
-            ${cores.map((cor, i) => `
-              <button type="button" class="bolinha-cor"
-                      style="background:${escapar(cor.hex)}"
-                      data-valor="${escapar(cor.nome)}"
-                      aria-pressed="${i === 0}"
-                      title="${escapar(cor.nome)}">
-                <span class="so-leitor">${escapar(cor.nome)}</span>
-              </button>`).join("")}
+          <div class="opcao">
+            <span class="opcao__rotulo" id="${idTam}">Tamanho</span>
+            <div class="lista-opcoes" role="group" aria-labelledby="${idTam}" data-grupo="tamanho">
+              ${tamanhosDoModelo(modelo).map((t) => `
+                <button type="button" class="botao-tamanho" data-valor="${escapar(t)}"
+                        aria-pressed="false">${escapar(t)}</button>`).join("")}
+            </div>
+            ${nota ? `<p class="opcao__nota">${escapar(nota)}</p>` : ""}
+            <button type="button" class="link-texto" data-abrir-medidas>Tabela de medidas</button>
           </div>
-        </div>
 
-        <div class="opcao">
-          <span class="opcao__rotulo" id="${idTam}">Tamanho</span>
-          <div class="lista-opcoes" role="group" aria-labelledby="${idTam}" data-grupo="tamanho">
-            ${tamanhos.map((t, i) => `
-              <button type="button" class="botao-tamanho"
-                      data-valor="${escapar(t)}"
-                      aria-pressed="${i === 0}">${escapar(t)}</button>`).join("")}
-          </div>
-        </div>
+          <p class="produto__faltou" role="alert" hidden></p>
 
-        <div class="produto__rodape">
-          <div class="quantidade">
-            <button type="button" data-passo="-1" aria-label="Diminuir quantidade">−</button>
-            <output aria-live="polite">1</output>
-            <button type="button" data-passo="1" aria-label="Aumentar quantidade">+</button>
+          <div class="produto__rodape">
+            <div class="quantidade">
+              <button type="button" data-passo="-1" aria-label="Diminuir quantidade">−</button>
+              <output aria-live="polite">1</output>
+              <button type="button" data-passo="1" aria-label="Aumentar quantidade">+</button>
+            </div>
+            <button type="button" class="botao botao--principal" data-acao="adicionar">
+              Adicionar
+            </button>
           </div>
-          <button type="button" class="botao botao--principal" data-acao="adicionar">
-            Adicionar
-          </button>
         </div>`}
-        </div>
       </div>`;
 
-    if (produto.esgotado) return cartao;
+    const foto = cartao.querySelector(".produto__foto");
+    const tiras = cartao.querySelector(".produto__vistas");
+
+    /** Redesenha os botõezinhos de frente/costas e troca a foto grande. */
+    function mostrarVistas() {
+      foto.src = vistas[vistaAtual].src;
+      foto.alt = legenda(vistas[vistaAtual]);
+
+      tiras.innerHTML = vistas
+        .map(
+          (vista, i) => `
+          <button type="button" class="produto__vista" data-vista="${i}"
+                  aria-pressed="${i === vistaAtual}">
+            <img src="${escapar(vista.src)}" alt="" loading="lazy">
+            <span class="so-leitor">${escapar(vista.rotulo)}</span>
+          </button>`
+        )
+        .join("");
+    }
+
+    mostrarVistas();
+
+    tiras.addEventListener("click", (evento) => {
+      const botao = evento.target.closest("[data-vista]");
+      if (!botao) return;
+      vistaAtual = Number(botao.dataset.vista);
+      mostrarVistas();
+    });
+
+    if (colecao.esgotada) return cartao;
+
+    const listaTamanhos = cartao.querySelector('[data-grupo="tamanho"]');
+    const faltou = cartao.querySelector(".produto__faltou");
 
     // O cartão mostra só foto, nome e preço; este botão é que traz as
     // opções. Um cartão aberto por vez, para a grade não virar uma coluna
@@ -452,49 +649,53 @@
       escolher.textContent = abrindo ? "Fechar" : "Escolher";
     });
 
-    // Seleção de cor e tamanho
-    cartao.querySelectorAll("[data-grupo]").forEach((grupo) => {
-      grupo.addEventListener("click", (evento) => {
-        const botao = evento.target.closest("button[data-valor]");
-        if (!botao) return;
-        grupo.querySelectorAll("button[data-valor]").forEach((b) =>
-          b.setAttribute("aria-pressed", String(b === botao))
-        );
-      });
+    listaTamanhos.addEventListener("click", (evento) => {
+      const botao = evento.target.closest("button[data-valor]");
+      if (!botao) return;
+      listaTamanhos
+        .querySelectorAll("button")
+        .forEach((b) => b.setAttribute("aria-pressed", String(b === botao)));
+      faltou.hidden = true;
     });
 
-    // Quantidade
     const saida = cartao.querySelector(".quantidade output");
     cartao.querySelectorAll(".quantidade button").forEach((botao) => {
       botao.addEventListener("click", () => {
         const passo = Number(botao.dataset.passo);
         const atual = Number(saida.textContent);
-        const novo = Math.min(LIMITE_POR_ITEM, Math.max(1, atual + passo));
-        saida.textContent = String(novo);
+        saida.textContent = String(
+          Math.min(LIMITE_POR_ITEM, Math.max(1, atual + passo))
+        );
       });
     });
 
-    // Adicionar ao pedido
     cartao
       .querySelector('[data-acao="adicionar"]')
       .addEventListener("click", () => {
-        const selecionado = (grupo) =>
-          cartao.querySelector(
-            `[data-grupo="${grupo}"] button[aria-pressed="true"]`
-          )?.dataset.valor;
+        // Nenhum tamanho vem marcado de antemão: um padrão silencioso
+        // viraria pedido errado.
+        const tamanho = listaTamanhos.querySelector('[aria-pressed="true"]');
+        if (!tamanho) return pedir("Escolha o tamanho.");
 
         adicionarAoPedido({
-          produtoId: produto.id,
-          nome: produto.nome,
-          preco: produto.preco,
-          imagem: produto.imagem,
-          cor: selecionado("cor"),
-          tamanho: selecionado("tamanho"),
+          colecaoId: colecao.id,
+          modeloId: modelo.id,
+          nome: colecao.nome,
+          modeloNome: modelo.nome,
+          preco: modelo.preco,
+          imagem: vistas[vistaAtual].src,
+          cor: CONFIG.prevenda.cor,
+          tamanho: tamanho.dataset.valor,
           quantidade: Number(saida.textContent),
         });
 
         saida.textContent = "1";
       });
+
+    function pedir(mensagem) {
+      faltou.textContent = mensagem;
+      faltou.hidden = false;
+    }
 
     return cartao;
   }
@@ -504,7 +705,7 @@
      ==================================================================== */
 
   function adicionarAoPedido(item) {
-    const chave = `${item.produtoId}|${item.cor}|${item.tamanho}`;
+    const chave = `${item.colecaoId}|${item.modeloId}|${item.tamanho}`;
     const existente = pedido.find((i) => i.chave === chave);
 
     if (existente) {
@@ -518,7 +719,7 @@
 
     salvar();
     desenharTudo();
-    avisar(`${item.nome} (${item.tamanho}) adicionada ao pedido`);
+    avisar(`${item.nome} ${item.modeloNome} (${item.tamanho}) no pedido`);
   }
 
   function alterarQuantidade(chave, passo) {
@@ -559,18 +760,21 @@
       const salvo = JSON.parse(localStorage.getItem(CHAVE_ARMAZENAMENTO) || "[]");
       if (!Array.isArray(salvo)) return;
 
-      // Mantém só itens cujo produto ainda existe e revalida o preço atual.
+      // O pedido fica guardado no navegador e pode ser de semanas atrás.
+      // Antes de mostrar, confere se a coleção e o modelo ainda existem e
+      // relê o preço da configuração de hoje.
       pedido = salvo
         .map((item) => {
-          const produto = (CONFIG.produtos || []).find(
-            (p) => p.id === item.produtoId && !p.esgotado
-          );
-          if (!produto) return null;
+          const colecao = acharColecao(item.colecaoId);
+          const modelo = acharModelo(item.modeloId);
+          if (!colecao || colecao.esgotada || !modelo) return null;
+
           return {
             ...item,
-            nome: produto.nome,
-            preco: produto.preco,
-            imagem: produto.imagem,
+            nome: colecao.nome,
+            modeloNome: modelo.nome,
+            preco: modelo.preco,
+            cor: CONFIG.prevenda.cor,
             quantidade: Math.min(
               LIMITE_POR_ITEM,
               Math.max(1, Number(item.quantidade) || 1)
@@ -592,6 +796,10 @@
     desenharPainel();
     desenharResumo();
 
+    // O valor vai escrito no botão: ninguém deve descobrir quanto vai
+    // pagar só depois de sair do site.
+    elementos.textoBotaoEnviar.textContent = rotuloDoPagamento();
+
     // Esvaziar o pedido pelo formulário deixaria a etapa de dados sem sentido.
     if (!pedido.length && etapa === "dados") mostrarEtapa("itens");
   }
@@ -607,8 +815,8 @@
     elementos.botaoCarrinho.setAttribute(
       "aria-label",
       n === 0
-        ? "Meu pedido, vazio"
-        : `Meu pedido, ${n} ${n === 1 ? "peça" : "peças"}`
+        ? "Meus pedidos, vazio"
+        : `Meus pedidos, ${n} ${n === 1 ? "peça" : "peças"}`
     );
   }
 
@@ -631,7 +839,7 @@
           <img class="item-carrinho__imagem" src="${escapar(item.imagem)}" alt="" loading="lazy">
           <div class="item-carrinho__dados">
             <p class="item-carrinho__nome">${escapar(item.nome)}</p>
-            <p class="item-carrinho__detalhe">${escapar(item.cor)} · Tamanho ${escapar(item.tamanho)}</p>
+            <p class="item-carrinho__detalhe">${escapar(item.modeloNome)} · Tamanho ${escapar(item.tamanho)}</p>
             <div class="item-carrinho__linha">
               <div class="quantidade quantidade--pequena">
                 <button type="button" data-chave="${escapar(item.chave)}" data-passo="-1" aria-label="Diminuir quantidade de ${escapar(item.nome)}">−</button>
@@ -666,7 +874,7 @@
           <li class="resumo__item">
             <span>
               ${item.quantidade}× ${escapar(item.nome)}
-              <small>${escapar(item.cor)} · Tamanho ${escapar(item.tamanho)}</small>
+              <small>${escapar(item.modeloNome)} · Tamanho ${escapar(item.tamanho)}</small>
             </span>
             <strong>${emReais(item.preco * item.quantidade)}</strong>
           </li>`
@@ -674,7 +882,7 @@
           .join("")}
       </ul>
       <div class="resumo__total">
-        <span>Total estimado</span>
+        <span>Total</span>
         <strong>${emReais(totalValor())}</strong>
       </div>`;
   }
@@ -686,7 +894,7 @@
   /**
    * Alterna entre a lista de itens e o formulário, ambos dentro do painel.
    * O rodapé com o total só existe na etapa dos itens: na de dados quem
-   * conclui é o botão do WhatsApp, dentro do próprio formulário.
+   * conclui é o botão de pagar, dentro do próprio formulário.
    */
   function mostrarEtapa(nova) {
     etapa = nova;
@@ -697,7 +905,7 @@
     elementos.rodapeCarrinho.hidden = emDados;
     elementos.voltarItens.hidden = !emDados;
     elementos.tituloPainel.textContent = emDados
-      ? "Finalizar reserva"
+      ? "Finalizar pedido"
       : "Seu pedido";
     elementos.corpoCarrinho.scrollTop = 0;
   }
@@ -787,53 +995,13 @@
     return erros;
   }
 
-  function montarMensagem(dados) {
-    const nomeEntrega =
-      (CONFIG.entrega.find((o) => o.id === dados.entrega) || {}).nome || "-";
-
-    const linhas = [
-      `*NOVO PEDIDO — PRÉ-VENDA ${CONFIG.marca.nome.toUpperCase()}*`,
-      "",
-      `*Nome:* ${dados.nome.trim()}`,
-      `*WhatsApp:* ${mascaraTelefone(dados.whatsapp)}`,
-    ];
-
-    if (dados.email.trim()) linhas.push(`*E-mail:* ${dados.email.trim()}`);
-
-    linhas.push(`*Cidade:* ${dados.cidade.trim()}`);
-    linhas.push(`*Entrega:* ${nomeEntrega}`);
-    linhas.push("", "*ITENS DO PEDIDO*");
-
-    pedido.forEach((item, indice) => {
-      linhas.push(
-        `${indice + 1}. ${item.nome}`,
-        `   Cor: ${item.cor} | Tamanho: ${item.tamanho} | Qtd: ${item.quantidade}`,
-        `   Subtotal: ${emReais(item.preco * item.quantidade)}`
-      );
-    });
-
-    linhas.push(
-      "",
-      `*Total estimado:* ${emReais(totalValor())}`,
-      `(${totalItens()} ${totalItens() === 1 ? "peça" : "peças"})`
-    );
-
-    if (dados.observacoes.trim()) {
-      linhas.push("", `*Observações:* ${dados.observacoes.trim()}`);
-    }
-
-    linhas.push("", "Enviado pelo site da pré-venda.");
-
-    return linhas.join("\n");
-  }
-
-  function enviar(evento) {
+  function irParaPagamento(evento) {
     evento.preventDefault();
     limparErros();
 
     if (!pedido.length) {
       fecharPainel();
-      avisar("Adicione pelo menos uma camiseta antes de enviar o pedido.");
+      avisar("Adicione pelo menos uma camiseta antes de pagar.");
       document
         .getElementById("catalogo")
         .scrollIntoView({ behavior: "smooth", block: "start" });
@@ -857,22 +1025,445 @@
       return;
     }
 
-    const numero = soDigitos(CONFIG.contato.whatsapp);
-    if (numero.length < 12) {
-      elementos.erroGeral.textContent =
-        "O número de WhatsApp da loja ainda não foi configurado. Fale com a gente pelo Instagram.";
-      elementos.erroGeral.hidden = false;
-      return;
+    abrirCheckout(dados);
+  }
+
+  /* ====================================================================
+     Pagamento pela InfinitePay
+     --------------------------------------------------------------------
+     O site não cobra nada por conta própria. Ele monta o pedido, pede à
+     InfinitePay um endereço de checkout e leva o cliente até lá: é na
+     tela deles que se escolhe Pix, crédito à vista ou parcelado, e é lá
+     que o cartão é digitado — nunca aqui.
+
+     Terminado o pagamento, o cliente volta para esta mesma página com os
+     dados da transação no endereço. Antes de dar o pedido por pago,
+     perguntamos à InfinitePay se ele saiu mesmo.
+
+     O que a InfinitePay aceita e em quantas parcelas sem juros é ajustado
+     no aplicativo dela, não aqui: mudar isso pelo site exigiria a chave
+     secreta da conta, que não pode morar num arquivo público.
+     ==================================================================== */
+
+  const API_INFINITEPAY = "https://api.checkout.infinitepay.io";
+  const CHAVE_EM_PAGAMENTO = "viapadrepio:pagamento:v1";
+
+  const FORMAS = { pix: "Pix", credit_card: "Cartão de crédito" };
+
+  /** A InfinitePay trabalha em centavos: R$ 74,90 vira 7490. */
+  const emCentavos = (valor) => Math.round(valor * 100);
+
+  /** A InfiniteTag da loja, sem o cifrão que as pessoas costumam copiar junto. */
+  const infiniteTag = () =>
+    String((CONFIG.pagamento || {}).handle || "").trim().replace(/^\$/, "");
+
+  const opcaoDeEntrega = (id) =>
+    (CONFIG.entrega || []).find((o) => o.id === id) || {};
+
+  /** Número do pedido: a data, para a gente se achar, e um fim que não repete. */
+  function novoNumeroDePedido() {
+    const agora = new Date();
+    const dia = [
+      agora.getFullYear(),
+      String(agora.getMonth() + 1).padStart(2, "0"),
+      String(agora.getDate()).padStart(2, "0"),
+    ].join("");
+    return `VIA-${dia}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+  }
+
+  /** Para onde a InfinitePay devolve o cliente depois de pagar. */
+  const enderecoDeRetorno = () =>
+    String((CONFIG.pagamento || {}).retorno || "").trim() ||
+    `${location.origin}${location.pathname}`;
+
+  function guardarEmAndamento(registro) {
+    try {
+      localStorage.setItem(CHAVE_EM_PAGAMENTO, JSON.stringify(registro));
+    } catch (e) {
+      /* navegação privada bloqueia; o pagamento em si não depende disto */
+    }
+  }
+
+  function lerEmAndamento() {
+    try {
+      return JSON.parse(localStorage.getItem(CHAVE_EM_PAGAMENTO) || "null");
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function esquecerEmAndamento() {
+    try {
+      localStorage.removeItem(CHAVE_EM_PAGAMENTO);
+    } catch (e) {
+      /* idem */
+    }
+  }
+
+  /**
+   * O pedido escrito como aparece no checkout e, depois, no extrato da
+   * InfinitePay. Cada linha diz coleção, modelo, cor e tamanho, porque é
+   * por ela que as peças vão ser separadas.
+   */
+  function itensParaCobranca(dados) {
+    const itens = pedido.map((item) => ({
+      quantity: item.quantidade,
+      price: emCentavos(item.preco),
+      description: `${item.nome} — ${item.modeloNome} · ${item.cor} · Tam ${item.tamanho}`,
+    }));
+
+    const entrega = opcaoDeEntrega(dados.entrega);
+    if (entrega.frete > 0) {
+      itens.push({
+        quantity: 1,
+        price: emCentavos(entrega.frete),
+        description: `Frete — ${entrega.nome}`,
+      });
     }
 
-    const url = `https://wa.me/${numero}?text=${encodeURIComponent(montarMensagem(dados))}`;
-    window.open(url, "_blank", "noopener");
-    avisar("Abrindo o WhatsApp com o seu pedido…");
-
-    // js/animacoes.js escuta para comemorar. Só dispara quando o pedido
-    // realmente saiu, nunca quando a validação barrou o envio.
-    document.dispatchEvent(new CustomEvent("via:pedido-enviado"));
+    return itens;
   }
+
+  /**
+   * Pede o endereço do checkout. O endereço vem com nomes diferentes
+   * conforme o host que responde, então pegamos o primeiro que apareça em
+   * vez de apostar num só.
+   */
+  async function pedirLinkDeCheckout(corpo) {
+    const resposta = await fetch(`${API_INFINITEPAY}/links`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(corpo),
+    });
+
+    const dados = await resposta.json().catch(() => ({}));
+
+    if (!resposta.ok || dados.success === false) {
+      throw new Error(
+        dados.message || `A InfinitePay respondeu ${resposta.status}.`
+      );
+    }
+
+    const fonte = dados.data || dados;
+    const url = ["url", "checkout_url", "link", "payment_url"]
+      .map((chave) => fonte[chave])
+      .find((valor) => typeof valor === "string" && valor.startsWith("http"));
+
+    if (!url) {
+      throw new Error("A InfinitePay não devolveu o endereço do checkout.");
+    }
+
+    return { url, slug: fonte.slug || "" };
+  }
+
+  async function abrirCheckout(dados) {
+    if (!infiniteTag()) {
+      return pararPagamento(
+        "O pagamento pelo site ainda está sendo ligado. Chame a gente no WhatsApp que fechamos o seu pedido por lá."
+      );
+    }
+
+    const numeroPedido = novoNumeroDePedido();
+    travarEnvio(true, "Abrindo o pagamento…");
+
+    try {
+      const { url, slug } = await pedirLinkDeCheckout({
+        handle: infiniteTag(),
+        order_nsu: numeroPedido,
+        redirect_url: enderecoDeRetorno(),
+        items: itensParaCobranca(dados),
+        // Vai preenchido para o outro lado: é menos campo para digitar na
+        // hora de pagar, que é onde as compras costumam ser abandonadas.
+        customer: {
+          name: dados.nome.trim(),
+          email: dados.email.trim() || undefined,
+          phone_number: `+55${soDigitos(dados.whatsapp)}`,
+        },
+      });
+
+      // Guardado antes de a página sair do ar: é com isto que a volta do
+      // checkout mostra o que foi comprado e monta os dados de entrega.
+      // O carrinho só é esvaziado quando o pagamento se confirma.
+      guardarEmAndamento({
+        numeroPedido,
+        slug,
+        dados,
+        itens: pedido,
+        total: totalValor(),
+        quando: new Date().toISOString(),
+      });
+
+      window.location.href = url;
+    } catch (erro) {
+      console.error("Via Padre Pio: não deu para abrir o checkout —", erro);
+      travarEnvio(false);
+      pararPagamento(
+        "Não conseguimos abrir o pagamento agora. Tente de novo em instantes ou chame a gente no WhatsApp."
+      );
+    }
+  }
+
+  /** Enquanto a InfinitePay responde, o botão para de aceitar cliques. */
+  function travarEnvio(travado, texto) {
+    const botao = el("botaoEnviar");
+    botao.disabled = travado;
+    botao.setAttribute("aria-busy", String(travado));
+    elementos.textoBotaoEnviar.textContent = travado
+      ? texto
+      : rotuloDoPagamento();
+  }
+
+  function pararPagamento(mensagem) {
+    elementos.erroGeral.textContent = mensagem;
+    elementos.erroGeral.hidden = false;
+    elementos.erroGeral.scrollIntoView({ block: "nearest" });
+  }
+
+  const rotuloDoPagamento = () =>
+    pedido.length ? `Pagar ${emReais(totalValor())}` : "Ir para o pagamento";
+
+  /**
+   * Volta do checkout. A InfinitePay devolve o cliente com os dados da
+   * transação no próprio endereço — e quem digitasse esse endereço à mão
+   * chegaria aqui também, então perguntamos a ela se o pagamento saiu
+   * antes de dar o pedido por pago.
+   */
+  async function conferirVoltaDoPagamento() {
+    const params = new URLSearchParams(location.search);
+    const transacao = params.get("transaction_nsu");
+    if (!transacao) return;
+
+    const retorno = {
+      transacao,
+      numeroPedido: params.get("order_nsu") || "",
+      slug: params.get("slug") || "",
+      comprovante: params.get("receipt_url") || "",
+      forma: params.get("capture_method") || "",
+    };
+
+    // Limpa a barra de endereços: recarregar a página não deve reabrir a
+    // confirmação de um pagamento que a pessoa já viu.
+    history.replaceState(null, "", location.pathname + location.hash);
+
+    mostrarPagamentoConcluido(retorno, await consultarPagamento(retorno));
+  }
+
+  /**
+   * Pergunta direto à InfinitePay. "pago" vem true, false, ou null quando
+   * não deu para perguntar — e aí tratamos como recebido, sem comemorar:
+   * o comprovante na mão do cliente vale mais do que uma resposta que
+   * não chegou.
+   *
+   * O valor pago pode ser maior que o do pedido: quem parcela no cartão
+   * paga o acréscimo do parcelamento, e é esse número que aparece na
+   * fatura dele.
+   */
+  async function consultarPagamento(retorno) {
+    const vazio = { pago: null, valorPago: null, parcelas: null };
+    if (!infiniteTag() || !retorno.slug) return vazio;
+
+    try {
+      const resposta = await fetch(`${API_INFINITEPAY}/payment_check`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          handle: infiniteTag(),
+          order_nsu: retorno.numeroPedido,
+          transaction_nsu: retorno.transacao,
+          slug: retorno.slug,
+        }),
+      });
+
+      const dados = await resposta.json().catch(() => ({}));
+
+      return {
+        pago: typeof dados.paid === "boolean" ? dados.paid : null,
+        valorPago: Number.isFinite(dados.paid_amount)
+          ? dados.paid_amount / 100
+          : null,
+        parcelas: Number(dados.installments) || null,
+      };
+    } catch (erro) {
+      console.warn("Via Padre Pio: não deu para conferir o pagamento —", erro);
+      return vazio;
+    }
+  }
+
+  /**
+   * Como o pagamento foi feito, em uma linha: "Pix", "Cartão à vista" ou
+   * "Cartão em 5x". O número de parcelas é o que o cliente reconhece da
+   * própria fatura — e, quando a InfinitePay não respondeu, ficamos no
+   * genérico em vez de afirmar um parcelamento que não conferimos.
+   */
+  function comoFoiPago(retorno, consulta) {
+    if (retorno.forma === "pix") return "Pix";
+    if (retorno.forma !== "credit_card") return "";
+    if (!consulta.parcelas) return "Cartão de crédito";
+    return consulta.parcelas <= 1
+      ? "Cartão à vista"
+      : `Cartão em ${consulta.parcelas}x`;
+  }
+
+  function mostrarPagamentoConcluido(retorno, consulta) {
+    const registro = lerEmAndamento() || {};
+    const numero = retorno.numeroPedido || registro.numeroPedido || "";
+    const itens = registro.itens || [];
+    const recusado = consulta.pago === false;
+
+    if (!recusado) {
+      // O pedido foi pago: o carrinho já cumpriu o seu papel.
+      pedido = [];
+      salvar();
+      desenharTudo();
+      fecharPainel(false);
+      esquecerEmAndamento();
+    }
+
+    elementos.pagamentoTitulo.textContent = recusado
+      ? "Pagamento não confirmado"
+      : "Pedido confirmado!";
+
+    elementos.pagamentoTexto.textContent = recusado
+      ? "A InfinitePay não confirmou esse pagamento. Se o valor saiu da sua conta, mande o comprovante para a gente no WhatsApp que resolvemos."
+      : "Recebemos o seu pagamento. Agora é só nos dizer para onde enviar — o botão abaixo abre a conversa com os seus dados já escritos.";
+
+    elementos.pagamentoSelo.hidden = recusado;
+
+    // O valor que vale aqui é o que saiu da conta do cliente. Só quando a
+    // InfinitePay não responde é que caímos no total do pedido.
+    const pagou = consulta.valorPago;
+    const comoPagou = comoFoiPago(retorno, consulta);
+
+    const linhas = [];
+    if (numero) linhas.push(["Pedido", numero]);
+    if (comoPagou) linhas.push(["Pagamento", comoPagou]);
+    if (pagou || registro.total) {
+      linhas.push([pagou ? "Total pago" : "Total", emReais(pagou || registro.total)]);
+    }
+
+    elementos.pagamentoDados.innerHTML = linhas
+      .map(
+        ([rotulo, valor]) =>
+          `<div><dt>${escapar(rotulo)}</dt><dd>${escapar(valor)}</dd></div>`
+      )
+      .join("");
+
+    elementos.pagamentoItens.innerHTML = itens
+      .map(
+        (item) =>
+          `<li>${item.quantidade}× ${escapar(item.nome)} — ${escapar(item.modeloNome)} · Tam ${escapar(item.tamanho)}</li>`
+      )
+      .join("");
+    elementos.pagamentoItens.hidden = !itens.length;
+
+    // Quem parcela paga mais do que o preço das peças. Em vez de deixar a
+    // diferença sem explicação, ela é dita por extenso — com o valor da
+    // parcela, que é como a cobrança vai aparecer na fatura.
+    const acrescimo = pagou && registro.total ? pagou - registro.total : 0;
+    elementos.pagamentoParcelas.hidden = acrescimo <= 0.009;
+    if (acrescimo > 0.009) {
+      const parcela =
+        consulta.parcelas > 1
+          ? `${consulta.parcelas}× de ${emReais(pagou / consulta.parcelas)} · `
+          : "";
+      elementos.pagamentoParcelas.textContent =
+        `${parcela}${emReais(registro.total)} em peças + ${emReais(acrescimo)} de acréscimo do parcelamento.`;
+    }
+
+    const temComprovante = Boolean(retorno.comprovante);
+    elementos.pagamentoComprovante.hidden = !temComprovante;
+    if (temComprovante) elementos.pagamentoComprovante.href = retorno.comprovante;
+
+    const conversa = linkDoAtendimento(
+      recusado
+        ? mensagemDeProblema(numero, retorno.comprovante)
+        : mensagemDeEntrega(numero, registro, retorno.comprovante)
+    );
+    elementos.pagamentoSac.hidden = !conversa;
+    if (conversa) {
+      elementos.pagamentoSac.href = conversa;
+      elementos.pagamentoSacTexto.textContent = recusado
+        ? "Falar com o atendimento"
+        : "Enviar meus dados de entrega";
+    }
+
+    // Mandar só o comprovante, sem o resto. Serve para quem já combinou a
+    // entrega e para quem volta à janela depois.
+    const envioComprovante =
+      temComprovante && linkDoAtendimento(mensagemDeComprovante(numero, retorno));
+    elementos.pagamentoEnviarComprovante.hidden = !envioComprovante;
+    if (envioComprovante) {
+      elementos.pagamentoEnviarComprovante.href = envioComprovante;
+    }
+
+    elementos.janelaPagamento.showModal();
+
+    // js/animacoes.js escuta para comemorar — e só há o que comemorar
+    // quando o pagamento não foi recusado.
+    if (!recusado) {
+      document.dispatchEvent(new CustomEvent("via:pedido-enviado"));
+    }
+  }
+
+  /* ====================================================================
+     Atendimento pelo WhatsApp
+     --------------------------------------------------------------------
+     A conversa deixou de ser o caixa e virou o balcão: tira dúvidas,
+     recebe o endereço de entrega e resolve o que der errado.
+     ==================================================================== */
+
+  function linkDoAtendimento(mensagem) {
+    const numero = soDigitos(CONFIG.contato.whatsapp);
+    if (numero.length < 12) return "";
+    return (
+      `https://wa.me/${numero}` +
+      (mensagem ? `?text=${encodeURIComponent(mensagem)}` : "")
+    );
+  }
+
+  /** O endereço de entrega não passa pela InfinitePay: chega por aqui. */
+  function mensagemDeEntrega(numero, registro, comprovante) {
+    const dados = registro.dados || {};
+    const entrega = opcaoDeEntrega(dados.entrega).nome || "-";
+
+    const linhas = [
+      `Olá! Acabei de pagar o pedido ${numero || "da pré-venda"} no site.`,
+      "",
+      `*Nome:* ${(dados.nome || "").trim()}`,
+      `*Cidade:* ${(dados.cidade || "").trim()}`,
+      `*Entrega:* ${entrega}`,
+    ];
+
+    (registro.itens || []).forEach((item, indice) => {
+      if (indice === 0) linhas.push("", "*Peças:*");
+      linhas.push(
+        `${indice + 1}. ${item.nome} — ${item.modeloNome} · Tam ${item.tamanho} · ${item.quantidade}x`
+      );
+    });
+
+    if ((dados.observacoes || "").trim()) {
+      linhas.push("", `*Observações:* ${dados.observacoes.trim()}`);
+    }
+
+    // O comprovante vai junto: a loja recebe numa mensagem só o que
+    // entregar, para quem, e a prova de que foi pago.
+    if (comprovante) linhas.push("", `*Comprovante:* ${comprovante}`);
+
+    return linhas.join("\n");
+  }
+
+  /** Só o comprovante, para quem quer mandar a prova do pagamento e nada mais. */
+  function mensagemDeComprovante(numero, retorno) {
+    return [
+      `Olá! Segue o comprovante do pagamento do pedido ${numero || "da pré-venda"}.`,
+      "",
+      retorno.comprovante,
+    ].join("\n");
+  }
+
+  const mensagemDeProblema = (numero, comprovante) =>
+    `Olá! Tentei pagar o pedido ${numero || "da pré-venda"} no site e o pagamento não foi confirmado. Podem me ajudar?` +
+    (comprovante ? `\n\n*Comprovante:* ${comprovante}` : "");
 
   /* ====================================================================
      Eventos
@@ -887,6 +1478,38 @@
     // quando a pessoa acerta o fundo escurecido. O Esc o navegador já fecha.
     elementos.janelaSanto.addEventListener("click", (evento) => {
       if (evento.target === elementos.janelaSanto) elementos.janelaSanto.close();
+    });
+
+    elementos.fecharMedidas.addEventListener("click", () =>
+      elementos.janelaMedidas.close()
+    );
+
+    elementos.janelaMedidas.addEventListener("click", (evento) => {
+      if (evento.target === elementos.janelaMedidas) {
+        elementos.janelaMedidas.close();
+      }
+    });
+
+    elementos.fecharPagamento.addEventListener("click", () =>
+      elementos.janelaPagamento.close()
+    );
+
+    elementos.janelaPagamento.addEventListener("click", (evento) => {
+      if (evento.target === elementos.janelaPagamento) {
+        elementos.janelaPagamento.close();
+      }
+    });
+
+    // A tabela de medidas e as histórias são chamadas de vários lugares —
+    // de dentro dos cartões e das dúvidas frequentes —, e os cartões só
+    // existem depois que o catálogo é montado. Por isso o clique é ouvido
+    // uma vez só, aqui na página inteira.
+    document.addEventListener("click", (evento) => {
+      const medidas = evento.target.closest("[data-abrir-medidas]");
+      if (medidas) return abrirMedidas(medidas);
+
+      const santo = evento.target.closest("[data-santo]");
+      if (santo) abrirSantoPorNome(santo.dataset.santo);
     });
 
     elementos.botaoCarrinho.addEventListener("click", () =>
@@ -930,7 +1553,7 @@
       campoTelefone.value = mascaraTelefone(campoTelefone.value);
     });
 
-    elementos.formulario.addEventListener("submit", enviar);
+    elementos.formulario.addEventListener("submit", irParaPagamento);
   }
 
   /* ====================================================================
@@ -945,10 +1568,12 @@
     aplicarTema();
     aplicarTextos();
     montarCatalogo();
+    montarMedidas();
     montarInspiracoes();
     carregar();
     desenharTudo();
     ligarEventos();
+    conferirVoltaDoPagamento();
   }
 
   document.readyState === "loading"
