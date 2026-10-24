@@ -1201,6 +1201,19 @@ a { color: inherit; }
   text-decoration-color: var(--destaque);
 }
 
+/* Num celular não existe chegar perto: o sublinhado do hover nunca
+   acontece, e os nomes ficam com cara de texto solto no meio do rodapé.
+   Onde não há ponteiro que paire, ele fica à mostra desde o começo — um
+   fio dourado fino, só o bastante para dizer que ali se clica. */
+@media (hover: none) {
+  .rodape__santo {
+    opacity: 0.9;
+    text-decoration: underline;
+    text-decoration-color: var(--destaque);
+    text-decoration-thickness: 1px;
+  }
+}
+
 /* ---------- Janela de um santo ---------- */
 
 .janela-santo {

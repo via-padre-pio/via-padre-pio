@@ -326,6 +326,9 @@ marrom `#6b4a1e` nas letras e botões.
 - **"Nossa Essência" fica no rodapé.** Os santos vêm de `inspiracoes.santos`,
   no `js/config.js`: nome, anos de vida, foto (dentro de `assets/santos/`) e a
   história em parágrafos. Clicando no nome, abre uma janela com a foto e o texto.
+  No computador o sublinhado dourado só aparece quando o ponteiro chega perto; no
+  celular, onde não existe chegar perto, ele fica à mostra o tempo todo — senão os
+  nomes passariam por texto solto e ninguém descobriria que ali se clica.
 - **As dúvidas frequentes ficam no `index.html`.** São texto puro, na seção
   `id="duvidas"`. O prazo aparece ali e também em `marca.prazoEntrega`: mudando um,
   confira o outro.
