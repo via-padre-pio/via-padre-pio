@@ -309,55 +309,55 @@ const CONFIG = {
   colecoes: [
     {
       id: "nada-e-pequeno",
-      nome: "Nada é Pequeno",
-      santo: "Santa Teresinha do Menino Jesus",
+      nome: "Nada é Pequeno se Feito com Amor",
+      santo: "Coleção: Santa Teresinha do Menino Jesus",
       descricao:
-        "A rosa de Teresinha no peito e, descendo pelas costas, a frase que resume a pequena via: nada é pequeno se feito com amor.",
+        "Uma rosa delicada no peito e, nas costas, a frase que traduz a pequena via de Santa Teresinha: nada é pequeno se feito com amor. Uma peça que nos lembra que a santidade está nos pequenos gestos vividos com amor.",
       pasta: "assets/colecoes/nada-e-pequeno",
       esgotada: false,
     },
     {
       id: "saint-therese",
       nome: "Saint Therese",
-      santo: "Santa Teresinha do Menino Jesus",
+      santo: "Coleção: Santa Teresinha do Menino Jesus",
       descricao:
-        "O nome da santa escrito letra a letra ao longo da coluna, fechado pela rosa. A frente fica com o traço discreto no peito.",
+        "O nome de Santa Teresinha percorre as costas da peça, escrito letra a letra ao longo da coluna e finalizado por uma rosa delicada. Na frente, uma rosa em traço sutil no peito completa o design com simplicidade e significado.",
       pasta: "assets/colecoes/saint-therese",
       esgotada: false,
     },
     {
       id: "since-1873",
       nome: "Saint Therese Since 1873",
-      santo: "Santa Teresinha do Menino Jesus",
+      santo: "Coleção: Santa Teresinha do Menino Jesus",
       descricao:
-        "O ano de nascimento de Teresinha estampado no peito e, nas costas, a rosa inteira em traço aberto.",
+        "O ano de nascimento de Santa Teresinha em uma inscrição delicada no peito. Nas costas, uma rosa grande, simboliza a devoção à santa e remete à sua promessa de fazer cair uma chuva de rosas sobre a Terra, como sinal das graças de Deus.",
       pasta: "assets/colecoes/since-1873",
       esgotada: false,
     },
     {
       id: "padre-pio",
       nome: "Padre Pio",
-      santo: "São Pio de Pietrelcina",
+      santo: "Coleção: São Pio de Pietrelcina",
       descricao:
-        "O rosto do santo em traço contínuo, pequeno no peito. Nas costas, o nome descendo pela coluna em letras espaçadas, aberto por uma cruz.",
+        "Uma homenagem ao santo que inspira o nome e a essência da Via. Seu rosto em traço contínuo no peito e seu nome nas costas, acompanhado de uma cruz, representam uma fé marcada pela oração e pela confiança em Deus.",
       pasta: "assets/colecoes/padre-pio",
       esgotada: false,
     },
     {
       id: "father-pio",
       nome: "Father Pio Since 1887",
-      santo: "São Pio de Pietrelcina",
+      santo: "Coleção: São Pio de Pietrelcina",
       descricao:
-        "O ano de nascimento discreto na frente e, ocupando as costas inteiras, o santo em oração sob a frase que ele repetia a quem o procurava: reze, espere e não se preocupe.",
+        "Na frente, o ano de nascimento de Padre Pio. Nas costas, sua imagem em oração, junto à frase que traduz um dos seus ensinamentos mais marcantes: “Reze, espere e não se preocupe”.",
       pasta: "assets/colecoes/father-pio",
       esgotada: false,
     },
     {
       id: "amai-nossa-senhora",
       nome: "Amai Nossa Senhora",
-      santo: "São Pio de Pietrelcina",
+      santo: "Coleção: São Pio de Pietrelcina",
       descricao:
-        "A frase de Padre Pio em manuscrito, no lado do peito, com a assinatura dele embaixo. As costas ficam limpas.",
+        "A frase “Amai Nossa Senhora” em composição manuscrita no peito, acompanhada do nome de Padre Pio, identificando sua autoria. As costas permanecem limpas, em uma proposta minimalista e elegante.",
       pasta: "assets/colecoes/amai-nossa-senhora",
       esgotada: false,
 
