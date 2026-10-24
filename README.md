@@ -69,10 +69,41 @@ fica registrado na venda, dentro do app — é lá que vocês consultam para ond
 
 O que a InfinitePay *não* sabe é a forma de entrega escolhida (retirada, entrega em
 mãos ou Correios) e as observações do cliente. Isso chega pelo botão "Enviar meus
-dados de entrega" da tela de confirmação, que abre o WhatsApp com o número do
-pedido, o nome, a cidade, as peças e o link do comprovante já escritos. Quem quiser
-mandar só o comprovante tem um segundo link na mesma janela, "Enviar comprovante no
-WhatsApp".
+dados de entrega" da tela de confirmação, que abre o WhatsApp com a mensagem já
+escrita. Quem quiser mandar só a prova do pagamento tem um segundo link na mesma
+janela, "Enviar comprovante no WhatsApp".
+
+As três mensagens chegam no formato de cartão: a primeira linha diz o que aconteceu
+e com qual pedido — e é justamente ela que vocês leem na lista de conversas, antes
+de abrir —, depois vêm os dados do pagamento e, no caso do pedido pago, os dados da
+entrega:
+
+```
+*PEDIDO PAGO · VIA-20261023-A7K2P*
+──────────────────
+*Pagamento:* Cartão em 5x
+*Total pago:* R$ 361,70
+_R$ 329,70 em peças + R$ 32,00 de acréscimo do parcelamento_
+*Comprovante:* https://comprovante.infinitepay.io/abc123
+──────────────────
+*Cliente:* Maria das Dores Silva
+*Cidade:* Barueri - SP
+*Entrega:* Enviar pelos Correios (frete à parte)
+
+*Peças:*
+1. Padre Pio — Oversized · Tam G · 2x
+
+Olá! Acabei de pagar no site. O endereço de entrega é o que preenchi
+no checkout da InfinitePay.
+```
+
+As outras duas começam por `*COMPROVANTE · ...*` e `*PAGAMENTO NÃO CONFIRMADO ·
+...*`, e trazem o mesmo bloco de pagamento. O WhatsApp não tem cartão de verdade em
+link `wa.me` — só texto —, então o formato é feito com o que ele sabe desenhar:
+negrito, itálico e o traço longo.
+
+A linha em itálico só aparece quando o cliente parcelou. Sem ela, um valor pago
+maior que o do pedido pareceria erro de cobrança.
 
 **Taxas e parcelamento ficam no app da InfinitePay** (Meios de Pagamento → cartão de
 crédito), onde se escolhe entre *repassar* ou *assumir* as taxas. Repassando, o

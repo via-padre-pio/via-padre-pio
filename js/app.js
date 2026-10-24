@@ -1390,8 +1390,8 @@
 
     const conversa = linkDoAtendimento(
       recusado
-        ? mensagemDeProblema(numero, retorno.comprovante)
-        : mensagemDeEntrega(numero, registro, retorno.comprovante)
+        ? mensagemDeProblema(numero, registro, retorno, consulta)
+        : mensagemDeEntrega(numero, registro, retorno, consulta)
     );
     elementos.pagamentoSac.hidden = !conversa;
     if (conversa) {
@@ -1404,7 +1404,10 @@
     // Mandar só o comprovante, sem o resto. Serve para quem já combinou a
     // entrega e para quem volta à janela depois.
     const envioComprovante =
-      temComprovante && linkDoAtendimento(mensagemDeComprovante(numero, retorno));
+      temComprovante &&
+      linkDoAtendimento(
+        mensagemDeComprovante(numero, registro, retorno, consulta)
+      );
     elementos.pagamentoEnviarComprovante.hidden = !envioComprovante;
     if (envioComprovante) {
       elementos.pagamentoEnviarComprovante.href = envioComprovante;
@@ -1435,15 +1438,71 @@
     );
   }
 
-  /** O endereço de entrega não passa pela InfinitePay: chega por aqui. */
-  function mensagemDeEntrega(numero, registro, comprovante) {
+  /**
+   * As mensagens chegam na loja como um cartão: uma chamada em negrito,
+   * uma régua e os dados em linhas curtas. O WhatsApp não tem cartão de
+   * verdade em link wa.me — só texto —, então o formato é feito com o que
+   * ele sabe desenhar: *negrito*, _itálico_ e o traço longo.
+   *
+   * A primeira linha é escolhida para ser lida na lista de conversas,
+   * antes de abrir: ali a loja já sabe se foi pagamento aprovado,
+   * comprovante avulso ou problema, e de qual pedido.
+   */
+  const REGUA = "──────────────────";
+
+  const cartao = (titulo, numero) => [
+    `*${titulo}${numero ? ` · ${numero}` : ""}*`,
+    REGUA,
+  ];
+
+  /**
+   * O pagamento em três linhas: como foi pago, quanto saiu da conta do
+   * cliente e o comprovante para conferir. Quem parcelou pagou mais do
+   * que o preço das peças, e a diferença vem dita por extenso — senão a
+   * loja estranha um valor que não bate com o pedido.
+   */
+  function dadosDoPagamento(registro, retorno, consulta) {
+    const linhas = [];
+
+    const comoPagou = comoFoiPago(retorno, consulta);
+    if (comoPagou) linhas.push(`*Pagamento:* ${comoPagou}`);
+
+    const pago = consulta.valorPago;
+    if (pago) {
+      linhas.push(`*Total pago:* ${emReais(pago)}`);
+      const acrescimo = registro.total ? pago - registro.total : 0;
+      if (acrescimo > 0.009) {
+        linhas.push(
+          `_${emReais(registro.total)} em peças + ${emReais(acrescimo)} de acréscimo do parcelamento_`
+        );
+      }
+    } else if (registro.total) {
+      linhas.push(`*Valor do pedido:* ${emReais(registro.total)}`);
+    }
+
+    if (retorno.comprovante) {
+      linhas.push(`*Comprovante:* ${retorno.comprovante}`);
+    }
+
+    return linhas;
+  }
+
+  /**
+   * O pedido pago, inteiro. O endereço de entrega não vem aqui: ele é
+   * pedido pela própria InfinitePay, numa etapa obrigatória do checkout,
+   * e a loja o consulta no aplicativo pelo número do pedido. O que esta
+   * mensagem acrescenta é o que a InfinitePay não sabe — a forma de
+   * envio combinada, as observações e quais peças separar.
+   */
+  function mensagemDeEntrega(numero, registro, retorno, consulta) {
     const dados = registro.dados || {};
     const entrega = opcaoDeEntrega(dados.entrega).nome || "-";
 
     const linhas = [
-      `Olá! Acabei de pagar o pedido ${numero || "da pré-venda"} no site.`,
-      "",
-      `*Nome:* ${(dados.nome || "").trim()}`,
+      ...cartao("PEDIDO PAGO", numero),
+      ...dadosDoPagamento(registro, retorno, consulta),
+      REGUA,
+      `*Cliente:* ${(dados.nome || "").trim()}`,
       `*Cidade:* ${(dados.cidade || "").trim()}`,
       `*Entrega:* ${entrega}`,
     ];
@@ -1459,25 +1518,38 @@
       linhas.push("", `*Observações:* ${dados.observacoes.trim()}`);
     }
 
-    // O comprovante vai junto: a loja recebe numa mensagem só o que
-    // entregar, para quem, e a prova de que foi pago.
-    if (comprovante) linhas.push("", `*Comprovante:* ${comprovante}`);
+    linhas.push(
+      "",
+      "Olá! Acabei de pagar no site. O endereço de entrega é o que preenchi no checkout da InfinitePay."
+    );
 
     return linhas.join("\n");
   }
 
-  /** Só o comprovante, para quem quer mandar a prova do pagamento e nada mais. */
-  function mensagemDeComprovante(numero, retorno) {
+  /** Só a prova do pagamento, para quem já combinou a entrega. */
+  function mensagemDeComprovante(numero, registro, retorno, consulta) {
     return [
-      `Olá! Segue o comprovante do pagamento do pedido ${numero || "da pré-venda"}.`,
+      ...cartao("COMPROVANTE", numero),
+      ...dadosDoPagamento(registro, retorno, consulta),
       "",
-      retorno.comprovante,
+      "Olá! Segue o comprovante do meu pagamento.",
     ].join("\n");
   }
 
-  const mensagemDeProblema = (numero, comprovante) =>
-    `Olá! Tentei pagar o pedido ${numero || "da pré-venda"} no site e o pagamento não foi confirmado. Podem me ajudar?` +
-    (comprovante ? `\n\n*Comprovante:* ${comprovante}` : "");
+  /**
+   * O pagamento que a InfinitePay não confirmou. Os dados vão junto
+   * justamente porque é aqui que eles mais importam: com o comprovante e
+   * o número do pedido em mãos, a loja resolve sem ter que entrevistar
+   * um cliente que acabou de levar um susto.
+   */
+  function mensagemDeProblema(numero, registro, retorno, consulta) {
+    return [
+      ...cartao("PAGAMENTO NÃO CONFIRMADO", numero),
+      ...dadosDoPagamento(registro, retorno, consulta),
+      "",
+      "Olá! Tentei pagar no site e o pagamento não foi confirmado. Podem me ajudar?",
+    ].join("\n");
+  }
 
   /* ====================================================================
      Eventos
