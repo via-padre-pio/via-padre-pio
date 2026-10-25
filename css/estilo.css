@@ -180,7 +180,15 @@ a { color: inherit; }
   text-decoration: none;
 }
 
-.marca__texto { display: flex; flex-direction: column; line-height: 1.2; }
+/* A coluna tem a largura do nome, que é o mais comprido dos dois. Centrar
+   o texto dentro dela põe a assinatura no meio do título, em vez de solta
+   na beirada esquerda. */
+.marca__texto {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  text-align: center;
+}
 
 .marca__texto strong {
   font-family: var(--fonte-titulo);
