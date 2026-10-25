@@ -443,4 +443,50 @@ const CONFIG = {
       },
     },
   },
+
+  /* ------------------------------------------------------------------
+     9. PROVADOR
+     ------------------------------------------------------------------
+     A segunda aba da janela de medidas. Ele não adivinha nada sozinho:
+     faz conta em cima da tabela acima. Estes são os dois números que a
+     conta precisa, e os dois podem ser ajustados quando a loja souber,
+     pelas trocas reais, que uma peça está vestindo diferente do previsto.
+
+     FOLGA
+     Quanto a peça sobra sobre o corpo, em centímetros de circunferência.
+     A linha "Tórax" da tabela é a metade da peça, deitada: a peça M
+     tradicional tem 52 de tórax, logo 104 cm de volta inteira. Tirando a
+     folga de 8, ela veste um corpo de 96 cm.
+
+     Os valores abaixo não foram escolhidos no olho — eles saem da própria
+     tabela. Com 8 na tradicional, os tamanhos caem exatamente sobre o
+     tórax masculino da ABNT NBR 16060 (P 92, M 96, G 100, GG 104); com 6
+     na baby look, sobre o busto feminino da NBR 16933 (PP 82, P 86, M 90,
+     G 94); e com 20 na oversized, cada tamanho veste o mesmo corpo que o
+     tamanho de mesma letra na tradicional. Ou seja: quem é M é M nos três.
+
+     ESTIMATIVA
+     Para quem não tem fita métrica em casa. O corpo é, grosso modo, um
+     cilindro: a massa acompanha a altura vezes a área da seção, e a volta
+     do tórax acompanha a raiz dessa área. Daí tórax ≈ k × √(peso ÷ altura),
+     com o peso em quilos e a altura em metros. O k abaixo foi calibrado
+     para que uma pessoa de porte médio caia no M da ABNT.
+
+     Isso é uma estimativa, e o provador diz isso a quem usa. Os outros
+     dois caminhos — medir o próprio tórax, ou medir uma camiseta que já
+     serve — não passam por aqui e são exatos.
+     ------------------------------------------------------------------ */
+  provador: {
+    folga: {
+      tradicional: 8,
+      oversized: 20,
+      "baby-look": 6,
+      infantil: 6,
+    },
+
+    estimativa: {
+      masculino: 14.9,
+      feminino: 14.5,
+    },
+  },
 };

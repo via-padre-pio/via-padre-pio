@@ -94,8 +94,16 @@
     vistasFoto: el("vistasFoto"),
     janelaMedidas: el("janelaMedidas"),
     fecharMedidas: el("fecharMedidas"),
+    secoesMedidas: el("secoesMedidas"),
+    tituloMedidas: el("tituloMedidas"),
+    notaMedidas: el("notaMedidas"),
     abasMedidas: el("abasMedidas"),
     corpoMedidas: el("corpoMedidas"),
+    provadorModelos: el("provadorModelos"),
+    provadorJeitos: el("provadorJeitos"),
+    provadorDica: el("provadorDica"),
+    provadorCampos: el("provadorCampos"),
+    provadorSaida: el("provadorSaida"),
     janelaPagamento: el("janelaPagamento"),
     fecharPagamento: el("fecharPagamento"),
     pagamentoSelo: el("pagamentoSelo"),
@@ -783,9 +791,364 @@
    */
   function abrirMedidas(origem) {
     const cartao = origem.closest(".produto");
-    if (cartao?.dataset.medidas) mostrarTabela(cartao.dataset.medidas);
+    if (cartao?.dataset.medidas) {
+      mostrarTabela(cartao.dataset.medidas);
+      // O provador abre no mesmo modelo da tabela: quem veio do cartão da
+      // baby look está perguntando o tamanho da baby look, e trocar de aba
+      // não pode devolvê-lo à tradicional.
+      escolherModelo(cartao.dataset.medidas);
+      desenharProvador();
+    }
 
+    mostrarSecao("tabela");
     elementos.janelaMedidas.showModal();
+  }
+
+  /* ====================================================================
+     Provador
+     --------------------------------------------------------------------
+     A segunda aba da janela. Não há adivinhação aqui: a tabela de medidas
+     diz quanto cada peça mede, CONFIG.provador.folga diz quanto ela sobra
+     sobre o corpo, e o resto é subtração.
+
+     São três caminhos, e dois deles são exatos. Medir o próprio tórax e
+     medir uma camiseta que já serve não passam por estimativa nenhuma —
+     o segundo nem usa a folga, porque compara peça com peça. O caminho da
+     altura e do peso é o único que estima, e diz isso a quem o usa.
+     ==================================================================== */
+
+  const provador = { modelo: "", jeito: "estimar", corpo: "masculino" };
+
+  const tabelaDoProvador = () =>
+    (CONFIG.medidas?.tabelas || {})[provador.modelo] || null;
+
+  /**
+   * A linha do tórax é procurada pelo nome, e não fixada no índice 1: a
+   * ordem de CONFIG.medidas.linhas é da loja, e mexer nela não pode fazer
+   * o provador passar a medir a boca da manga em silêncio.
+   */
+  const linhaDoTorax = () =>
+    (CONFIG.medidas?.linhas || []).findIndex((l) => /t[óo]rax/i.test(l));
+
+  /** O tórax de cada tamanho: a metade da peça, deitada, como na tabela. */
+  function toraxDasPecas() {
+    const tabela = tabelaDoProvador();
+    const linha = linhaDoTorax();
+    if (!tabela || linha < 0) return [];
+    return (tabela.valores[linha] || []).map(Number);
+  }
+
+  const folgaDoModelo = () =>
+    Number((CONFIG.provador?.folga || {})[provador.modelo]) || 0;
+
+  /**
+   * Tórax do corpo a partir da altura e do peso. O corpo é, grosso modo,
+   * um cilindro: a massa acompanha a altura vezes a área da seção, e a
+   * volta do tórax acompanha a raiz dessa área. O k vem do config.
+   */
+  function toraxEstimado(alturaCm, pesoKg) {
+    const k = Number((CONFIG.provador?.estimativa || {})[provador.corpo]);
+    if (!k || alturaCm <= 0 || pesoKg <= 0) return 0;
+    return k * Math.sqrt(pesoKg / (alturaCm / 100));
+  }
+
+  /**
+   * Fita métrica não tem precisão de milímetro, e a estimativa muito menos.
+   * Um centímetro de tolerância existe para que um corpo de 96,1 continue
+   * vestindo o M de 104, em vez de subir um tamanho inteiro por causa de
+   * um milímetro de sobra na conta.
+   */
+  const TOLERANCIA = 1;
+
+  /**
+   * O primeiro tamanho que acomoda a medida. Devolve junto o que fazer
+   * quando nenhum acomoda, porque empurrar a pessoa para o maior tamanho
+   * em silêncio seria dizer que a peça serve quando ela não serve.
+   */
+  function tamanhoQueVeste(larguraPedida) {
+    const pecas = toraxDasPecas();
+    const ultimo = pecas.length - 1;
+
+    const i = pecas.findIndex((p) => p >= larguraPedida - TOLERANCIA / 2);
+    if (i < 0) return { indice: ultimo, situacao: "grande" };
+    if (i === 0 && pecas[0] > larguraPedida + TOLERANCIA) {
+      return { indice: 0, situacao: "pequeno" };
+    }
+    return { indice: i, situacao: "serve" };
+  }
+
+  /** O tamanho cuja peça chega mais perto da medida, para mais ou para menos. */
+  function maisParecido(largura) {
+    const pecas = toraxDasPecas();
+    return pecas.reduce(
+      (melhor, p, i) =>
+        Math.abs(p - largura) < Math.abs(pecas[melhor] - largura) ? i : melhor,
+      0
+    );
+  }
+
+  /** Infantil é numerado pela idade: "04" veste quem tem quatro anos. */
+  function tamanhoDaIdade(idade) {
+    const tamanhos = tabelaDoProvador()?.tamanhos || [];
+    const i = tamanhos.findIndex((t) => parseInt(t, 10) >= idade);
+    return i >= 0 ? i : tamanhos.length - 1;
+  }
+
+  function escolherModelo(chave) {
+    if ((CONFIG.medidas?.tabelas || {})[chave]) provador.modelo = chave;
+  }
+
+  const DICAS = {
+    estimar:
+      "Uma estimativa a partir do seu porte. Se o resultado deixar dúvida, " +
+      "os outros dois caminhos são medidas de verdade.",
+    corpo:
+      "Passe a fita em volta da parte mais larga do peito, por baixo dos " +
+      "braços, sem apertar.",
+    peca:
+      "Deite no chão uma camiseta que já serve bem em você e meça a largura " +
+      "de um lado ao outro, logo abaixo das mangas.",
+  };
+
+  const campoNumero = (id, rotulo, unidade, exemplo) => `
+    <label class="provador__campo" for="${id}">
+      <span class="provador__rotulo">${rotulo}</span>
+      <span class="provador__entrada">
+        <input type="number" id="${id}" inputmode="decimal" min="1" step="any"
+               autocomplete="off" placeholder="${exemplo}">
+        <span class="provador__unidade">${unidade}</span>
+      </span>
+    </label>`;
+
+  function camposDoProvador() {
+    if (provador.jeito === "corpo") {
+      return campoNumero("provTorax", "Volta do meu tórax", "cm", "96");
+    }
+    if (provador.jeito === "peca") {
+      return campoNumero("provPeca", "Largura dela, deitada", "cm", "52");
+    }
+    if (provador.modelo === "infantil") {
+      return campoNumero("provIdade", "Idade da criança", "anos", "6");
+    }
+    return `
+      <div class="provador__corpos" role="group" aria-label="Corpo">
+        ${["masculino", "feminino"]
+          .map(
+            (c) => `
+          <button type="button" class="provador__corpo" data-corpo="${c}"
+                  aria-pressed="${provador.corpo === c}">${
+              c === "masculino" ? "Masculino" : "Feminino"
+            }</button>`
+          )
+          .join("")}
+      </div>
+      ${campoNumero("provAltura", "Altura", "cm", "173")}
+      ${campoNumero("provPeso", "Peso", "kg", "72")}`;
+  }
+
+  function montarProvador() {
+    const tabelas = CONFIG.medidas?.tabelas || {};
+    const chaves = Object.keys(tabelas);
+    if (!chaves.length) return;
+    if (!provador.modelo) provador.modelo = chaves[0];
+
+    elementos.provadorModelos.innerHTML = chaves
+      .map(
+        (chave) => `
+        <button type="button" class="provador__modelo" data-modelo="${escapar(chave)}"
+                aria-pressed="false">${escapar(tabelas[chave].nome)}</button>`
+      )
+      .join("");
+
+    elementos.provadorModelos.addEventListener("click", (evento) => {
+      const botao = evento.target.closest("[data-modelo]");
+      if (!botao) return;
+      provador.modelo = botao.dataset.modelo;
+      desenharProvador();
+    });
+
+    elementos.provadorJeitos.addEventListener("click", (evento) => {
+      const botao = evento.target.closest("[data-jeito]");
+      if (!botao) return;
+      provador.jeito = botao.dataset.jeito;
+      desenharProvador();
+    });
+
+    // O corpo não redesenha os campos: a altura e o peso já digitados
+    // continuam onde estão, e a conta só refaz com o outro k.
+    elementos.provadorCampos.addEventListener("click", (evento) => {
+      const botao = evento.target.closest("[data-corpo]");
+      if (!botao) return;
+      provador.corpo = botao.dataset.corpo;
+      elementos.provadorCampos
+        .querySelectorAll("[data-corpo]")
+        .forEach((b) =>
+          b.setAttribute("aria-pressed", String(b.dataset.corpo === provador.corpo))
+        );
+      calcularProvador();
+    });
+
+    elementos.provadorCampos.addEventListener("input", calcularProvador);
+
+    desenharProvador();
+  }
+
+  function desenharProvador() {
+    const marcar = (caixa, chave) =>
+      caixa
+        .querySelectorAll(`[data-${chave}]`)
+        .forEach((b) =>
+          b.setAttribute("aria-pressed", String(b.dataset[chave] === provador[chave]))
+        );
+
+    marcar(elementos.provadorModelos, "modelo");
+    marcar(elementos.provadorJeitos, "jeito");
+
+    elementos.provadorDica.textContent = DICAS[provador.jeito] || "";
+    elementos.provadorCampos.innerHTML = camposDoProvador();
+    elementos.provadorSaida.innerHTML = "";
+  }
+
+  function mostrarSecao(nome) {
+    elementos.secoesMedidas.querySelectorAll("[data-secao]").forEach((aba) =>
+      aba.setAttribute("aria-selected", String(aba.dataset.secao === nome))
+    );
+    elementos.janelaMedidas
+      .querySelectorAll("div[data-secao]")
+      .forEach((painel) => {
+        painel.hidden = painel.dataset.secao !== nome;
+      });
+
+    const provando = nome === "provador";
+    elementos.tituloMedidas.textContent = provando
+      ? "Provador virtual"
+      : "Tabela de medidas";
+    elementos.notaMedidas.textContent = provando
+      ? "Diga o seu porte e a gente procura, na tabela ao lado, o tamanho que veste você."
+      : "Medidas da peça em centímetros, não do corpo. Na dúvida, compare com uma camiseta que já serve bem em você.";
+  }
+
+  /**
+   * Lê os campos, acha o tamanho e escreve a conta por extenso. A conta
+   * aparece de propósito: um número que a pessoa pode conferir contra a
+   * tabela convence mais do que um veredito.
+   */
+  function calcularProvador() {
+    const tabela = tabelaDoProvador();
+    const pecas = toraxDasPecas();
+    if (!tabela || !pecas.length) return;
+
+    const numero = (id) => {
+      const campo = el(id);
+      return campo ? Number(String(campo.value).replace(",", ".")) || 0 : 0;
+    };
+
+    let indice = -1;
+    let conta = "";
+    let estimado = false;
+    let situacao = "serve";
+
+    if (provador.jeito === "peca") {
+      const largura = numero("provPeca");
+      if (largura <= 0) return limparSaidaDoProvador();
+      indice = maisParecido(largura);
+      conta =
+        `A sua camiseta mede ${emCentimetros(largura)} cm de tórax, deitada. ` +
+        `O ${tabela.tamanhos[indice]} é o mais próximo disso, com ` +
+        `${emCentimetros(pecas[indice])} cm.`;
+    } else if (provador.jeito === "estimar" && provador.modelo === "infantil") {
+      const idade = numero("provIdade");
+      if (idade <= 0) return limparSaidaDoProvador();
+      indice = tamanhoDaIdade(idade);
+      conta =
+        "Os tamanhos infantis são numerados pela idade, e por isso este " +
+        "caminho não precisa de conta nenhuma.";
+    } else {
+      let torax = 0;
+      if (provador.jeito === "corpo") {
+        torax = numero("provTorax");
+      } else {
+        // Arredondado antes de entrar na conta: a estimativa não tem
+        // precisão de milímetro, e mostrar 96,1234755 daria a ela uma
+        // exatidão que ela não tem.
+        torax = Math.round(toraxEstimado(numero("provAltura"), numero("provPeso")));
+        estimado = true;
+      }
+      if (torax <= 0) return limparSaidaDoProvador();
+
+      const folga = folgaDoModelo();
+      const achado = tamanhoQueVeste((torax + folga) / 2);
+      indice = achado.indice;
+      situacao = achado.situacao;
+
+      conta =
+        `${estimado ? "Tórax estimado" : "Seu tórax"}: ` +
+        `${emCentimetros(torax)} cm. Com a folga de ${emCentimetros(folga)} cm ` +
+        `deste modelo, a peça precisa ter ${emCentimetros(torax + folga)} cm de ` +
+        `volta — e o ${tabela.tamanhos[indice]} tem ` +
+        `${emCentimetros(pecas[indice] * 2)} cm.`;
+    }
+
+    escreverSaidaDoProvador(tabela, indice, conta, estimado, situacao);
+  }
+
+  function limparSaidaDoProvador() {
+    elementos.provadorSaida.innerHTML = "";
+  }
+
+  /**
+   * Quando a tabela não alcança o corpo, o provador diz isso em vez de
+   * entregar o maior tamanho como se coubesse. A peça sob encomenda já é
+   * oferecida no catálogo; aqui o caminho é a conversa.
+   */
+  const RECADOS = {
+    grande:
+      "Nenhum dos tamanhos desta tabela chega à sua medida. Este é o maior " +
+      "que temos pronto — fale com a gente para combinarmos uma peça sob " +
+      "encomenda.",
+    pequeno:
+      "Este é o menor tamanho adulto que temos, e ele vai ficar folgado em " +
+      "você. Vale olhar o infantil, ou falar com a gente.",
+  };
+
+  function escreverSaidaDoProvador(tabela, indice, conta, estimado, situacao) {
+    const serve = situacao === "serve";
+    const justo = tabela.tamanhos[indice - 1];
+    const folgado = tabela.tamanhos[indice + 1];
+    const vizinhos = [
+      justo ? `mais justo, o ${justo}` : "",
+      folgado ? `mais folgado, o ${folgado}` : "",
+    ].filter(Boolean);
+
+    const ajuda = linkDoAtendimento(
+      serve
+        ? `Olá! Fiz o provador do site e ele indicou o tamanho ${tabela.tamanhos[indice]} ` +
+            `no modelo ${tabela.nome}. Pode me ajudar a confirmar?`
+        : `Olá! Fiz o provador do site e nenhum tamanho do modelo ${tabela.nome} ` +
+            `serviu em mim. Pode me ajudar?`
+    );
+
+    elementos.provadorSaida.innerHTML = `
+      <p class="provador__chamada">${
+        serve
+          ? `O seu tamanho no ${escapar(tabela.nome)} é`
+          : `No ${escapar(tabela.nome)}, o mais perto é`
+      }</p>
+      <p class="provador__tamanho">${escapar(tabela.tamanhos[indice])}</p>
+      <p class="provador__conta">${escapar(conta)}</p>
+      ${serve && vizinhos.length
+        ? `<p class="provador__vizinhos">Se você gosta de ${vizinhos.join(", ou ")}.</p>`
+        : ""}
+      ${!serve
+        ? `<p class="provador__aviso">${escapar(RECADOS[situacao])}</p>`
+        : estimado
+        ? `<p class="provador__aviso">Isto é uma estimativa a partir da altura e do peso.
+             Para ter certeza, meça o seu tórax ou uma camiseta que já serve.</p>`
+        : ""}
+      ${ajuda
+        ? `<a class="provador__ajuda" href="${ajuda}" target="_blank" rel="noopener">
+             ${serve ? "Ficou em dúvida? Fale com a gente" : "Falar com a gente"}</a>`
+        : ""}`;
   }
 
   /** Recolhe as opções de todos os cartões, menos o que for passado. */
@@ -2080,6 +2443,11 @@
       elementos.janelaMedidas.close()
     );
 
+    elementos.secoesMedidas.addEventListener("click", (evento) => {
+      const aba = evento.target.closest("[data-secao]");
+      if (aba) mostrarSecao(aba.dataset.secao);
+    });
+
     elementos.janelaMedidas.addEventListener("click", (evento) => {
       if (evento.target === elementos.janelaMedidas) {
         elementos.janelaMedidas.close();
@@ -2168,6 +2536,7 @@
       .forEach(umaFrasePorLinha);
     montarCatalogo();
     montarMedidas();
+    montarProvador();
     montarInspiracoes();
     carregar();
     desenharTudo();

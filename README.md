@@ -29,6 +29,7 @@ Tudo fica em **`js/config.js`**. É o único arquivo do dia a dia.
 | Opções de entrega | `entrega` | **Sim** |
 | Frete dos Correios por estado | `frete` | **Sim** |
 | Tabelas de medidas | `medidas` | Não |
+| Folgas do provador | `provador` | Não |
 
 O número do WhatsApp vai **só com dígitos**, no formato `55` + DDD + número:
 
@@ -235,6 +236,52 @@ a exceção: tem a sua própria grade de tamanhos, declarada dentro do modelo.
 
 ---
 
+## Provador: aritmética, não adivinhação
+
+O provador é a segunda aba da janela de medidas. Ele não tem base de dados nem
+inteligência nenhuma: pega a tabela de medidas que está logo ao lado, desconta a
+folga da peça e devolve o tamanho. A conta aparece escrita na tela de propósito —
+um número que o cliente pode conferir contra a tabela convence mais do que um
+veredito.
+
+São três caminhos, e **dois deles são exatos**:
+
+| Caminho | O que pede | Exato? |
+| --- | --- | --- |
+| Altura e peso | altura, peso e corpo | Não, é estimativa |
+| Meu tórax | a volta do tórax, com fita | Sim |
+| Camiseta que serve | a largura dela, deitada | Sim, nem usa a folga |
+
+No infantil o caminho rápido pergunta a idade, porque os tamanhos infantis já são
+numerados por ela.
+
+### As folgas
+
+A linha "Tórax" da tabela é **metade da peça, deitada**. O M tradicional tem 52, logo
+104 cm de volta inteira. A folga diz quanto disso sobra sobre o corpo:
+
+```js
+provador: {
+  folga: { tradicional: 8, oversized: 20, "baby-look": 6, infantil: 6 },
+}
+```
+
+Esses números não foram escolhidos no olho — saem da própria tabela de vocês. Com 8
+na tradicional, os tamanhos caem exatamente sobre o tórax masculino da ABNT NBR
+16060 (P 92, M 96, G 100, GG 104); com 6 na baby look, sobre o busto feminino da NBR
+16933 (PP 82, P 86, M 90, G 94); e com 20 na oversized, cada tamanho veste o mesmo
+corpo que o de mesma letra na tradicional. Quem é M é M nos três.
+
+**Se as trocas mostrarem que uma peça está vestindo diferente do previsto, mude a
+folga aqui** — é um número só, e o provador inteiro se ajusta.
+
+### Quando nenhum tamanho serve
+
+O provador diz isso, em vez de entregar o maior como se coubesse, e oferece o
+WhatsApp. É a diferença entre uma recomendação e uma venda errada.
+
+---
+
 ## Ver o site no seu computador
 
 Abra o arquivo `index.html` com dois cliques. É o suficiente para conferir mudanças.
@@ -327,6 +374,8 @@ marrom `#6b4a1e` nas letras e botões.
   é mais larga que a tela, então ao abrir ela corre sozinha até o último tamanho e
   volta ao PP — em um segundo e meio a pessoa vê que há mais colunas à direita e
   aprende que dá para arrastar. Quem já começou a arrastar interrompe o passeio.
+- **O provador virtual é a segunda aba dessa mesma janela.** Ele não adivinha: faz
+  conta em cima da tabela ao lado. Veja a seção abaixo.
 - **"Nossa Essência" fica no rodapé.** Os santos vêm de `inspiracoes.santos`,
   no `js/config.js`: nome, anos de vida, foto (dentro de `assets/santos/`) e a
   história em parágrafos. Clicando no nome, abre uma janela com a foto e o texto.

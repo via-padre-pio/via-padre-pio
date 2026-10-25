@@ -304,14 +304,37 @@
     </svg>
   </button>
 
+  <div class="janela-medidas__secoes" id="secoesMedidas" role="tablist" aria-label="Tabela ou provador">
+    <button type="button" class="janela-medidas__secao" data-secao="tabela" role="tab" aria-selected="true">Tabela de medidas</button>
+    <button type="button" class="janela-medidas__secao" data-secao="provador" role="tab" aria-selected="false">Provador virtual</button>
+  </div>
+
   <h2 id="tituloMedidas">Tabela de medidas</h2>
-  <p class="janela-medidas__nota">
+  <p class="janela-medidas__nota" id="notaMedidas">
     Medidas da peça em centímetros, não do corpo. Na dúvida, compare com uma
     camiseta que já serve bem em você.
   </p>
 
-  <div class="janela-medidas__abas" id="abasMedidas" role="tablist" aria-label="Modelo da camiseta"></div>
-  <div class="janela-medidas__corpo" id="corpoMedidas"></div>
+  <div data-secao="tabela">
+    <div class="janela-medidas__abas" id="abasMedidas" role="tablist" aria-label="Modelo da camiseta"></div>
+    <div class="janela-medidas__corpo" id="corpoMedidas"></div>
+  </div>
+
+  <!-- O provador é montado pelo js/app.js: os modelos saem das mesmas
+       tabelas acima, e a conta usa as folgas de CONFIG.provador. -->
+  <div class="provador" data-secao="provador" hidden>
+    <div class="provador__modelos" id="provadorModelos" role="group" aria-label="Modelo da camiseta"></div>
+
+    <div class="provador__jeitos" id="provadorJeitos" role="group" aria-label="Como descobrir o tamanho">
+      <button type="button" class="provador__jeito" data-jeito="estimar" aria-pressed="true">Altura e peso</button>
+      <button type="button" class="provador__jeito" data-jeito="corpo" aria-pressed="false">Meu tórax</button>
+      <button type="button" class="provador__jeito" data-jeito="peca" aria-pressed="false">Camiseta que serve</button>
+    </div>
+
+    <p class="provador__dica" id="provadorDica"></p>
+    <div class="provador__campos" id="provadorCampos"></div>
+    <div class="provador__saida" id="provadorSaida" role="status" aria-live="polite"></div>
+  </div>
 </dialog>
 
 <!-- Volta do checkout da InfinitePay. O js/app.js preenche e abre esta janela
