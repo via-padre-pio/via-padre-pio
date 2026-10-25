@@ -319,6 +319,9 @@
     );
   }
 
+  /** Onde uma frase acaba: no ponto final, antes do espaço que o segue. */
+  const FIM_DE_FRASE = /(?<=\.)\s+/;
+
   /**
    * Separa um texto no ponto final. O ponto fica com a frase que ele
    * fecha, e o espaço que vinha depois some: quem monta o HTML decide se
@@ -327,8 +330,45 @@
   function emFrases(texto) {
     return String(texto || "")
       .trim()
-      .split(/(?<=\.)\s+/)
+      .split(FIM_DE_FRASE)
       .filter(Boolean);
+  }
+
+  /**
+   * Põe uma frase por linha nos textos escritos à mão no index.html: os
+   * passos da pré-venda e as respostas das dúvidas. O HTML continua sendo
+   * prosa corrida, que é como se escreve e se revisa um texto, e a quebra
+   * no ponto final — a mesma regra da capa e das coleções — acontece aqui
+   * para ninguém ter de marcá-la de novo ao trocar uma palavra.
+   *
+   * Mexe só nos pedaços de texto e deixa os filhos onde estão: a resposta
+   * sobre o tamanho tem um botão no meio da frase, e ele precisa continuar
+   * ali. Por isso um <br>, e não um bloco por frase como nos outros dois.
+   *
+   * Corta sem aparar as pontas, ao contrário de emFrases(): o espaço que
+   * separa "consultar nossa" do botão vem no fim de um pedaço de texto, e
+   * perdê-lo emendaria as duas palavras.
+   */
+  function umaFrasePorLinha(paragrafo) {
+    const textos = [];
+    const fila = [paragrafo];
+    while (fila.length) {
+      fila.pop().childNodes.forEach((no) => {
+        if (no.nodeType === Node.TEXT_NODE) textos.push(no);
+        else fila.push(no);
+      });
+    }
+
+    textos.forEach((no) => {
+      const partes = no.data.split(FIM_DE_FRASE);
+      if (partes.length < 2) return;
+      const novo = document.createDocumentFragment();
+      partes.forEach((parte, i) => {
+        if (i) novo.appendChild(document.createElement("br"));
+        novo.appendChild(document.createTextNode(parte));
+      });
+      no.replaceWith(novo);
+    });
   }
 
   /** Frases da descrição da capa, separadas no ponto final. */
@@ -2123,6 +2163,9 @@
     }
     aplicarTema();
     aplicarTextos();
+    document
+      .querySelectorAll(".passo p, .duvida__conteudo p")
+      .forEach(umaFrasePorLinha);
     montarCatalogo();
     montarMedidas();
     montarInspiracoes();
