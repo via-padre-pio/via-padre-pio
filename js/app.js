@@ -65,6 +65,7 @@
     resumoPedido: el("resumoPedido"),
     formulario: el("formularioPedido"),
     selectEntrega: el("entrega"),
+    selectPagamento: el("formaPagamento"),
     campoCep: el("cep"),
     cepEndereco: el("cepEndereco"),
     textoBotaoEnviar: el("textoBotaoEnviar"),
@@ -135,6 +136,9 @@
   });
 
   const emReais = (valor) => formatadorMoeda.format(valor);
+
+  /** A InfinitePay trabalha em centavos: R$ 74,90 vira 7490. */
+  const emCentavos = (valor) => Math.round(Number(valor) * 100);
 
   const soDigitos = (texto) => String(texto || "").replace(/\D/g, "");
 
@@ -236,6 +240,9 @@
       elementos.marcaPrazo.hidden = false;
     }
 
+    montarFaixaDesconto();
+    escreverRegraDeDesconto();
+
     if (contato.instagram) {
       const url = `https://instagram.com/${contato.instagram}`;
       elementos.linkInstagram.href = url;
@@ -286,6 +293,15 @@
       opcoes
         .map((o) => `<option value="${o.id}">${escapar(o.nome)}</option>`)
         .join("");
+
+    const formas = (CONFIG.pagamento && CONFIG.pagamento.formas) || [];
+    if (elementos.selectPagamento) {
+      elementos.selectPagamento.innerHTML =
+        '<option value="">Selecione…</option>' +
+        formas
+          .map((o) => `<option value="${escapar(o.id)}">${escapar(o.nome)}</option>`)
+          .join("");
+    }
 
   }
 
@@ -1101,7 +1117,123 @@
   }
 
   const totalItens = () => pedido.reduce((s, i) => s + i.quantidade, 0);
-  const totalValor = () => pedido.reduce((s, i) => s + i.preco * i.quantidade, 0);
+
+  /**
+   * Faixas de desconto, da menor para a maior. A que vale é a de maior
+   * mínimo que a quantidade alcança: duas peças pegam 3%, três ou mais
+   * pegam 5%. Sem faixa, o pedido segue pelo preço de catálogo.
+   */
+  function regrasDeDesconto() {
+    const lista = (CONFIG.pagamento && CONFIG.pagamento.descontos) || [];
+    return lista
+      .map((regra) => ({
+        minimo: Number(regra.minimo) || 0,
+        percentual: Number(regra.percentual) || 0,
+      }))
+      .filter(
+        (regra) =>
+          regra.minimo >= 1 && regra.percentual > 0 && regra.percentual < 100
+      )
+      .sort((a, b) => a.minimo - b.minimo);
+  }
+
+  function regraDeDesconto(quantidade) {
+    const n = quantidade == null ? totalItens() : quantidade;
+    let escolhida = null;
+    regrasDeDesconto().forEach((regra) => {
+      if (n >= regra.minimo) escolhida = regra;
+    });
+    return escolhida;
+  }
+
+  /** "de 2 peças" ou "de 3 ou mais peças", conforme a faixa seguinte. */
+  function condicaoDaFaixa(regra, proxima) {
+    if (!proxima) return `${regra.minimo} ou mais peças`;
+    if (proxima.minimo === regra.minimo + 1) {
+      return `${regra.minimo} ${regra.minimo === 1 ? "peça" : "peças"}`;
+    }
+    return `${regra.minimo} a ${proxima.minimo - 1} peças`;
+  }
+
+  function textoDaRegraDeDesconto() {
+    const regras = regrasDeDesconto();
+    if (!regras.length) return "";
+
+    const faixas = regras.map((regra, indice) => {
+      const quanto = condicaoDaFaixa(regra, regras[indice + 1]);
+      return `${regra.percentual}% na compra de ${quanto}`;
+    });
+    const lista =
+      faixas.length === 1
+        ? faixas[0]
+        : `${faixas.slice(0, -1).join(", ")} e ${faixas[faixas.length - 1]}`;
+
+    return (
+      `${lista.charAt(0).toUpperCase()}${lista.slice(1)}. ` +
+      "O desconto vale só no Pix, sobre as peças, e não incide sobre o frete. No cartão o total é o preço cheio."
+    );
+  }
+
+  /** Os dois cartazes acima de "Escolha sua peça", lidos da mesma regra. */
+  function montarFaixaDesconto() {
+    const caixa = el("faixaDesconto");
+    if (!caixa) return;
+
+    const regras = regrasDeDesconto();
+    if (!regras.length) {
+      caixa.hidden = true;
+      caixa.replaceChildren();
+      return;
+    }
+
+    caixa.hidden = false;
+    caixa.innerHTML = regras
+      .map((regra, indice) => {
+        const quanto = condicaoDaFaixa(regra, regras[indice + 1]);
+        return `
+          <li class="selo-desconto">
+            <p class="selo-desconto__valor">${regra.percentual}%</p>
+            <p class="selo-desconto__titulo">de desconto</p>
+            <span class="selo-desconto__traco" aria-hidden="true"></span>
+            <p class="selo-desconto__condicao">na compra<br>de ${escapar(quanto)}</p>
+          </li>`;
+      })
+      .join("");
+  }
+
+  function escreverRegraDeDesconto() {
+    const texto = textoDaRegraDeDesconto();
+    ["regraDescontoPagamento", "notaDesconto"].forEach((id) => {
+      const alvo = el(id);
+      if (!alvo) return;
+      alvo.textContent = texto;
+      alvo.hidden = !texto;
+    });
+  }
+
+  /** Soma das peças em centavos, antes do desconto e sem o frete. */
+  const centavosDasPecas = () =>
+    pedido.reduce((s, item) => s + emCentavos(item.preco) * item.quantidade, 0);
+
+  /** Pix ou cartão, o que está escolhido agora. Vazio enquanto não escolhe. */
+  const formaEscolhida = () =>
+    (elementos.selectPagamento && elementos.selectPagamento.value) || "";
+
+  /**
+   * O desconto só existe no Pix. No cartão, e enquanto ninguém escolhe,
+   * o total é o preço de catálogo. A lista do carrinho nunca mostra o
+   * desconto, mesmo que a quantidade já dê direito.
+   */
+  const centavosDoDesconto = () => {
+    if (formaEscolhida() !== "pix") return 0;
+    const regra = regraDeDesconto();
+    if (!regra) return 0;
+    return Math.round((centavosDasPecas() * regra.percentual) / 100);
+  };
+
+  const subtotalPecas = () => centavosDasPecas() / 100;
+  const valorDoDesconto = () => centavosDoDesconto() / 100;
+  const totalPecas = () => (centavosDasPecas() - centavosDoDesconto()) / 100;
 
   const nomeDoEstado = (sigla) => ESTADOS[sigla] || "";
 
@@ -1128,8 +1260,11 @@
       enderecoDoCep ? enderecoDoCep.estado : ""
     );
 
-  /** O que o cliente vai pagar: as peças mais o frete. */
-  const totalComFrete = () => totalValor() + freteAtual();
+  /**
+   * O que o cliente vai pagar. No Pix, as peças saem com desconto.
+   * No cartão, e enquanto ninguém escolhe, é o preço cheio mais o frete.
+   */
+  const totalComFrete = () => totalPecas() + freteAtual();
 
   /* ====================================================================
      CEP
@@ -1328,7 +1463,9 @@
       )
       .join("");
 
-    elementos.totalCarrinho.textContent = emReais(totalValor());
+    // A lista do pedido mostra o preço cheio. O desconto só entra no
+    // resumo quando a forma escolhida é Pix.
+    elementos.totalCarrinho.textContent = emReais(subtotalPecas());
   }
 
   function desenharResumo() {
@@ -1355,7 +1492,7 @@
           )
           .join("")}
       </ul>
-      ${desenharFrete()}
+      ${desenharComposicao()}
       <div class="resumo__total">
         <span>Total</span>
         <strong>${emReais(totalComFrete())}</strong>
@@ -1363,25 +1500,43 @@
   }
 
   /**
-   * As duas linhas que separam peça de entrega. Só aparecem quando há
-   * frete a cobrar: num pedido que será retirado em mãos, "Peças" e
-   * "Total" seriam o mesmo número dito duas vezes.
+   * Como o total foi formado. Some quando não há o que explicar: num
+   * pedido de uma peça, retirado em mãos, "Peças" e "Total" seriam o
+   * mesmo número. Com desconto ou frete, as linhas aparecem.
    */
-  function desenharFrete() {
+  function desenharComposicao() {
     const frete = freteAtual();
-    if (frete <= 0) return "";
+    const desconto = valorDoDesconto();
+    const regra = regraDeDesconto();
+    if (desconto <= 0 && frete <= 0) return "";
 
     const estado = enderecoDoCep ? nomeDoEstado(enderecoDoCep.estado) : "";
-
-    return `
-      <div class="resumo__linha">
+    const linhas = [
+      `<div class="resumo__linha">
         <span>Peças</span>
-        <span>${emReais(totalValor())}</span>
-      </div>
-      <div class="resumo__linha">
-        <span>Frete${estado ? ` para ${escapar(estado)}` : ""}</span>
-        <span>${emReais(frete)}</span>
-      </div>`;
+        <span>${emReais(subtotalPecas())}</span>
+      </div>`,
+    ];
+
+    if (desconto > 0 && regra) {
+      linhas.push(
+        `<div class="resumo__linha resumo__linha--desconto">
+          <span>Desconto de ${regra.percentual}%</span>
+          <span>− ${emReais(desconto)}</span>
+        </div>`
+      );
+    }
+
+    if (frete > 0) {
+      linhas.push(
+        `<div class="resumo__linha">
+          <span>Frete${estado ? ` para ${escapar(estado)}` : ""}</span>
+          <span>${emReais(frete)}</span>
+        </div>`
+      );
+    }
+
+    return linhas.join("");
   }
 
   /* ====================================================================
@@ -1501,6 +1656,10 @@
       erros.push(["entrega", "Escolha como prefere receber."]);
     }
 
+    if (!dados.formaPagamento) {
+      erros.push(["formaPagamento", "Escolha como prefere pagar."]);
+    }
+
     return erros;
   }
 
@@ -1524,6 +1683,7 @@
       email: formulario.get("email") || "",
       cep: formulario.get("cep") || "",
       entrega: formulario.get("entrega") || "",
+      formaPagamento: formulario.get("formaPagamento") || "",
       observacoes: formulario.get("observacoes") || "",
 
       // Não vêm do formulário: vêm da resposta da BrasilAPI ao CEP.
@@ -1564,9 +1724,6 @@
   const CHAVE_EM_PAGAMENTO = "viapadrepio:pagamento:v1";
 
   const FORMAS = { pix: "Pix", credit_card: "Cartão de crédito" };
-
-  /** A InfinitePay trabalha em centavos: R$ 74,90 vira 7490. */
-  const emCentavos = (valor) => Math.round(valor * 100);
 
   /** A InfiniteTag da loja, sem o cifrão que as pessoas costumam copiar junto. */
   const infiniteTag = () =>
@@ -1620,12 +1777,77 @@
    * InfinitePay. Cada linha diz coleção, modelo, cor e tamanho, porque é
    * por ela que as peças vão ser separadas.
    */
+  /**
+   * Uma unidade por vez, com o desconto repartido em centavos. A soma
+   * fecha exatamente no total com desconto: quando a divisão não dá
+   * inteiro, a sobra de um centavo fica na última unidade, e unidades
+   * iguais voltam a ser agrupadas numa linha só.
+   */
+  function precosParaCobranca() {
+    const regra = regraDeDesconto();
+    const unidades = [];
+
+    pedido.forEach((item) => {
+      const description =
+        `${item.nome} — ${item.modeloNome} · ${item.cor} · Tam ${item.tamanho}` +
+        (regra ? ` · desconto de ${regra.percentual}%` : "");
+
+      for (let n = 0; n < item.quantidade; n++) {
+        unidades.push({ description, price: emCentavos(item.preco) });
+      }
+    });
+
+    const teto = unidades.reduce((s, u) => s + Math.max(0, u.price - 1), 0);
+    const desconto = Math.min(centavosDoDesconto(), teto);
+
+    if (desconto > 0 && unidades.length) {
+      const total = unidades.reduce((s, u) => s + u.price, 0);
+      let restante = desconto;
+
+      unidades.forEach((unidade, indice) => {
+        const ultimo = indice === unidades.length - 1;
+        const cota = ultimo
+          ? restante
+          : Math.min(restante, Math.round((desconto * unidade.price) / total));
+        const aplicado = Math.min(cota, Math.max(0, unidade.price - 1));
+        unidade.price -= aplicado;
+        restante -= aplicado;
+      });
+
+      let cursor = 0;
+      while (restante > 0 && cursor < unidades.length * 3) {
+        const unidade = unidades[cursor % unidades.length];
+        if (unidade.price > 1) {
+          unidade.price -= 1;
+          restante -= 1;
+        }
+        cursor += 1;
+      }
+    }
+
+    const grupos = [];
+    unidades.forEach((unidade) => {
+      const anterior = grupos[grupos.length - 1];
+      if (
+        anterior &&
+        anterior.description === unidade.description &&
+        anterior.price === unidade.price
+      ) {
+        anterior.quantity += 1;
+      } else {
+        grupos.push({
+          quantity: 1,
+          price: unidade.price,
+          description: unidade.description,
+        });
+      }
+    });
+
+    return grupos;
+  }
+
   function itensParaCobranca(dados) {
-    const itens = pedido.map((item) => ({
-      quantity: item.quantidade,
-      price: emCentavos(item.preco),
-      description: `${item.nome} — ${item.modeloNome} · ${item.cor} · Tam ${item.tamanho}`,
-    }));
+    const itens = precosParaCobranca();
 
     const frete = freteDaEntrega(dados.entrega, dados.estado);
     if (frete > 0) {
@@ -1682,11 +1904,15 @@
     travarEnvio(true, "Abrindo o pagamento…");
 
     try {
+      const meio = dados.formaPagamento === "credito" ? "credit_card" : "pix";
       const { url, slug } = await pedirLinkDeCheckout({
         handle: infiniteTag(),
         order_nsu: numeroPedido,
         redirect_url: enderecoDeRetorno(),
         items: itensParaCobranca(dados),
+        // A pessoa já escolheu aqui. O link abre só nessa forma. No Pix
+        // os preços já vão com o desconto; no cartão, vão cheios.
+        options: { payment_methods_enabled: [meio] },
         // Vai preenchido para o outro lado: é menos campo para digitar na
         // hora de pagar, que é onde as compras costumam ser abandonadas.
         customer: {
@@ -1703,13 +1929,17 @@
       // volta do checkout descobre quanto do valor pago virou juro de
       // parcelamento. O frete vai à parte para poder ser dito por nome.
       const frete = freteDaEntrega(dados.entrega, dados.estado);
+      const regra = regraDeDesconto();
       guardarEmAndamento({
         numeroPedido,
         slug,
         dados,
         itens: pedido,
         frete,
-        total: totalValor() + frete,
+        subtotal: subtotalPecas(),
+        desconto: valorDoDesconto(),
+        percentualDesconto: valorDoDesconto() > 0 && regra ? regra.percentual : 0,
+        total: totalPecas() + frete,
         quando: new Date().toISOString(),
       });
 
@@ -1857,6 +2087,12 @@
     const linhas = [];
     if (numero) linhas.push(["Pedido", numero]);
     if (comoPagou) linhas.push(["Pagamento", comoPagou]);
+    if (registro.desconto > 0) {
+      const pct = registro.percentualDesconto
+        ? ` (${registro.percentualDesconto}%)`
+        : "";
+      linhas.push(["Desconto", `− ${emReais(registro.desconto)}${pct}`]);
+    }
     if (registro.frete > 0) linhas.push(["Frete", emReais(registro.frete)]);
     if (pagou || registro.total) {
       linhas.push([pagou ? "Total pago" : "Total", emReais(pagou || registro.total)]);
@@ -1970,6 +2206,35 @@
   ];
 
   /**
+   * A conta aberta, para a loja não estranhar um total que não é a soma
+   * dos preços de catálogo. O desconto sai, o frete entra, e o que passou
+   * disso é acréscimo do parcelamento.
+   */
+  function detalheDoValor(registro, acrescimo) {
+    const frete = registro.frete || 0;
+    const desconto = registro.desconto || 0;
+    const pecas =
+      registro.subtotal != null
+        ? registro.subtotal
+        : (registro.total || 0) - frete + desconto;
+
+    if (frete <= 0 && desconto <= 0 && acrescimo <= 0.009) return "";
+
+    let texto = pecas > 0 ? `${emReais(pecas)} em peças` : "";
+    if (desconto > 0) {
+      const pct = registro.percentualDesconto
+        ? ` (${registro.percentualDesconto}%)`
+        : "";
+      texto += `${texto ? " − " : ""}${emReais(desconto)} de desconto${pct}`;
+    }
+    if (frete > 0) texto += `${texto ? " + " : ""}${emReais(frete)} de frete`;
+    if (acrescimo > 0.009) {
+      texto += `${texto ? " + " : ""}${emReais(acrescimo)} de acréscimo do parcelamento`;
+    }
+    return texto;
+  }
+
+  /**
    * O pagamento em poucas linhas: como foi pago, quanto saiu da conta do
    * cliente e o comprovante para conferir. O valor pago costuma ser
    * maior que o preço das peças — por causa do frete, do parcelamento,
@@ -1986,21 +2251,12 @@
     if (pago) {
       linhas.push(`*Total pago:* ${emReais(pago)}`);
 
-      const frete = registro.frete || 0;
-      const pecas = (registro.total || 0) - frete;
-      const acrescimo = registro.total ? pago - registro.total : 0;
-
-      const parcelas = [];
-      if (frete > 0 || acrescimo > 0.009) {
-        if (pecas > 0) parcelas.push(`${emReais(pecas)} em peças`);
-        if (frete > 0) parcelas.push(`${emReais(frete)} de frete`);
-        if (acrescimo > 0.009) {
-          parcelas.push(`${emReais(acrescimo)} de acréscimo do parcelamento`);
-        }
-        linhas.push(`_${parcelas.join(" + ")}_`);
-      }
+      const detalhe = detalheDoValor(registro, pago - (registro.total || 0));
+      if (detalhe) linhas.push(`_${detalhe}_`);
     } else if (registro.total) {
       linhas.push(`*Valor do pedido:* ${emReais(registro.total)}`);
+      const detalhe = detalheDoValor(registro, 0);
+      if (detalhe) linhas.push(`_${detalhe}_`);
     }
 
     if (retorno.comprovante) {
@@ -2090,6 +2346,9 @@
     // ali, não descobrir no checkout.
     elementos.campoCep.addEventListener("input", conferirCep);
     elementos.selectEntrega.addEventListener("change", desenharTudo);
+    if (elementos.selectPagamento) {
+      elementos.selectPagamento.addEventListener("change", desenharTudo);
+    }
 
     elementos.fecharSanto.addEventListener("click", () =>
       elementos.janelaSanto.close()

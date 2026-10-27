@@ -102,6 +102,7 @@
   <section class="secao" id="catalogo">
     <div class="container">
       <header class="secao__cabecalho">
+        <ul class="faixa-desconto" id="faixaDesconto" aria-label="Descontos por quantidade" hidden></ul>
         <h2>Escolha sua peça</h2>
         <p>Do oversized ao infantil, encontre a peça que mais combina com você. Escolha seu modelo, tamanho e quantidade e reúna suas peças favoritas em um único pedido.</p>
         <p class="secao__aviso">Nesta pré-venda, nossas peças estão disponíveis exclusivamente na cor <span class="sem-quebra">off-white</span>.</p>
@@ -156,6 +157,7 @@
         <div class="duvida__painel">
           <div class="duvida__conteudo">
             <p>O pagamento é realizado diretamente pelo site, em um checkout seguro da InfinitePay. Você pode pagar via Pix ou cartão de crédito, à vista ou parcelado em até 12x. No Pix, você paga o valor do pedido; no cartão, pode haver acréscimo conforme o número de parcelas, informado antes da confirmação. Após a aprovação do pagamento, seu pedido será confirmado e seguirá para produção.</p>
+            <p id="regraDescontoPagamento" hidden></p>
           </div>
         </div>
       </details>
@@ -426,6 +428,12 @@
         </div>
 
         <div class="campo">
+          <label for="formaPagamento">Como prefere pagar <span class="obrigatorio" aria-hidden="true">*</span></label>
+          <select id="formaPagamento" name="formaPagamento" required></select>
+          <p class="erro" data-erro-de="formaPagamento" hidden></p>
+        </div>
+
+        <div class="campo">
           <label for="observacoes">Alguma observação <span class="opcional">(opcional)</span></label>
           <textarea id="observacoes" name="observacoes" rows="3" maxlength="400" placeholder="Dúvidas sobre tamanho, presente, prazo..."></textarea>
         </div>
@@ -441,10 +449,12 @@
         </button>
 
         <p class="nota-form">
-          Você vai para o checkout da InfinitePay, onde escolhe Pix, crédito à vista
-          ou em até 12x. O valor final de cada opção aparece lá, antes de confirmar.
+          O desconto de quantidade vale só no Pix. No cartão, o total é o
+          preço cheio. O checkout da InfinitePay abre na forma escolhida.
           Os dados do cartão são digitados lá, nunca aqui.
         </p>
+
+        <p class="nota-form" id="notaDesconto" hidden></p>
 
         <p class="nota-form nota-form--sac">
           Alguma dúvida antes de pagar?
@@ -467,8 +477,8 @@
 <!-- Aviso flutuante -->
 <div class="aviso-flutuante" id="avisoFlutuante" role="status" aria-live="polite" hidden></div>
 
-<script src="js/config.js"></script>
-<script src="js/app.js"></script>
+<script src="js/config.js?v=3"></script>
+<script src="js/app.js?v=3"></script>
 
 <!-- Animações. É um enfeite: se este arquivo ou a Motion não carregarem,
      a página continua inteira e o pedido funciona normalmente. -->

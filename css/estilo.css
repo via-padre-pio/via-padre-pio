@@ -459,6 +459,77 @@ a { color: inherit; }
   font-weight: 600;
 }
 
+/* Os dois selos de desconto, no mesmo desenho do cartaz: percentual grande,
+   a condição embaixo e os dois lado a lado, logo acima do título. A cor
+   cobre fica só aqui — o resto da página continua no marrom da marca. */
+.faixa-desconto {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 268px));
+  justify-content: center;
+  gap: 16px;
+  list-style: none;
+  margin: 0 auto 28px;
+  padding: 0;
+}
+
+.selo-desconto {
+  border: 1.5px solid #8c4e34;
+  border-radius: 18px;
+  padding: 18px 12px 16px;
+  color: #8c4e34;
+  background: linear-gradient(180deg, rgb(255 252 247 / 70%), rgb(244 232 214 / 45%));
+}
+
+.secao__cabecalho .selo-desconto p {
+  margin: 0;
+  max-width: none;
+  color: inherit;
+}
+
+.secao__cabecalho .selo-desconto__valor {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: clamp(2.8rem, 7vw, 3.6rem);
+  line-height: 0.85;
+  letter-spacing: -0.03em;
+  background: linear-gradient(185deg, #c4845c 8%, #8d4a32 58%, #6d3422);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.secao__cabecalho .selo-desconto__titulo {
+  margin-top: 8px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.selo-desconto__traco {
+  display: block;
+  width: 38%;
+  height: 1px;
+  margin: 11px auto 10px;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+.secao__cabecalho .selo-desconto__condicao {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  line-height: 1.35;
+}
+
+@media (max-width: 460px) {
+  .faixa-desconto { gap: 8px; margin-bottom: 22px; }
+  .selo-desconto { padding: 14px 8px 12px; border-radius: 14px; }
+  .secao__cabecalho .selo-desconto__titulo { letter-spacing: 0.08em; font-size: 0.62rem; }
+  .secao__cabecalho .selo-desconto__condicao { letter-spacing: 0.04em; font-size: 0.6rem; }
+}
+
 /* ---------- Catálogo: coleções e peças ---------- */
 
 /* O catálogo é uma pilha de coleções, cada uma com os seus cinco modelos.
@@ -934,6 +1005,11 @@ a { color: inherit; }
 }
 
 .resumo__linha span:last-child { font-variant-numeric: tabular-nums; }
+
+.resumo__linha--desconto {
+  color: #8c4e34;
+  font-weight: 600;
+}
 
 .resumo__total {
   display: flex;

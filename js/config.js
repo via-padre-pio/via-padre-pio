@@ -208,6 +208,30 @@ const CONFIG = {
     // Para onde a InfinitePay traz o cliente depois de pagar. Deixe ""
     // que o site usa o próprio endereço de onde o pedido saiu.
     retorno: "",
+
+    // Pix ou cartão, no mesmo formato de "Como prefere receber".
+    // O desconto por quantidade só entra se a pessoa escolher Pix.
+    // No cartão o total continua o preço cheio.
+    formas: [
+      { id: "pix", nome: "Pix" },
+      { id: "credito", nome: "Cartão de crédito" },
+    ],
+
+    // Desconto por quantidade de peças. Vale só sobre as peças — o frete
+    // continua inteiro. A faixa usada é a de maior mínimo que o pedido
+    // alcança: 2 peças levam 3%, 3 ou mais levam 5%. Uma peça sai pelo
+    // preço de catálogo.
+    //
+    // Não aparece na lista do carrinho. Entra no resumo e no link da
+    // InfinitePay só quando a pessoa escolhe Pix. No cartão não há
+    // desconto. O checkout da InfinitePay não tem desconto por quantidade,
+    // então, no Pix, o site já manda os preços com o desconto aplicado.
+    // minimo     -> a partir de quantas peças (somando todos os modelos)
+    // percentual -> inteiro, de 1 a 99
+    descontos: [
+      { minimo: 2, percentual: 3 },
+      { minimo: 3, percentual: 5 },
+    ],
   },
 
   /* ------------------------------------------------------------------
