@@ -229,7 +229,9 @@
     }
 
     if (marca.prazoEntrega) {
-      elementos.marcaPrazo.textContent = marca.prazoEntrega;
+      elementos.marcaPrazo.innerHTML = comQuebraDeCelular(
+        escapar(marca.prazoEntrega)
+      );
       elementos.marcaPrazo.hidden = false;
     }
 
@@ -321,6 +323,25 @@
 
   /** Onde uma frase acaba: no ponto final, antes do espaço que o segue. */
   const FIM_DE_FRASE = /(?<=\.)\s+/;
+
+  /**
+   * Uma barra vertical no meio de um texto do js/config.js vira uma quebra
+   * de linha que só existe no celular. Serve para os lugares onde a frase
+   * fica melhor partida numa tela estreita, mas não no computador — o nome
+   * de um santo que não deveria ser cortado ao meio, uma citação que pede a
+   * própria linha.
+   *
+   * O espaço antes do <br> é o que faz a frase voltar a ser uma só quando a
+   * quebra some: sem ele, "nome de" e "Padre Pio" se emendariam no
+   * computador.
+   */
+  const MARCA_DE_QUEBRA = "|";
+
+  const comQuebraDeCelular = (escapado) =>
+    escapado
+      .split(MARCA_DE_QUEBRA)
+      .map((parte) => parte.trim())
+      .join(' <br class="quebra-celular">');
 
   /**
    * Separa um texto no ponto final. O ponto fica com a frase que ele
@@ -824,7 +845,10 @@
           : ""}
         ${colecao.descricao
           ? `<p class="colecao__descricao">${emFrases(colecao.descricao)
-              .map((f) => `<span class="colecao__frase">${escapar(f)}</span>`)
+              .map(
+                (f) =>
+                  `<span class="colecao__frase">${comQuebraDeCelular(escapar(f))}</span>`
+              )
               .join("")}</p>`
           : ""}
         ${colecao.nota

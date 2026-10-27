@@ -500,6 +500,16 @@ a { color: inherit; }
   display: block;
 }
 
+/* A quebra que a loja marca com uma barra vertical no js/config.js. Numa
+   tela estreita ela parte a frase onde faz sentido partir; no computador,
+   onde a linha é larga e o corte ficaria arbitrário, ela simplesmente não
+   existe — o espaço que a precede fecha a frase de volta. */
+@media (min-width: 681px) {
+  .quebra-celular {
+    display: none;
+  }
+}
+
 /* Um recado sobre a coleção inteira — por exemplo, que a estampa ainda não
    saiu em todos os modelos. Sem isso, um bloco com um cartão só parece
    uma peça que faltou carregar. */

@@ -90,8 +90,13 @@ const CONFIG = {
     // "" para esconder. A mesma informação é repetida com outras palavras na
     // dúvida "Qual é o prazo...", dentro do index.html: mudando aqui, confira
     // lá também.
+    //
+    // A barra vertical é uma quebra de linha que só acontece no celular: na
+    // tela estreita o prazo fica em duas linhas, "até 20 dias" e o resto; no
+    // computador a frase volta a ser uma só. Vale em qualquer descrição de
+    // coleção também.
     prazoEntrega:
-      "Prazo de produção e envio: até 20 dias após a confirmação do pagamento do pedido.",
+      "Prazo de produção e envio: até 20 dias | após a confirmação do pagamento do pedido.",
 
     // Aviso que anda no letreiro do topo. Deixe "" para esconder a faixa.
     aviso: "Pré-venda exclusiva • Acesso reservado a convidados Via",
@@ -205,14 +210,13 @@ const CONFIG = {
     // cada peça do pedido.
     cor: "Off-white",
 
-    // Tamanhos que qualquer pessoa pode reservar pelo site. A tabela de
-    // medidas mostra outros além destes, e é de propósito: os maiores saem
-    // por encomenda, combinada na conversa.
-    tamanhos: ["PP", "P", "M", "G", "GG"],
+    // Tamanhos que qualquer pessoa pode reservar pelo site. São os mesmos
+    // dez da tabela de medidas: todos saem na pré-venda, e quem veste G3
+    // reserva e paga pelo site como qualquer outro.
+    tamanhos: ["PP", "P", "M", "G", "GG", "XG", "XGG", "G1", "G2", "G3"],
 
     // Recado embaixo dos tamanhos no cartão. Deixe "" para esconder.
-    avisoTamanhos:
-      "Do XG ao G3, sob encomenda: é só combinar com a gente no WhatsApp.",
+    avisoTamanhos: "",
   },
 
   /* ------------------------------------------------------------------
@@ -327,10 +331,10 @@ const CONFIG = {
     },
     {
       id: "amai-nossa-senhora",
-      nome: "Amai Nossa Senhora",
+      nome: "“Amai Nossa Senhora”",
       santo: "Coleção: São Pio de Pietrelcina",
       descricao:
-        "A frase “Amai Nossa Senhora” em composição manuscrita no peito, acompanhada do nome de Padre Pio, identificando sua autoria. As costas permanecem limpas, em uma proposta minimalista e elegante.",
+        "A frase “Amai Nossa Senhora” em composição manuscrita no peito, acompanhada do nome de | Padre Pio, identificando sua autoria. As costas permanecem limpas, em uma proposta minimalista e elegante.",
       pasta: "assets/colecoes/amai-nossa-senhora",
       esgotada: false,
 
@@ -344,7 +348,7 @@ const CONFIG = {
       nome: "“Nada é Pequeno se Feito com Amor”",
       santo: "Coleção: Santa Teresinha do Menino Jesus",
       descricao:
-        "Uma rosa delicada no peito e, nas costas, a frase que traduz a pequena via de Santa Teresinha: nada é pequeno se feito com amor. Uma peça que nos lembra que a santidade está nos pequenos gestos vividos com amor.",
+        "Uma rosa delicada no peito e, nas costas, a frase que traduz a pequena via de Santa Teresinha: | nada é pequeno se feito com amor. Uma peça que nos lembra que a santidade está nos pequenos gestos vividos com amor.",
       pasta: "assets/colecoes/nada-e-pequeno",
       esgotada: false,
     },

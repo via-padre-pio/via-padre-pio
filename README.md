@@ -198,6 +198,17 @@ A `descricao` quebra sozinha a cada ponto final: cada frase aparece na própria
 linha, como acontece na descrição da abertura. Vale escrever pensando nisso —
 uma frase para o que o desenho mostra, outra para o que ele quer dizer.
 
+**Uma barra vertical quebra a linha só no celular.** Serve para os lugares onde a
+frase fica melhor partida numa tela estreita, mas não no computador: o nome de um
+santo que não deveria ser cortado ao meio, uma citação que pede a própria linha.
+
+```js
+descricao: "...acompanhada do nome de | Padre Pio, identificando sua autoria.",
+```
+
+No celular, "Padre Pio" começa uma linha nova. No computador a barra simplesmente
+não existe e a frase volta a ser uma só. Funciona também no `prazoEntrega`.
+
 **As fotos vão numa pasta própria**, dentro de `assets/colecoes/`, e o nome de cada
 arquivo é o que diz ao site a qual modelo ela pertence. São doze, sempre com estes
 nomes exatos:
