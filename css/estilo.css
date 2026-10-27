@@ -1685,6 +1685,23 @@ a { color: inherit; }
   line-height: 1.7;
 }
 
+/* "E quando chega?" — a pergunta seguinte ao alívio de ter pagado. A faixa
+   a separa do comprovante acima e do botão abaixo, para ela não passar por
+   mais uma linha de dados; e a borda de um lado só dá o tom de recado, sem
+   o peso de um aviso de erro. */
+.janela-pagamento__prazo {
+  width: 100%;
+  margin: 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--marca);
+  border-radius: var(--raio-pequeno);
+  background: var(--fundo);
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--tinta-suave);
+  text-align: left;
+}
+
 .janela-pagamento__comprovante {
   display: flex;
   flex-wrap: wrap;

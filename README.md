@@ -347,6 +347,11 @@ marrom `#6b4a1e` nas letras e botões.
 - **As dúvidas frequentes ficam no `index.html`.** São texto puro, na seção
   `id="duvidas"`. O prazo aparece ali e também em `marca.prazoEntrega`: mudando um,
   confira o outro.
+- **O prazo é repetido depois do pagamento**, em `marca.lembreteDoPrazo`. A mesma
+  frase aparece na janela "Pedido confirmado!" e fecha, em caixa alta, o cartão que
+  o cliente manda pelo WhatsApp. Escreva sem dizer quem fala: quem envia a mensagem
+  é o cliente e quem a lê é a loja, então "combinaremos" serve para os dois lados e
+  "entraremos em contato" sairia invertido.
 - **As animações são enfeite e nada mais.** Elas vivem em `js/animacoes.js` e usam a
   biblioteca Motion, carregada da internet (CDN) no fim do `index.html`. Se essa
   biblioteca não carregar, ou se o visitante pedir menos movimento nas configurações

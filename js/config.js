@@ -98,6 +98,17 @@ const CONFIG = {
     prazoEntrega:
       "Prazo de produção e envio: até 20 dias | após a confirmação do pagamento do pedido.",
 
+    // O prazo repetido depois que o pagamento sai, quando ele deixa de ser
+    // informação e vira compromisso: aparece na janela "Pedido confirmado!"
+    // e no fim do cartão que o cliente manda pelo WhatsApp, ali em caixa
+    // alta. É a mesma frase nos dois lugares, escrita uma vez só.
+    //
+    // Vale escrever sem dizer quem fala: quem envia a mensagem do WhatsApp
+    // é o cliente, e a loja é quem a lê. "Combinaremos" serve para os dois;
+    // "entraremos em contato" sairia invertido no celular dele.
+    lembreteDoPrazo:
+      "Prazo de confecção e entrega: até 20 dias a partir de agora. Combinaremos a entrega pelo WhatsApp assim que as peças estiverem disponíveis.",
+
     // Aviso que anda no letreiro do topo. Deixe "" para esconder a faixa.
     aviso: "Pré-venda exclusiva • Acesso reservado a convidados Via",
   },

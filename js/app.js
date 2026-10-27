@@ -104,6 +104,7 @@
     pagamentoDados: el("pagamentoDados"),
     pagamentoParcelas: el("pagamentoParcelas"),
     pagamentoItens: el("pagamentoItens"),
+    pagamentoPrazo: el("pagamentoPrazo"),
     pagamentoSac: el("pagamentoSac"),
     pagamentoSacTexto: el("pagamentoSacTexto"),
     pagamentoEnviarComprovante: el("pagamentoEnviarComprovante"),
@@ -1876,6 +1877,13 @@
       .join("");
     elementos.pagamentoItens.hidden = !itens.length;
 
+    // A pergunta que vem logo depois do alívio de ter pagado é "e quando
+    // chega?". Ela é respondida aqui, antes do botão — e só quando há de
+    // fato um pedido a produzir: num pagamento recusado não há prazo.
+    const lembrete = (CONFIG.marca.lembreteDoPrazo || "").trim();
+    elementos.pagamentoPrazo.hidden = recusado || !lembrete;
+    elementos.pagamentoPrazo.textContent = lembrete;
+
     // Quem parcela paga mais do que o preço das peças. Em vez de deixar a
     // diferença sem explicação, ela é dita por extenso — com o valor da
     // parcela, que é como a cobrança vai aparecer na fatura.
@@ -2038,6 +2046,11 @@
       "",
       "Olá! Acabei de pagar no site. O endereço de entrega é o que preenchi no checkout da InfinitePay."
     );
+
+    // O prazo fecha o cartão, depois da régua e em caixa alta: é a última
+    // coisa que os dois leem, e fica registrado por escrito na conversa.
+    const lembrete = (CONFIG.marca.lembreteDoPrazo || "").trim();
+    if (lembrete) linhas.push("", REGUA, lembrete.toUpperCase());
 
     return linhas.join("\n");
   }
