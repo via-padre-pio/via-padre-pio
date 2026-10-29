@@ -1783,8 +1783,8 @@
    * inteiro, a sobra de um centavo fica na última unidade, e unidades
    * iguais voltam a ser agrupadas numa linha só.
    */
-  function precosParaCobranca() {
-    const regra = regraDeDesconto();
+  function precosParaCobranca(forma) {
+    const regra = forma === "pix" ? regraDeDesconto() : null;
     const unidades = [];
 
     pedido.forEach((item) => {
@@ -1798,7 +1798,9 @@
     });
 
     const teto = unidades.reduce((s, u) => s + Math.max(0, u.price - 1), 0);
-    const desconto = Math.min(centavosDoDesconto(), teto);
+    const desconto = regra
+      ? Math.min(Math.round((unidades.reduce((s, u) => s + u.price, 0) * regra.percentual) / 100), teto)
+      : 0;
 
     if (desconto > 0 && unidades.length) {
       const total = unidades.reduce((s, u) => s + u.price, 0);
@@ -1847,7 +1849,7 @@
   }
 
   function itensParaCobranca(dados) {
-    const itens = precosParaCobranca();
+    const itens = precosParaCobranca(dados.formaPagamento);
 
     const frete = freteDaEntrega(dados.entrega, dados.estado);
     if (frete > 0) {
