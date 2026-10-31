@@ -318,6 +318,10 @@ da resposta do `payment_check` vai no extra do evento.
 **Limite:** se o cliente paga/falha na InfinitePay e **não volta** ao site, não
 há evento de retorno — isso só aparece no Histórico do app até existir webhook.
 
+**Push no celular (ntfy):** em `observabilidade.ntfyTopico` / `ntfyToken`. Quando
+a InfinitePay responde HTTP ≠ 200 (abrir checkout ou `payment_check`), o site
+manda um aviso no [ntfy.sh](https://ntfy.sh). Assine o tópico no app ntfy.
+
 ---
 
 ## Estrutura dos arquivos

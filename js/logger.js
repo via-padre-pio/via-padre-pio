@@ -3,7 +3,10 @@
    --------------------------------------------------------------------------
    Encaminha erros e eventos do checkout para o Sentry quando
    CONFIG.observabilidade.sentryDsn estiver preenchido. Sem DSN (ou sem
-   o SDK carregado), as funções não fazem nada — o pedido segue normal.
+   o SDK carregado), o Sentry fica quieto — o pedido segue normal.
+
+   Em falha HTTP ≠ 200 do pagamento, também envia push via ntfy.sh quando
+   ntfyTopico estiver preenchido.
    ========================================================================== */
 
 const Logger = (function () {
@@ -11,9 +14,19 @@ const Logger = (function () {
 
   let ligado = false;
 
+  function obs() {
+    return (typeof CONFIG !== "undefined" && CONFIG.observabilidade) || {};
+  }
+
   function dsnConfigurado() {
-    const obs = (typeof CONFIG !== "undefined" && CONFIG.observabilidade) || {};
-    return String(obs.sentryDsn || "").trim();
+    return String(obs().sentryDsn || "").trim();
+  }
+
+  function ntfyConfigurado() {
+    const topico = String(obs().ntfyTopico || "").trim();
+    const token = String(obs().ntfyToken || "").trim();
+    if (!topico) return null;
+    return { topico, token };
   }
 
   function init() {
@@ -54,6 +67,44 @@ const Logger = (function () {
   }
 
   /**
+   * Push no ntfy quando a InfinitePay (ou outra API de pagamento) responde
+   * com status HTTP diferente de 200. Falha de rede do ntfy é ignorada.
+   */
+  function avisarHttp(dados) {
+    const cfg = ntfyConfigurado();
+    if (!cfg) return;
+
+    const status = dados && dados.http_status;
+    if (!Number.isFinite(status) || status === 200) return;
+
+    const evento = (dados && dados.evento) || "http_error";
+    const pedido = (dados && dados.order_nsu) || "";
+    const transacao = (dados && dados.transaction_nsu) || "";
+    const linhas = [
+      `Evento: ${evento}`,
+      `HTTP: ${status}`,
+      pedido ? `Pedido: ${pedido}` : "",
+      transacao ? `NSU: ${transacao}` : "",
+      `Host: ${location.hostname || "local"}`,
+    ].filter(Boolean);
+
+    const headers = {
+      Title: "Via Padre Pio · falha no pagamento",
+      Priority: "high",
+      Tags: "warning,money_with_wings",
+    };
+    if (cfg.token) headers.Authorization = `Bearer ${cfg.token}`;
+
+    fetch(`https://ntfy.sh/${encodeURIComponent(cfg.topico)}`, {
+      method: "POST",
+      body: linhas.join("\n"),
+      headers,
+    }).catch(() => {
+      /* sem ntfy o pedido continua; o Sentry (se ligado) já registrou */
+    });
+  }
+
+  /**
    * Evento estruturado (checkout, payment_check, etc.).
    * Vira breadcrumb + mensagem no Sentry para poder filtrar por nome.
    */
@@ -84,6 +135,8 @@ const Logger = (function () {
     } else if (typeof dados === "string") {
       payload.evento = dados;
     }
+
+    avisarHttp(payload);
 
     if (!ligado) {
       console.error("Via Padre Pio:", erro, payload);

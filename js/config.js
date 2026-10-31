@@ -235,17 +235,18 @@ const CONFIG = {
   },
 
   /* ------------------------------------------------------------------
-     4c. OBSERVABILIDADE (Sentry)
+     4c. OBSERVABILIDADE (Sentry + ntfy)
      ------------------------------------------------------------------
      Erros do site e eventos do checkout InfinitePay vão para o Sentry
      quando o DSN está preenchido. Enquanto estiver vazio, o logger não
-     envia nada (a loja funciona igual).
+     envia nada ao Sentry (a loja funciona igual).
 
-     1. Crie um projeto em https://sentry.io (plataforma Browser JavaScript)
-     2. Copie o DSN do projeto e cole abaixo
-     3. Publique o site
+     Quando a InfinitePay responde HTTP diferente de 200, o site também
+     manda um push no ntfy.sh (tópico abaixo). Assine o tópico no app
+     ntfy no celular. Token e tópico ficam no frontend — use um token
+     só deste tópico.
 
-     No painel, busque por order_nsu (ex. VIA-20261031-…) ou pelo
+     No Sentry, busque por order_nsu (ex. VIA-20261031-…) ou pelo
      transaction_nsu (o NSU UUID que aparece no app da InfinitePay).
      ------------------------------------------------------------------ */
   observabilidade: {
@@ -253,6 +254,11 @@ const CONFIG = {
     // É público no frontend por desenho — não é chave secreta de API.
     sentryDsn:
       "https://cefc29b73df1946a34ba4b7195e3a594@o4512353173766144.ingest.us.sentry.io/4512353200373760",
+
+    // Push no celular via https://ntfy.sh — só em falha HTTP ≠ 200 do pagamento.
+    // Deixe ntfyTopico "" para desligar o push.
+    ntfyTopico: "via_padre_pioTAcKHHz",
+    ntfyToken: "tk_erhutf4j7olwmrc00zhe4ctyjskx5",
   },
 
   /* ------------------------------------------------------------------
