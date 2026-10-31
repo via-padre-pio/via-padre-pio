@@ -477,8 +477,14 @@
 <!-- Aviso flutuante -->
 <div class="aviso-flutuante" id="avisoFlutuante" role="status" aria-live="polite" hidden></div>
 
-<script src="js/config.js?v=4"></script>
-<script src="js/app.js?v=4"></script>
+<script src="js/config.js?v=5"></script>
+<!-- Sentry: só envia algo se observabilidade.sentryDsn estiver em config.js -->
+<script
+  src="https://browser.sentry-cdn.com/8.42.0/bundle.min.js"
+  crossorigin="anonymous"
+></script>
+<script src="js/logger.js?v=5"></script>
+<script src="js/app.js?v=5"></script>
 
 <!-- Animações. É um enfeite: se este arquivo ou a Motion não carregarem,
      a página continua inteira e o pedido funciona normalmente. -->

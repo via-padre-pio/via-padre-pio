@@ -235,6 +235,27 @@ const CONFIG = {
   },
 
   /* ------------------------------------------------------------------
+     4c. OBSERVABILIDADE (Sentry)
+     ------------------------------------------------------------------
+     Erros do site e eventos do checkout InfinitePay vão para o Sentry
+     quando o DSN está preenchido. Enquanto estiver vazio, o logger não
+     envia nada (a loja funciona igual).
+
+     1. Crie um projeto em https://sentry.io (plataforma Browser JavaScript)
+     2. Copie o DSN do projeto e cole abaixo
+     3. Publique o site
+
+     No painel, busque por order_nsu (ex. VIA-20261031-…) ou pelo
+     transaction_nsu (o NSU UUID que aparece no app da InfinitePay).
+     ------------------------------------------------------------------ */
+  observabilidade: {
+    // DSN do projeto "via-padre-pio" na org via-padre-pio-lv (Sentry US).
+    // É público no frontend por desenho — não é chave secreta de API.
+    sentryDsn:
+      "https://cefc29b73df1946a34ba4b7195e3a594@o4512353173766144.ingest.us.sentry.io/4512353200373760",
+  },
+
+  /* ------------------------------------------------------------------
      5. A PRÉ-VENDA INTEIRA
      ------------------------------------------------------------------
      Vale para todas as peças, de todas as coleções.

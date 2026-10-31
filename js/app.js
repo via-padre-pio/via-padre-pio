@@ -15,6 +15,17 @@
   /** Onde o CEP é conferido. Responde com CORS liberado, direto do navegador. */
   const API_CEP = "https://brasilapi.com.br/api/cep/v2";
 
+  /** Encaminha para js/logger.js quando o Sentry está ligado; senão, silêncio. */
+  const log = {
+    info(evento, dados) {
+      if (typeof Logger !== "undefined") Logger.info(evento, dados);
+    },
+    error(erro, dados) {
+      if (typeof Logger !== "undefined") Logger.error(erro, dados);
+      else console.error("Via Padre Pio:", erro, dados || "");
+    },
+  };
+
   /**
    * Os nomes dos estados, para escrever "Frete para São Paulo" em vez de
    * "Frete para SP". Ficam aqui, e não em js/config.js, porque não são
@@ -1348,6 +1359,7 @@
     } catch (erro) {
       if (minha !== perguntaMaisRecente) return;
 
+      log.error(erro, { evento: "cep_error", cep: numeros });
       enderecoDoCep = null;
       mostrarAchado("");
       mostrarErro("cep", "Não encontramos esse CEP. Confira os números.");
@@ -1878,9 +1890,16 @@
     const dados = await resposta.json().catch(() => ({}));
 
     if (!resposta.ok || dados.success === false) {
-      throw new Error(
-        dados.message || `A InfinitePay respondeu ${resposta.status}.`
-      );
+      const mensagem =
+        dados.message || `A InfinitePay respondeu ${resposta.status}.`;
+      const erro = new Error(mensagem);
+      erro.detalhe = {
+        evento: "checkout_link_error",
+        order_nsu: corpo.order_nsu,
+        http_status: resposta.status,
+        resposta: dados,
+      };
+      throw erro;
     }
 
     const fonte = dados.data || dados;
@@ -1889,8 +1908,23 @@
       .find((valor) => typeof valor === "string" && valor.startsWith("http"));
 
     if (!url) {
-      throw new Error("A InfinitePay não devolveu o endereço do checkout.");
+      const erro = new Error(
+        "A InfinitePay não devolveu o endereço do checkout."
+      );
+      erro.detalhe = {
+        evento: "checkout_link_error",
+        order_nsu: corpo.order_nsu,
+        http_status: resposta.status,
+        resposta: dados,
+      };
+      throw erro;
     }
+
+    log.info("checkout_link_ok", {
+      order_nsu: corpo.order_nsu,
+      slug: fonte.slug || "",
+      http_status: resposta.status,
+    });
 
     return { url, slug: fonte.slug || "" };
   }
@@ -1903,10 +1937,21 @@
     }
 
     const numeroPedido = novoNumeroDePedido();
+    const meio = dados.formaPagamento === "credito" ? "credit_card" : "pix";
+    const frete = freteDaEntrega(dados.entrega, dados.estado);
+    const total = totalPecas() + frete;
+
+    log.info("checkout_start", {
+      order_nsu: numeroPedido,
+      meio,
+      total,
+      frete,
+      itens: pedido.length,
+    });
+
     travarEnvio(true, "Abrindo o pagamento…");
 
     try {
-      const meio = dados.formaPagamento === "credito" ? "credit_card" : "pix";
       const { url, slug } = await pedirLinkDeCheckout({
         handle: infiniteTag(),
         order_nsu: numeroPedido,
@@ -1930,7 +1975,6 @@
       // "total" é o que foi cobrado, frete incluído: é com ele que a
       // volta do checkout descobre quanto do valor pago virou juro de
       // parcelamento. O frete vai à parte para poder ser dito por nome.
-      const frete = freteDaEntrega(dados.entrega, dados.estado);
       const regra = regraDeDesconto();
       guardarEmAndamento({
         numeroPedido,
@@ -1941,13 +1985,18 @@
         subtotal: subtotalPecas(),
         desconto: valorDoDesconto(),
         percentualDesconto: valorDoDesconto() > 0 && regra ? regra.percentual : 0,
-        total: totalPecas() + frete,
+        total,
         quando: new Date().toISOString(),
       });
 
       window.location.href = url;
     } catch (erro) {
-      console.error("Via Padre Pio: não deu para abrir o checkout —", erro);
+      log.error(erro, {
+        evento: "checkout_link_error",
+        order_nsu: numeroPedido,
+        meio,
+        ...(erro && erro.detalhe ? erro.detalhe : {}),
+      });
       travarEnvio(false);
       pararPagamento(
         "Não conseguimos abrir o pagamento agora. Tente de novo em instantes ou chame a gente no WhatsApp."
@@ -1985,13 +2034,29 @@
     const transacao = params.get("transaction_nsu");
     if (!transacao) return;
 
+    // Guarda tudo que a InfinitePay mandou na URL: campos extras (motivo
+    // de recusa, status, etc.) ajudam a cruzar com o Histórico do app.
+    const query = {};
+    params.forEach((valor, chave) => {
+      query[chave] = valor;
+    });
+
     const retorno = {
       transacao,
       numeroPedido: params.get("order_nsu") || "",
       slug: params.get("slug") || "",
       comprovante: params.get("receipt_url") || "",
       forma: params.get("capture_method") || "",
+      query,
     };
+
+    log.info("checkout_return", {
+      order_nsu: retorno.numeroPedido,
+      transaction_nsu: retorno.transacao,
+      slug: retorno.slug,
+      capture_method: retorno.forma,
+      query,
+    });
 
     // Limpa a barra de endereços: recarregar a página não deve reabrir a
     // confirmação de um pagamento que a pessoa já viu.
@@ -2011,8 +2076,21 @@
    * fatura dele.
    */
   async function consultarPagamento(retorno) {
-    const vazio = { pago: null, valorPago: null, parcelas: null };
-    if (!infiniteTag() || !retorno.slug) return vazio;
+    const vazio = {
+      pago: null,
+      valorPago: null,
+      parcelas: null,
+      bruto: null,
+      httpStatus: null,
+    };
+    if (!infiniteTag() || !retorno.slug) {
+      log.info("payment_check_skipped", {
+        order_nsu: retorno.numeroPedido,
+        transaction_nsu: retorno.transacao,
+        motivo: !infiniteTag() ? "sem_handle" : "sem_slug",
+      });
+      return vazio;
+    }
 
     try {
       const resposta = await fetch(`${API_INFINITEPAY}/payment_check`, {
@@ -2027,16 +2105,60 @@
       });
 
       const dados = await resposta.json().catch(() => ({}));
+      const pago = typeof dados.paid === "boolean" ? dados.paid : null;
 
-      return {
-        pago: typeof dados.paid === "boolean" ? dados.paid : null,
+      const consulta = {
+        pago,
         valorPago: Number.isFinite(dados.paid_amount)
           ? dados.paid_amount / 100
           : null,
         parcelas: Number(dados.installments) || null,
+        // Corpo inteiro: se a API mandar motivo de recusa, fica no Sentry.
+        bruto: dados,
+        httpStatus: resposta.status,
       };
+
+      if (!resposta.ok) {
+        log.error(
+          new Error(`payment_check HTTP ${resposta.status}`),
+          {
+            evento: "payment_check_error",
+            order_nsu: retorno.numeroPedido,
+            transaction_nsu: retorno.transacao,
+            http_status: resposta.status,
+            resposta: dados,
+          }
+        );
+      } else if (pago === true) {
+        log.info("payment_paid", {
+          order_nsu: retorno.numeroPedido,
+          transaction_nsu: retorno.transacao,
+          valor_pago: consulta.valorPago,
+          parcelas: consulta.parcelas,
+          resposta: dados,
+        });
+      } else if (pago === false) {
+        log.info("payment_unpaid", {
+          order_nsu: retorno.numeroPedido,
+          transaction_nsu: retorno.transacao,
+          resposta: dados,
+        });
+      } else {
+        log.info("payment_check_unknown", {
+          order_nsu: retorno.numeroPedido,
+          transaction_nsu: retorno.transacao,
+          http_status: resposta.status,
+          resposta: dados,
+        });
+      }
+
+      return consulta;
     } catch (erro) {
-      console.warn("Via Padre Pio: não deu para conferir o pagamento —", erro);
+      log.error(erro, {
+        evento: "payment_check_error",
+        order_nsu: retorno.numeroPedido,
+        transaction_nsu: retorno.transacao,
+      });
       return vazio;
     }
   }
@@ -2061,6 +2183,15 @@
     const numero = retorno.numeroPedido || registro.numeroPedido || "";
     const itens = registro.itens || [];
     const recusado = consulta.pago === false;
+
+    log.info(recusado ? "order_rejected" : "order_confirmed", {
+      order_nsu: numero,
+      transaction_nsu: retorno.transacao,
+      pago: consulta.pago,
+      valor_pago: consulta.valorPago,
+      parcelas: consulta.parcelas,
+      forma: retorno.forma,
+    });
 
     if (!recusado) {
       // O pedido foi pago: o carrinho já cumpriu o seu papel.
@@ -2458,6 +2589,17 @@
     if (typeof CONFIG === "undefined") {
       console.error("Via Padre Pio: js/config.js não foi carregado.");
       return;
+    }
+    if (typeof Logger !== "undefined") Logger.init();
+    // Só para validar o DSN: abra a página com ?sentry_test=1 e remova
+    // da barra depois. Não use em produção como fluxo normal.
+    if (
+      typeof Logger !== "undefined" &&
+      new URLSearchParams(location.search).get("sentry_test") === "1"
+    ) {
+      log.error(new Error("Sentry Test Error — Via Padre Pio"), {
+        evento: "sentry_verify",
+      });
     }
     aplicarTema();
     aplicarTextos();

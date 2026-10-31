@@ -289,6 +289,37 @@ git push
 
 ---
 
+## Logs e falhas de pagamento (Sentry)
+
+O site é estático: sem DSN configurado, nada é enviado. Com o Sentry ligado,
+vocês veem no painel erros JS e a trilha do checkout InfinitePay — útil para
+separar **recusa do emissor** (“Negada pelo emissor” no app) de **falha ao
+abrir o link**, de **payment_check** que não confirmou, e de bug no site.
+
+1. Crie um projeto em [sentry.io](https://sentry.io) (Browser JavaScript).
+2. Cole o DSN em `js/config.js`:
+
+```js
+observabilidade: {
+  sentryDsn: "https://…@….ingest.sentry.io/…",
+},
+```
+
+3. Publique o site. Enquanto `sentryDsn` estiver `""`, o logger não envia nada.
+
+Eventos principais: `checkout_start`, `checkout_link_ok` / `checkout_link_error`,
+`checkout_return`, `payment_paid` / `payment_unpaid` / `payment_check_error`,
+`order_confirmed` / `order_rejected`.
+
+No Sentry, filtre pelas tags `order_nsu` (ex. `VIA-20261031-…`) ou
+`transaction_nsu` (o NSU UUID da tela de detalhe no app InfinitePay). O corpo
+da resposta do `payment_check` vai no extra do evento.
+
+**Limite:** se o cliente paga/falha na InfinitePay e **não volta** ao site, não
+há evento de retorno — isso só aparece no Histórico do app até existir webhook.
+
+---
+
 ## Estrutura dos arquivos
 
 ```
@@ -297,6 +328,7 @@ git push
 ├── css/estilo.css          aparência (as cores vêm do config)
 ├── js/config.js            ← tudo que vocês editam
 ├── js/app.js               catálogo, carrinho e pagamento
+├── js/logger.js            envia eventos/erros ao Sentry (se o DSN estiver no config)
 ├── js/animacoes.js         só os movimentos da página (enfeite, veja abaixo)
 └── assets/
     ├── logo.png            logo da marca (aparece na capa e no rodapé)
