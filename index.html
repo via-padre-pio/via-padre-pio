@@ -3,492 +3,788 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Via Padre Pio — Pré-venda de Camisetas</title>
-<meta name="description" content="Pré-venda de camisetas Via Padre Pio. Escolha a coleção, o modelo e o tamanho e pague no site com Pix ou cartão em até 12x.">
+<title>Via Padre Pio — Lançamento hoje, às 20h</title>
+<meta name="description" content="A Via Padre Pio entra no ar hoje, 8 de novembro, às 20h. Uma coleção criada para vestir a fé.">
 <meta name="theme-color" content="#5c3a21">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="Via Padre Pio — Pré-venda de Camisetas">
-<meta property="og:description" content="Garanta a sua camiseta antes da produção. Pagamento no site, com Pix ou cartão em até 12x.">
+<meta property="og:title" content="Via Padre Pio — Lançamento hoje, às 20h">
+<meta property="og:description" content="Uma coleção criada para vestir a fé. Lançamento hoje, às 20h.">
 <meta property="og:image" content="assets/logo.png">
 
 <link rel="icon" href="assets/logo.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/estilo.css">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fundo: #f6f1e8;
+    --superficie: #fffdf9;
+    --tinta: #2b211c;
+    --tinta-suave: #6f6158;
+    --marca: #5c3a21;
+    --marca-escura: #3d2615;
+    --destaque: #c08a2e;
+    --borda: #e3d8c7;
+  }
+
+  *,
+  *::before,
+  *::after { box-sizing: border-box; }
+
+  [hidden] { display: none !important; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    display: grid;
+    place-items: center;
+    min-height: 100dvh;
+    padding: 32px 20px 92px;
+    background:
+      radial-gradient(900px 420px at 50% -8%,
+        color-mix(in srgb, var(--destaque) 18%, transparent), transparent 68%),
+      var(--fundo);
+    color: var(--tinta);
+    font-family: Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .fio {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--destaque), transparent);
+  }
+
+  .pagina {
+    width: min(720px, 100%);
+    text-align: center;
+  }
+
+  /* O palco é maior que o círculo para a nuvem ter onde orbitar, como na capa
+     da loja. O logo em si continua do mesmo tamanho de antes. */
+  .palco-logo {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: clamp(210px, 58vw, 236px);
+    aspect-ratio: 1;
+    margin: 0 auto;
+    touch-action: manipulation;
+  }
+
+  .palco-logo__particulas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .logo {
+    position: relative;
+    width: 73%;
+    height: auto;
+    border-radius: 50%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .logo {
+      animation: surgir-logo 0.9s ease both, respirar 8s ease-in-out infinite;
+    }
+  }
+
+  @keyframes surgir-logo {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes respirar {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.028); }
+  }
+
+  .assinatura {
+    margin: 0;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 1.15rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--marca);
+  }
+
+  .traco {
+    width: 42px;
+    height: 1px;
+    margin: 26px auto 22px;
+    background: var(--destaque);
+  }
+
+  h1 {
+    margin: 0;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-weight: 500;
+    font-style: italic;
+    font-size: clamp(1.7rem, 4.4vw, 2.35rem);
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    color: var(--marca-escura);
+  }
+
+  .relogio {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: clamp(8px, 2vw, 18px);
+    margin-top: 28px;
+  }
+
+  .unidade { min-width: clamp(76px, 18vw, 120px); }
+
+  .numero {
+    display: block;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(3.6rem, 12vw, 6.4rem);
+    line-height: 0.85;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+    color: var(--marca);
+  }
+
+  .rotulo {
+    display: block;
+    margin-top: 12px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--tinta-suave);
+  }
+
+  .separador {
+    margin-top: 0.08em;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: clamp(2.8rem, 8vw, 4.6rem);
+    line-height: 0.85;
+    color: var(--destaque);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .separador { animation: pulso 1s steps(1, end) infinite; }
+  }
+
+  @keyframes pulso {
+    50% { opacity: 0.2; }
+  }
+
+  .recado {
+    margin: 28px 0 0;
+    font-size: 0.92rem;
+    color: var(--tinta-suave);
+  }
+
+  /* Reproduutor discreto, fixo no pé da tela. */
+  .player {
+    position: fixed;
+    z-index: 30;
+    left: 50%;
+    bottom: max(18px, env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: min(420px, calc(100% - 28px));
+    height: 48px;
+    padding: 6px 8px 6px 6px;
+    border-radius: 999px;
+    background: #f4f4f5;
+    color: #1c1c1e;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 8%), 0 10px 28px rgb(43 33 28 / 14%);
+  }
+
+  .player__play,
+  .player__icone,
+  .player__menu button {
+    font: inherit;
+    color: inherit;
+    border: 0;
+    cursor: pointer;
+  }
+
+  .player__play {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #e6e6ea;
+  }
+
+  .player__play:hover,
+  .player__icone:hover { background: #dedee3; }
+
+  .player__tempo {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    font-weight: 550;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  .player__progresso,
+  .player__volume {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    margin: 0;
+    border-radius: 999px;
+    background: linear-gradient(to right, #2c2c2e var(--preenchido, 0%), #d7d7dc var(--preenchido, 0%));
+    cursor: pointer;
+  }
+
+  .player__progresso { flex: 1; min-width: 28px; }
+
+  .player__volume {
+    width: 84px;
+    height: 18px;
+    flex-shrink: 0;
+    background: transparent;
+  }
+
+  .player__progresso::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 0;
+    height: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .player__volume::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -5px;
+    border: 0;
+    border-radius: 50%;
+    background: #2c2c2e;
+  }
+
+  .player__progresso::-webkit-slider-runnable-track {
+    height: 4px;
+    background: transparent;
+  }
+
+  .player__volume::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(to right, #2c2c2e var(--preenchido, 80%), #d7d7dc var(--preenchido, 80%));
+  }
+
+  .player__progresso::-moz-range-thumb { width: 0; height: 0; border: 0; }
+  .player__volume::-moz-range-track {
+    height: 4px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(to right, #2c2c2e var(--preenchido, 80%), #d7d7dc var(--preenchido, 80%));
+  }
+
+  .player__volume::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: 0;
+    border-radius: 50%;
+    background: #2c2c2e;
+  }
+
+  .player__icone {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: transparent;
+  }
+
+  .player__menu {
+    position: absolute;
+    right: 6px;
+    bottom: calc(100% + 8px);
+    min-width: 148px;
+    padding: 6px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 28px rgb(43 33 28 / 16%);
+  }
+
+  .player__menu button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: transparent;
+    font-size: 0.86rem;
+    text-align: left;
+  }
+
+  .player__menu button:hover { background: #f4f4f5; }
+
+  .player__menu button[aria-pressed="true"]::after { content: "✓"; }
+
+  .player button:focus-visible,
+  .player input:focus-visible {
+    outline: 2px solid var(--destaque);
+    outline-offset: 2px;
+  }
+
+  .so-leitor {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
 </head>
-
 <body>
+  <div class="fio" aria-hidden="true"></div>
 
-<a class="pular-link" href="#catalogo">Pular para o catálogo</a>
+  <main class="pagina">
+    <div class="palco-logo" id="palcoLogo">
+      <canvas class="palco-logo__particulas" id="particulasLogo" aria-hidden="true"></canvas>
+      <img class="logo" src="assets/logo.png" alt="Via Padre Pio" width="168" height="168">
+    </div>
+    <p class="assinatura">Fé que se veste.</p>
+    <div class="traco" aria-hidden="true"></div>
 
-<!-- Faixa de aviso -->
-<div class="faixa-aviso" id="faixaAviso" hidden>
-  <!-- O texto é copiado pelo js/app.js até encher a tela, para a volta do
-       letreiro acontecer sem buraco. -->
-  <div class="faixa-aviso__trilho" id="trilhoAviso" aria-hidden="true"></div>
-  <p class="so-leitor" id="textoAviso"></p>
-</div>
+    <h1 id="titulo">Lançamento hoje, às 20h</h1>
 
-<!-- Cabeçalho -->
-<header class="cabecalho">
-  <div class="container cabecalho__interno">
-    <a class="marca" href="#topo">
-      <span class="marca__texto">
-        <strong id="marcaNome">Via Padre Pio</strong>
-        <small id="marcaAssinatura"></small>
-      </span>
-    </a>
-
-    <nav class="cabecalho__acoes">
-      <a class="link-insta" id="linkInstagram" href="#" target="_blank" rel="noopener noreferrer">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8">
-          <rect x="3" y="3" width="18" height="18" rx="5"/>
-          <circle cx="12" cy="12" r="4"/>
-          <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
-        </svg>
-        <span class="so-leitor">Instagram</span>
-      </a>
-
-      <button class="botao-carrinho" id="botaoCarrinho" type="button" aria-expanded="false" aria-controls="painelCarrinho">
-        <svg class="icone-carrinho" viewBox="0 0 24 24" width="21" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <!-- Os corações só entram quando há peças no pedido; o carrinho
-               vazio fica limpo. Quem controla é a classe no botão. -->
-          <g class="icone-carrinho__coracoes">
-            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-                  transform="translate(10.8 1.9) scale(0.333)" stroke-width="5.4"/>
-            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-                  transform="translate(4.3 -0.4) scale(0.444)" stroke-width="4.05"/>
-          </g>
-
-          <!-- O carrinho desce um pouco para sobrar espaço aos corações; o
-               traço é reajustado para não afinar junto com a escala. -->
-          <g transform="translate(0 3.4) scale(0.86)" stroke-width="2.1">
-            <path d="M2.1 2.1h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
-            <circle cx="9" cy="20.4" r="1.4"/>
-            <circle cx="18.4" cy="20.4" r="1.4"/>
-          </g>
-        </svg>
-        <span>Meus pedidos</span>
-        <span class="selo-contador" id="contadorCarrinho" hidden>0</span>
-      </button>
-    </nav>
-  </div>
-</header>
-
-<main id="topo">
-
-  <!-- Abertura -->
-  <section class="capa">
-    <div class="container capa__interno">
-      <p class="etiqueta" id="marcaChamada">Pré-venda aberta</p>
-      <h1 class="capa__titulo">
-        <span class="capa__palco" id="capaPalco">
-          <img class="capa__logo" id="capaLogo" src="assets/logo.png" alt="Via Padre Pio" width="280" height="280">
-        </span>
-      </h1>
-      <p class="capa__texto" id="marcaDescricao"></p>
-      <p class="capa__lema" id="marcaLema"></p>
-      <div class="capa__botoes">
-        <a class="botao botao--principal" href="#catalogo">Conheça a coleção</a>
-        <a class="botao botao--contorno" href="#como-funciona">Sobre a pré-venda</a>
+    <div class="relogio" role="timer" aria-labelledby="titulo">
+      <div class="unidade">
+        <span class="numero" id="horas">––</span>
+        <span class="rotulo" id="rotuloHoras">horas</span>
       </div>
-      <p class="capa__prazo" id="marcaPrazo" hidden></p>
-    </div>
-  </section>
-
-  <!-- Catálogo -->
-  <section class="secao" id="catalogo">
-    <div class="container">
-      <header class="secao__cabecalho">
-        <ul class="faixa-desconto" id="faixaDesconto" aria-label="Descontos por quantidade" hidden></ul>
-        <h2>Escolha sua peça</h2>
-        <p>Do oversized ao infantil, encontre a peça que mais combina com você. Escolha seu modelo, tamanho e quantidade e reúna suas peças favoritas em um único pedido.</p>
-        <p class="secao__aviso">Nesta pré-venda, nossas peças estão disponíveis exclusivamente na cor <span class="sem-quebra">off-white</span>.</p>
-      </header>
-
-      <!-- Uma seção por coleção, cada uma com os seus cinco modelos. Tudo é
-           montado pelo js/app.js a partir de CONFIG.colecoes. -->
-      <div class="catalogo" id="gradeProdutos"></div>
-    </div>
-  </section>
-
-  <!-- Como funciona -->
-  <section class="secao secao--alternada" id="como-funciona">
-    <div class="container">
-      <header class="secao__cabecalho">
-        <h2>Como funciona a pré-venda</h2>
-      </header>
-      <ol class="passos">
-        <li class="passo">
-          <span class="passo__numero">1</span>
-          <h3>Escolha suas peças</h3>
-          <p>Explore nossas coleções, escolha seus modelos e tamanhos favoritos e adicione tudo ao carrinho.</p>
-        </li>
-        <li class="passo">
-          <span class="passo__numero">2</span>
-          <h3>Preencha seus dados</h3>
-          <p>Informe seus dados de contato para que possamos identificar seu pedido.</p>
-        </li>
-        <li class="passo">
-          <span class="passo__numero">3</span>
-          <h3>Realize o pagamento</h3>
-          <p>Pague via Pix ou cartão de crédito, à vista ou em até 12x, pelo checkout seguro da InfinitePay. Seu pedido será entregue pessoalmente por nós, com todo o cuidado que cada peça merece. Combinaremos a entrega pelo WhatsApp!</p>
-        </li>
-      </ol>
-    </div>
-  </section>
-
-  <!-- Dúvidas -->
-  <section class="secao secao--alternada" id="duvidas">
-    <div class="container container--estreito">
-      <header class="secao__cabecalho">
-        <h2>Dúvidas frequentes</h2>
-      </header>
-
-      <details class="duvida">
-        <summary>
-          <span>Como funciona o pagamento?</span>
-          <svg class="duvida__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m6 9 6 6 6-6"/>
-          </svg>
-        </summary>
-        <div class="duvida__painel">
-          <div class="duvida__conteudo">
-            <p>O pagamento é realizado diretamente pelo site, em um checkout seguro da InfinitePay. Você pode pagar via Pix ou cartão de crédito, à vista ou parcelado em até 12x. No Pix, você paga o valor do pedido; no cartão, pode haver acréscimo conforme o número de parcelas, informado antes da confirmação. Após a aprovação do pagamento, seu pedido será confirmado e seguirá para produção.</p>
-            <p id="regraDescontoPagamento" hidden></p>
-          </div>
-        </div>
-      </details>
-
-      <details class="duvida">
-        <summary>
-          <span>Qual é o prazo para receber minha camiseta?</span>
-          <svg class="duvida__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m6 9 6 6 6-6"/>
-          </svg>
-        </summary>
-        <div class="duvida__painel">
-          <div class="duvida__conteudo">
-            <!-- O mesmo prazo aparece na abertura, vindo de marca.prazoEntrega
-                 no js/config.js. Mudando um, confira o outro. -->
-            <p>A produção e a entrega serão realizadas em até 20 dias após a confirmação do pagamento do pedido.</p>
-          </div>
-        </div>
-      </details>
-
-      <details class="duvida">
-        <summary>
-          <span>E se eu tiver dúvidas sobre o tamanho?</span>
-          <svg class="duvida__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m6 9 6 6 6-6"/>
-          </svg>
-        </summary>
-        <div class="duvida__painel">
-          <div class="duvida__conteudo">
-            <p>Estamos à disposição para ajudar você a escolher o tamanho ideal antes de confirmar seu pedido. Por isso, recomendamos consultar nossa <button type="button" class="link-texto" data-abrir-medidas>tabela de medidas</button>.</p>
-          </div>
-        </div>
-      </details>
-
-      <details class="duvida">
-        <summary>
-          <span>Como combino a entrega depois de pagar?</span>
-          <svg class="duvida__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m6 9 6 6 6-6"/>
-          </svg>
-        </summary>
-        <div class="duvida__painel">
-          <div class="duvida__conteudo">
-            <p>Após a confirmação do pagamento, entraremos em contato pelo WhatsApp para combinar a entrega, assim que as peças estiverem disponíveis.</p>
-          </div>
-        </div>
-      </details>
-
-      <details class="duvida">
-        <summary>
-          <span>Posso pedir mais de uma camiseta?</span>
-          <svg class="duvida__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m6 9 6 6 6-6"/>
-          </svg>
-        </summary>
-        <div class="duvida__painel">
-          <div class="duvida__conteudo">
-            <p>Sim! Você pode escolher diferentes modelos, tamanhos e quantidades e reunir tudo em um único pedido.</p>
-          </div>
-        </div>
-      </details>
-    </div>
-  </section>
-
-</main>
-
-<footer class="rodape">
-  <div class="container rodape__interno">
-
-    <div class="rodape__coluna">
-      <div class="rodape__marca">
-        <img class="rodape__logo" id="rodapeLogo" src="" alt="" width="52" height="52">
-        <div class="rodape__marca-texto">
-          <strong id="rodapeNome">Via Padre Pio</strong>
-          <p id="rodapeCidade"></p>
-        </div>
+      <span class="separador" aria-hidden="true">:</span>
+      <div class="unidade">
+        <span class="numero" id="minutos">––</span>
+        <span class="rotulo" id="rotuloMinutos">minutos</span>
+      </div>
+      <span class="separador" aria-hidden="true">:</span>
+      <div class="unidade">
+        <span class="numero" id="segundos">––</span>
+        <span class="rotulo" id="rotuloSegundos">segundos</span>
       </div>
     </div>
 
-    <div class="rodape__coluna" id="colunaInspiracoes" hidden>
-      <strong id="tituloInspiracoes"></strong>
-      <div class="rodape__santos" id="listaSantos"></div>
-    </div>
+    <p class="recado" id="recado">Uma coleção criada para vestir a fé.</p>
+    <p class="so-leitor" id="leitura" aria-live="polite"></p>
 
-    <div class="rodape__coluna rodape__coluna--fim">
-      <div class="rodape__contatos">
-        <a id="rodapeWhatsapp" href="#" target="_blank" rel="noopener noreferrer"></a>
-        <a id="rodapeEmail" href="#"></a>
-        <a id="rodapeInstagram" href="#" target="_blank" rel="noopener noreferrer"></a>
-        <a id="rodapeInstagramPadre" href="#" target="_blank" rel="noopener noreferrer" hidden></a>
-      </div>
-    </div>
+    <noscript>
+      <p class="recado">A Via Padre Pio entra no ar hoje, 8 de novembro de 2026, às 20h, horário de Brasília.</p>
+    </noscript>
+  </main>
 
-  </div>
+  <div class="player" id="player" role="region" aria-label="Trilha sonora, O Elevador">
+    <audio id="trilha" src="O_Elevador.mp3" preload="auto" loop></audio>
 
-  <div class="container">
-    <p class="rodape__legal" id="rodapeCnpj" hidden></p>
-  </div>
-</footer>
-
-<!-- Janela com a história de cada santo -->
-<dialog class="janela-santo" id="janelaSanto" aria-labelledby="santoNome">
-  <button class="botao-fechar janela-santo__fechar" id="fecharSanto" type="button">
-    <span class="so-leitor">Fechar</span>
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="m6 6 12 12M18 6 6 18"/>
-    </svg>
-  </button>
-
-  <img class="janela-santo__foto" id="santoFoto" src="" alt="">
-
-  <div class="janela-santo__texto">
-    <h2 id="santoNome"></h2>
-    <p class="janela-santo__viveu" id="santoViveu"></p>
-    <div class="janela-santo__historia" id="santoHistoria"></div>
-  </div>
-</dialog>
-
-<!-- Foto da peça em tela cheia. O js/app.js preenche o palco e cuida do
-     zoom; as miniaturas trocam entre frente e costas sem fechar a janela. -->
-<dialog class="janela-foto" id="janelaFoto" aria-label="Foto da peça, ampliada">
-  <button class="botao-fechar janela-foto__fechar" id="fecharFoto" type="button">
-    <span class="so-leitor">Fechar</span>
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="m6 6 12 12M18 6 6 18"/>
-    </svg>
-  </button>
-
-  <div class="janela-foto__palco" id="palcoFoto">
-    <img class="janela-foto__imagem" id="fotoAmpliada" src="" alt="" draggable="false">
-  </div>
-
-  <div class="janela-foto__barra">
-    <p class="janela-foto__dica" id="dicaFoto"></p>
-    <div class="janela-foto__vistas" id="vistasFoto" role="group" aria-label="Fotos da peça"></div>
-  </div>
-</dialog>
-
-<!-- Tabela de medidas: as abas e as tabelas são montadas pelo js/app.js a
-     partir de CONFIG.medidas. -->
-<dialog class="janela-medidas" id="janelaMedidas" aria-labelledby="tituloMedidas">
-  <button class="botao-fechar janela-medidas__fechar" id="fecharMedidas" type="button">
-    <span class="so-leitor">Fechar</span>
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="m6 6 12 12M18 6 6 18"/>
-    </svg>
-  </button>
-
-  <h2 id="tituloMedidas">Tabela de medidas</h2>
-  <p class="janela-medidas__nota">
-    Medidas da peça em centímetros, não do corpo. Na dúvida, compare com uma
-    camiseta que já serve bem em você.
-  </p>
-
-  <div class="janela-medidas__abas" id="abasMedidas" role="tablist" aria-label="Modelo da camiseta"></div>
-  <div class="janela-medidas__corpo" id="corpoMedidas"></div>
-</dialog>
-
-<!-- Volta do checkout da InfinitePay. O js/app.js preenche e abre esta janela
-     quando o cliente retorna do pagamento; o endereço de entrega não passa
-     pela InfinitePay e sai daqui pelo WhatsApp. -->
-<dialog class="janela-pagamento" id="janelaPagamento" aria-labelledby="pagamentoTitulo">
-  <button class="botao-fechar janela-pagamento__fechar" id="fecharPagamento" type="button">
-    <span class="so-leitor">Fechar</span>
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="m6 6 12 12M18 6 6 18"/>
-    </svg>
-  </button>
-
-  <span class="janela-pagamento__selo" id="pagamentoSelo" data-confete-origem aria-hidden="true">
-    <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="m4 12.5 5.5 5.5L20 7"/>
-    </svg>
-  </span>
-
-  <h2 id="pagamentoTitulo"></h2>
-  <p class="janela-pagamento__texto" id="pagamentoTexto"></p>
-
-  <dl class="janela-pagamento__dados" id="pagamentoDados"></dl>
-  <p class="janela-pagamento__parcelas" id="pagamentoParcelas" hidden></p>
-  <ul class="janela-pagamento__itens" id="pagamentoItens" hidden></ul>
-
-  <!-- O prazo, agora que o pagamento saiu. Vem de marca.lembreteDoPrazo no
-       js/config.js, a mesma frase que fecha o cartão do WhatsApp. -->
-  <p class="janela-pagamento__prazo" id="pagamentoPrazo" hidden></p>
-
-  <a class="botao botao--whatsapp" id="pagamentoSac" href="#" target="_blank" rel="noopener noreferrer">
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="currentColor">
-      <path d="M12.04 2c-5.46 0-9.9 4.44-9.9 9.9 0 1.75.46 3.45 1.32 4.95L2 22l5.3-1.38a9.9 9.9 0 0 0 4.74 1.2h.01c5.46 0 9.9-4.44 9.9-9.9S17.5 2 12.04 2Zm0 18.05h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.05-.2-.31a8.18 8.18 0 1 1 6.99 3.87Zm4.5-6.14c-.25-.12-1.46-.72-1.69-.8-.22-.09-.39-.13-.55.12s-.63.8-.77.96c-.14.17-.28.19-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.55-1.34-.76-1.83-.2-.48-.4-.42-.55-.43h-.47c-.16 0-.43.06-.65.31-.22.25-.85.84-.85 2.04s.87 2.37 1 2.53c.12.17 1.72 2.62 4.16 3.68.58.25 1.03.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.46-.6 1.66-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.28Z"/>
-    </svg>
-    <span id="pagamentoSacTexto">Enviar meus dados de entrega</span>
-  </a>
-
-  <div class="janela-pagamento__comprovante">
-    <a class="link-texto" id="pagamentoEnviarComprovante" href="#" target="_blank" rel="noopener noreferrer" hidden>Enviar comprovante no WhatsApp</a>
-    <a class="link-texto" id="pagamentoComprovante" href="#" target="_blank" rel="noopener noreferrer" hidden>Ver o comprovante</a>
-  </div>
-</dialog>
-
-<!-- Painel do carrinho -->
-<div class="fundo-escuro" id="fundoEscuro" hidden></div>
-
-<aside class="painel" id="painelCarrinho" aria-label="Seu pedido" aria-hidden="true">
-  <header class="painel__cabecalho">
-    <button class="botao-voltar" id="voltarItens" type="button" hidden>
-      <span class="so-leitor">Voltar para os itens</span>
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M15 5 8 12l7 7"/>
+    <button class="player__play" id="botaoPlay" type="button" aria-label="Tocar">
+      <svg id="iconePlay" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+        <path fill="currentColor" d="M8.2 5.4c0-.9 1-1.5 1.8-.9l9.2 6.1c.7.5.7 1.5 0 1.9l-9.2 6.1c-.8.5-1.8 0-1.8-.9V5.4Z"/>
+      </svg>
+      <svg id="iconePause" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" hidden>
+        <path fill="currentColor" d="M7 5.5h3.2v13H7v-13Zm6.8 0H17v13h-3.2v-13Z"/>
       </svg>
     </button>
-    <h2 id="tituloPainel">Seu pedido</h2>
-    <button class="botao-fechar" id="fecharCarrinho" type="button">
-      <span class="so-leitor">Fechar</span>
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="m6 6 12 12M18 6 6 18"/>
+
+    <span class="player__tempo" id="tempoTrilha">0:00 / 0:00</span>
+
+    <input class="player__progresso" id="progressoTrilha" type="range" min="0" max="100" value="0" step="0.1" aria-label="Posição da música">
+
+    <input class="player__volume" id="volumeTrilha" type="range" min="0" max="100" value="80" aria-label="Volume" hidden>
+
+    <button class="player__icone" id="botaoVolume" type="button" aria-label="Volume" aria-expanded="false" aria-controls="volumeTrilha">
+      <svg id="iconeSom" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 10v4h3.2L12 18V6L7.2 10H4Z" fill="currentColor" stroke="none"/>
+        <path d="M15.2 9.2a3.6 3.6 0 0 1 0 5.6"/>
+        <path d="M17.6 7a6.4 6.4 0 0 1 0 10"/>
+      </svg>
+      <svg id="iconeMudo" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" hidden>
+        <path d="M4 10v4h3.2L12 18V6L7.2 10H4Z" fill="currentColor" stroke="none"/>
+        <path d="m16 10 4 4M20 10l-4 4"/>
       </svg>
     </button>
-  </header>
 
-  <div class="painel__corpo" id="corpoCarrinho">
+    <button class="player__icone" id="botaoMenu" type="button" aria-label="Mais opções" aria-expanded="false" aria-controls="menuTrilha">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor">
+        <circle cx="12" cy="6" r="1.4"/>
+        <circle cx="12" cy="12" r="1.4"/>
+        <circle cx="12" cy="18" r="1.4"/>
+      </svg>
+    </button>
 
-    <!-- Etapa 1: itens escolhidos -->
-    <div id="etapaItens">
-      <div id="itensCarrinho"></div>
+    <div class="player__menu" id="menuTrilha" hidden>
+      <button type="button" id="botaoRepetir" aria-pressed="true">Repetir</button>
     </div>
-
-    <!-- Etapa 2: dados de quem está comprando -->
-    <div id="etapaDados" tabindex="-1" hidden>
-      <p class="painel__intro">
-        Confira os itens e preencha seus dados. O pagamento é na próxima tela: Pix, crédito à vista ou em até 12x.
-      </p>
-
-      <div class="resumo" id="resumoPedido"></div>
-
-      <form class="formulario" id="formularioPedido" novalidate>
-        <div class="campo">
-          <label for="nome">Nome completo <span class="obrigatorio" aria-hidden="true">*</span></label>
-          <input type="text" id="nome" name="nome" autocomplete="name" required placeholder="Como quer ser chamado">
-          <p class="erro" data-erro-de="nome" hidden></p>
-        </div>
-
-        <div class="campo-duplo">
-          <div class="campo">
-            <label for="whatsapp">Seu WhatsApp <span class="obrigatorio" aria-hidden="true">*</span></label>
-            <input type="tel" id="whatsapp" name="whatsapp" inputmode="numeric" autocomplete="tel" required placeholder="(11) 91234-5678" maxlength="16">
-            <p class="erro" data-erro-de="whatsapp" hidden></p>
-          </div>
-
-          <div class="campo">
-            <label for="email">E-mail <span class="opcional">(opcional)</span></label>
-            <input type="email" id="email" name="email" autocomplete="email" placeholder="voce@email.com">
-            <p class="erro" data-erro-de="email" hidden></p>
-          </div>
-        </div>
-
-        <div class="campo">
-          <label for="cep">CEP <span class="obrigatorio" aria-hidden="true">*</span></label>
-          <input type="text" id="cep" name="cep" required inputmode="numeric"
-                 autocomplete="postal-code" maxlength="9" placeholder="06410-120">
-          <p class="campo__achado" id="cepEndereco" role="status" hidden></p>
-          <p class="erro" data-erro-de="cep" hidden></p>
-        </div>
-
-        <div class="campo">
-          <label for="entrega">Como prefere receber <span class="obrigatorio" aria-hidden="true">*</span></label>
-          <select id="entrega" name="entrega" required></select>
-          <p class="erro" data-erro-de="entrega" hidden></p>
-        </div>
-
-        <div class="campo">
-          <label for="formaPagamento">Como prefere pagar <span class="obrigatorio" aria-hidden="true">*</span></label>
-          <select id="formaPagamento" name="formaPagamento" required></select>
-          <p class="erro" data-erro-de="formaPagamento" hidden></p>
-        </div>
-
-        <div class="campo">
-          <label for="observacoes">Alguma observação <span class="opcional">(opcional)</span></label>
-          <textarea id="observacoes" name="observacoes" rows="3" maxlength="400" placeholder="Dúvidas sobre tamanho, presente, prazo..."></textarea>
-        </div>
-
-        <p class="erro erro--geral" id="erroGeral" hidden></p>
-
-        <button class="botao botao--principal botao--pagar" id="botaoEnviar" type="submit">
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="10" rx="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
-          <span id="textoBotaoEnviar">Ir para o pagamento</span>
-        </button>
-
-        <p class="nota-form">
-          O desconto de quantidade vale só no Pix. No cartão, o total é o
-          preço cheio. O checkout da InfinitePay abre na forma escolhida.
-          Os dados do cartão são digitados lá, nunca aqui.
-        </p>
-
-        <p class="nota-form" id="notaDesconto" hidden></p>
-
-        <p class="nota-form nota-form--sac">
-          Alguma dúvida antes de pagar?
-          <a id="sacCarrinho" href="#" target="_blank" rel="noopener noreferrer">Fale com a gente no WhatsApp</a>.
-        </p>
-      </form>
-    </div>
-
   </div>
 
-  <footer class="painel__rodape" id="rodapeCarrinho">
-    <div class="painel__total">
-      <span>Total</span>
-      <strong id="totalCarrinho">R$ 0,00</strong>
-    </div>
-    <button class="botao botao--principal botao--bloco" id="irParaPedido" type="button">Finalizar pedido</button>
-  </footer>
-</aside>
+<script>
+(function () {
+  // 20h de hoje no horário de Brasília. O Brasil não usa horário de verão.
+  var alvo = new Date("2026-11-08T20:00:00-03:00").getTime();
+  var horas = document.getElementById("horas");
+  var minutos = document.getElementById("minutos");
+  var segundos = document.getElementById("segundos");
+  var rotuloHoras = document.getElementById("rotuloHoras");
+  var rotuloMinutos = document.getElementById("rotuloMinutos");
+  var rotuloSegundos = document.getElementById("rotuloSegundos");
+  var titulo = document.getElementById("titulo");
+  var recado = document.getElementById("recado");
+  var leitura = document.getElementById("leitura");
+  var ultimoMinuto = null;
+  var encerrou = false;
 
-<!-- Aviso flutuante -->
-<div class="aviso-flutuante" id="avisoFlutuante" role="status" aria-live="polite" hidden></div>
+  function dois(n) {
+    return String(n).padStart(2, "0");
+  }
 
-<script src="js/config.js?v=6"></script>
-<!-- Sentry: só envia algo se observabilidade.sentryDsn estiver em config.js -->
-<script
-  src="https://browser.sentry-cdn.com/8.42.0/bundle.min.js"
-  crossorigin="anonymous"
-></script>
-<script src="js/logger.js?v=6"></script>
-<script src="js/app.js?v=6"></script>
+  function nome(n, um, varios) {
+    return n === 1 ? um : varios;
+  }
 
-<!-- Animações. É um enfeite: se este arquivo ou a Motion não carregarem,
-     a página continua inteira e o pedido funciona normalmente. -->
-<script src="https://cdn.jsdelivr.net/npm/motion@14.6.0/dist/motion.js"></script>
-<script src="js/animacoes.js"></script>
+  function atualizar() {
+    var resta = alvo - Date.now();
+    if (resta < 0) resta = 0;
+
+    var total = Math.floor(resta / 1000);
+    var h = Math.floor(total / 3600);
+    var m = Math.floor((total % 3600) / 60);
+    var s = total % 60;
+
+    horas.textContent = dois(h);
+    minutos.textContent = dois(m);
+    segundos.textContent = dois(s);
+    rotuloHoras.textContent = nome(h, "hora", "horas");
+    rotuloMinutos.textContent = nome(m, "minuto", "minutos");
+    rotuloSegundos.textContent = nome(s, "segundo", "segundos");
+
+    if (resta === 0) {
+      if (!encerrou) {
+        encerrou = true;
+        titulo.textContent = "É hora do lançamento";
+        recado.textContent = "A Via Padre Pio entra no ar agora.";
+        leitura.textContent = "São 20h. A Via Padre Pio entra no ar agora.";
+      }
+      return true;
+    }
+
+    if (m !== ultimoMinuto) {
+      ultimoMinuto = m;
+      leitura.textContent = "Faltam " + h + " " + nome(h, "hora", "horas")
+        + " e " + m + " " + nome(m, "minuto", "minutos")
+        + " para o lançamento, hoje às 20h.";
+    }
+    return false;
+  }
+
+  if (atualizar()) return;
+
+  var id = setInterval(function () {
+    if (atualizar()) clearInterval(id);
+  }, 250);
+})();
+
+/* Nuvem dourada em volta do logo, a mesma da capa da loja. O ponteiro
+   acelera e inclina a órbita; segurar pressionado recolhe a nuvem. */
+(function () {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  var palco = document.getElementById("palcoLogo");
+  var tela = document.getElementById("particulasLogo");
+  if (!palco || !tela) return;
+
+  var pincel = tela.getContext("2d");
+  if (!pincel) return;
+
+  var ouro = "#c08a2e";
+  var marrom = "#5c3a21";
+  var total = 120;
+
+  function umPouco(min, max) {
+    return min + Math.random() * (max - min);
+  }
+
+  var particulas = [];
+  for (var i = 0; i < total; i++) {
+    particulas.push({
+      angulo: umPouco(0, Math.PI * 2),
+      raio: umPouco(0.8, 1.04),
+      profundidade: umPouco(-1, 1),
+      giro: umPouco(0.1, 0.4),
+      tamanho: umPouco(0.55, 2.1),
+      opacidade: umPouco(0.28, 1),
+      dourada: Math.random() > 0.35
+    });
+  }
+
+  var velocidade = 1;
+  var alvoVelocidade = 1;
+  var inclinacao = 0.9;
+  var alvoInclinacao = 0.9;
+  var abertura = 1;
+  var alvoAbertura = 1;
+  var brilho = 0;
+  var alvoBrilho = 0.85;
+  var largura = 0;
+  var altura = 0;
+  var decorrido = 0;
+  var anterior = 0;
+  var ativo = true;
+
+  function medir() {
+    var area = palco.getBoundingClientRect();
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    largura = area.width;
+    altura = area.height;
+    tela.width = Math.round(largura * dpr);
+    tela.height = Math.round(altura * dpr);
+    pincel.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function aproximar(atual, alvo) {
+    return atual + (alvo - atual) * 0.06;
+  }
+
+  function desenhar(agora) {
+    if (!ativo) return;
+    requestAnimationFrame(desenhar);
+    if (!largura || !altura) return;
+
+    velocidade = aproximar(velocidade, alvoVelocidade);
+    inclinacao = aproximar(inclinacao, alvoInclinacao);
+    abertura = aproximar(abertura, alvoAbertura);
+    brilho = aproximar(brilho, alvoBrilho);
+
+    var passo = anterior ? Math.min(agora - anterior, 40) : 16;
+    anterior = agora;
+    decorrido += (passo / 1000) * velocidade;
+
+    pincel.clearRect(0, 0, largura, altura);
+
+    var meioX = largura / 2;
+    var meioY = altura / 2;
+    var escala = Math.min(largura, altura) / 2;
+
+    for (var n = 0; n < particulas.length; n++) {
+      var p = particulas[n];
+      var fase = p.angulo + decorrido * p.giro;
+      var raio = p.raio * abertura;
+      var x = Math.cos(fase) * raio;
+      var planoY = Math.sin(fase) * raio;
+      var z = p.profundidade * 0.22 * abertura;
+      var y = planoY * Math.cos(inclinacao) + z * Math.sin(inclinacao);
+      var fundo = -planoY * Math.sin(inclinacao) + z * Math.cos(inclinacao);
+      var perto = Math.min(Math.max(0.5 + fundo * 0.7, 0), 1);
+      var perspectiva = 1 / (1 - fundo * 0.42);
+
+      pincel.globalAlpha = Math.min(p.opacidade * (0.3 + perto * 0.7) * brilho, 1);
+      pincel.fillStyle = p.dourada ? ouro : marrom;
+      pincel.beginPath();
+      pincel.arc(
+        meioX + x * escala * perspectiva,
+        meioY + y * escala * perspectiva,
+        p.tamanho * (0.55 + perto * 1.3),
+        0,
+        Math.PI * 2
+      );
+      pincel.fill();
+    }
+
+    pincel.globalAlpha = 1;
+  }
+
+  medir();
+  window.addEventListener("resize", medir);
+  requestAnimationFrame(desenhar);
+
+  document.addEventListener("visibilitychange", function () {
+    ativo = !document.hidden;
+    anterior = 0;
+    if (ativo) requestAnimationFrame(desenhar);
+  });
+
+  palco.addEventListener("pointermove", function (evento) {
+    var area = palco.getBoundingClientRect();
+    alvoVelocidade = 0.35 + ((evento.clientX - area.left) / area.width) * 2.4;
+    alvoInclinacao = 0.4 + ((evento.clientY - area.top) / area.height);
+    alvoBrilho = 1;
+  });
+
+  palco.addEventListener("pointerleave", function () {
+    alvoVelocidade = 1;
+    alvoInclinacao = 0.9;
+    alvoBrilho = 0.85;
+  });
+
+  palco.addEventListener("pointerdown", function () {
+    alvoAbertura = 0.42;
+    alvoBrilho = 1;
+  });
+
+  function soltar() {
+    alvoAbertura = 1;
+    alvoBrilho = 0.85;
+  }
+
+  palco.addEventListener("pointerup", soltar);
+  palco.addEventListener("pointercancel", soltar);
+})();
+
+/* A trilha começa sozinha quando o navegador deixa. Se ele bloquear,
+   o primeiro toque fora do reprodutor dá o play — a menos que a pessoa
+   já tenha pausado. */
+(function () {
+  var audio = document.getElementById("trilha");
+  var player = document.getElementById("player");
+  var botaoPlay = document.getElementById("botaoPlay");
+  var iconePlay = document.getElementById("iconePlay");
+  var iconePause = document.getElementById("iconePause");
+  var tempo = document.getElementById("tempoTrilha");
+  var progresso = document.getElementById("progressoTrilha");
+  var botaoVolume = document.getElementById("botaoVolume");
+  var volume = document.getElementById("volumeTrilha");
+  var iconeSom = document.getElementById("iconeSom");
+  var iconeMudo = document.getElementById("iconeMudo");
+  var botaoMenu = document.getElementById("botaoMenu");
+  var menu = document.getElementById("menuTrilha");
+  var botaoRepetir = document.getElementById("botaoRepetir");
+  var usuarioPausou = false;
+  var volumeAntes = 0.8;
+
+  audio.volume = volumeAntes;
+
+  function formato(segundos) {
+    if (!isFinite(segundos)) return "0:00";
+    var inteiro = Math.floor(segundos);
+    return Math.floor(inteiro / 60) + ":" + String(inteiro % 60).padStart(2, "0");
+  }
+
+  function desenharTempo() {
+    tempo.textContent = formato(audio.currentTime) + " / " + formato(audio.duration);
+    if (document.activeElement === progresso) return;
+    var pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+    progresso.value = String(pct);
+    progresso.style.setProperty("--preenchido", pct + "%");
+  }
+
+  function desenharPlay() {
+    var tocando = !audio.paused;
+    iconePlay.hidden = tocando;
+    iconePause.hidden = !tocando;
+    botaoPlay.setAttribute("aria-label", tocando ? "Pausar" : "Tocar");
+  }
+
+  function desenharVolume() {
+    var nivel = audio.muted ? 0 : audio.volume;
+    volume.value = String(Math.round(nivel * 100));
+    volume.style.setProperty("--preenchido", (nivel * 100) + "%");
+    iconeSom.hidden = nivel === 0;
+    iconeMudo.hidden = nivel !== 0;
+    botaoVolume.setAttribute("aria-label", nivel === 0 ? "Ativar som" : "Volume");
+  }
+
+  function tocar() {
+    var promessa = audio.play();
+    if (promessa) promessa.catch(function () {});
+  }
+
+  function fecharMenu() {
+    menu.hidden = true;
+    botaoMenu.setAttribute("aria-expanded", "false");
+  }
+
+  botaoPlay.addEventListener("click", function () {
+    if (audio.paused) {
+      usuarioPausou = false;
+      tocar();
+    } else {
+      usuarioPausou = true;
+      audio.pause();
+    }
+  });
+
+  audio.addEventListener("play", desenharPlay);
+  audio.addEventListener("pause", desenharPlay);
+  audio.addEventListener("timeupdate", desenharTempo);
+  audio.addEventListener("loadedmetadata", desenharTempo);
+  audio.addEventListener("durationchange", desenharTempo);
+
+  progresso.addEventListener("input", function () {
+    if (!audio.duration) return;
+    audio.currentTime = (Number(progresso.value) / 100) * audio.duration;
+    progresso.style.setProperty("--preenchido", progresso.value + "%");
+  });
+
+  botaoVolume.addEventListener("click", function () {
+    var abrir = volume.hidden;
+    volume.hidden = !abrir;
+    botaoVolume.setAttribute("aria-expanded", abrir ? "true" : "false");
+    if (abrir && (audio.muted || audio.volume === 0)) {
+      audio.muted = false;
+      audio.volume = volumeAntes || 0.8;
+      desenharVolume();
+    }
+  });
+
+  volume.addEventListener("input", function () {
+    var nivel = Number(volume.value) / 100;
+    audio.muted = false;
+    audio.volume = nivel;
+    if (nivel > 0) volumeAntes = nivel;
+    desenharVolume();
+  });
+
+  botaoMenu.addEventListener("click", function () {
+    var abrir = menu.hidden;
+    menu.hidden = !abrir;
+    botaoMenu.setAttribute("aria-expanded", abrir ? "true" : "false");
+  });
+
+  botaoRepetir.addEventListener("click", function () {
+    audio.loop = !audio.loop;
+    botaoRepetir.setAttribute("aria-pressed", audio.loop ? "true" : "false");
+  });
+
+  document.addEventListener("pointerdown", function (evento) {
+    if (!menu.hidden && !menu.contains(evento.target) && evento.target !== botaoMenu) {
+      fecharMenu();
+    }
+    if (player.contains(evento.target) || usuarioPausou || !audio.paused) return;
+    tocar();
+  });
+
+  document.addEventListener("keydown", function (evento) {
+    if (evento.key === "Escape") fecharMenu();
+  });
+
+  desenharPlay();
+  desenharTempo();
+  desenharVolume();
+  tocar();
+})();
+</script>
 </body>
 </html>
